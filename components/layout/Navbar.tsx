@@ -1,0 +1,34 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+
+import { navItems } from "@/lib/constants";
+import { cn } from "@/lib/utils";
+
+export const Navbar = () => {
+  const pathname = usePathname();
+
+  return (
+    <nav className="overflow-x-auto">
+      <ul className="flex min-w-full items-center gap-6 text-xs font-semibold uppercase tracking-[0.12em]">
+        {navItems.map((item) => {
+          const isActive = pathname.startsWith(item.href);
+          return (
+            <li key={item.label}>
+              <Link
+                href={item.href}
+                className={cn(
+                  "block border-b-2 border-transparent pb-2 text-white/70 transition hover:text-white",
+                  isActive && "border-white text-white"
+                )}
+              >
+                {item.label}
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    </nav>
+  );
+};
