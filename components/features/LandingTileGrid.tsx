@@ -22,7 +22,7 @@ export const LandingTileGrid = ({ items }: LandingTileGridProps) => {
 
   return (
     <div className="space-y-8">
-      <div className="grid min-w-[900px] grid-cols-5 gap-4 overflow-x-auto rounded-2xl bg-transparent pb-2 md:min-w-full md:overflow-visible md:pb-0">
+      <div className="grid min-w-[1080px] grid-cols-6 gap-4 overflow-x-auto rounded-2xl bg-transparent pb-2 md:min-w-full md:overflow-visible md:pb-0">
         {items.map((item) => {
           const Icon = iconMap[item.icon];
           const isActive = activeId === item.id;

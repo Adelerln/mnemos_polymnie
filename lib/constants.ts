@@ -343,11 +343,25 @@ export const knowledgeBaseLinks = [
 
 export const landingMainTiles: FeatureItem[] = [
   {
-    id: "familles",
-    title: "Familles",
-    description: "Fiches, règlements, suivis",
-    href: "/familles",
+    id: "clients",
+    title: "Clients",
+    description: "Fiches familles et suivis",
+    href: "/clients",
     icon: "Users",
+  },
+  {
+    id: "sejours",
+    title: "Séjours",
+    description: "Calendriers et centres",
+    href: "/sejours",
+    icon: "CalendarDays",
+  },
+  {
+    id: "inscriptions",
+    title: "Inscriptions",
+    description: "Dossiers en cours",
+    href: "/inscription",
+    icon: "ClipboardList",
   },
   {
     id: "partenaires",
@@ -357,25 +371,18 @@ export const landingMainTiles: FeatureItem[] = [
     icon: "BriefcaseBusiness",
   },
   {
-    id: "centres",
-    title: "Séjours",
-    description: "Centres, inscriptions, équipes",
-    href: "/sejours",
-    icon: "CalendarDays",
-  },
-  {
-    id: "prestations",
-    title: "Prestations",
-    description: "Budgets et prestations",
-    href: "/prestations",
-    icon: "Wallet",
-  },
-  {
     id: "transports",
     title: "Transports",
     description: "Convoyages et billets",
     href: "/transports",
     icon: "Bus",
+  },
+  {
+    id: "personnel",
+    title: "Personnel",
+    description: "Équipes et planning",
+    href: "/personnel",
+    icon: "UsersRound",
   },
 ];
 
