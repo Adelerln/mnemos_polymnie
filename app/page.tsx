@@ -14,7 +14,7 @@ export default function Home() {
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.12),transparent_55%)]" />
           <div className="relative mx-auto flex max-w-4xl flex-col items-center gap-8 px-6 py-24 text-center md:py-28">
             <span className="rounded-full border border-white/20 px-4 py-1 text-xs font-medium uppercase tracking-[0.18em] text-white/70">
-              Thalie SaaS
+              Mnemos SaaS
             </span>
             <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
               La plateforme moderne pour organiser vos colonies de vacances

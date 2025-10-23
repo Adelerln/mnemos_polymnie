@@ -39,7 +39,7 @@ export const Footer = () => (
     </div>
     <div className="border-t border-border bg-muted py-4">
       <p className="mx-auto max-w-6xl px-4 text-xs text-muted-foreground md:px-6 lg:px-8">
-        © {new Date().getFullYear()} Thalie. Tous droits réservés.
+        © {new Date().getFullYear()} Mnemos. Tous droits réservés.
       </p>
     </div>
   </footer>

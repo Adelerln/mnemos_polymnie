@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Thalie SaaS",
+  title: "Mnemos SaaS",
   description:
     "Interface moderne pour la gestion des colonies de vacances pour enfants.",
 };

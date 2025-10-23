@@ -1,6 +1,6 @@
-## Thalie SaaS
+## Mnemos SaaS
 
-Interface Next.js inspirée du menu Thalie pour piloter l’organisation des colonies de vacances.
+Interface Next.js inspirée du menu Mnemos pour piloter l’organisation des colonies de vacances.
 
 ### Stack
 - Next.js 15 (App Router) & TypeScript
