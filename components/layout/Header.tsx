@@ -18,7 +18,7 @@ export const Header = () => (
           </IconButton>
           <div>
             <Link href="/" className="text-base font-semibold tracking-tight">
-              Menu logiciel Mnemos
+              Menu logiciel Polymnie
             </Link>
             <p className="text-xs text-white/60">
               Gestion des colonies de vacances

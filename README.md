@@ -1,6 +1,6 @@
-## Mnemos SaaS
+## Polymnie SaaS
 
-Interface Next.js inspirée du menu Mnemos pour piloter l’organisation des colonies de vacances.
+Interface Next.js inspirée du menu Polymnie pour piloter l’organisation des colonies de vacances.
 
 ### Stack
 - Next.js 15 (App Router) & TypeScript

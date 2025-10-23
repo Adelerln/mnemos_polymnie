@@ -16,7 +16,7 @@ export const SiteHeader = () => {
           href="/"
           className="text-sm font-semibold uppercase tracking-[0.22em] text-neutral-800"
         >
-          Mnemos
+          Polymnie
         </Link>
         <nav className="hidden items-center gap-6 text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500 md:flex">
           {primaryNavItems.map((item) => {
