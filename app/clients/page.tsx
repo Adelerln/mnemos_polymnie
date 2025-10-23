@@ -19,14 +19,14 @@ import {
   useMemo,
   useState,
 } from "react";
-
-type SecondaryContact = {
-  lastName: string;
-  firstName: string;
-  role: string;
-  phone: string;
-  email: string;
-};
+import {
+  fetchFamilies,
+  saveFamily,
+  type FamilyRecord,
+  type SecondaryContact,
+  type Child,
+  type HealthFormState,
+} from "@/services/api";
 
 type ChildFormState = {
   lastName: string;
@@ -35,27 +35,9 @@ type ChildFormState = {
   gender: "F" | "M" | "";
 };
 
-type HealthFormState = {
-  allergies: string;
-  diet: string;
-  healthIssues: string;
-  instructions: string;
-  friend: string;
-  vacaf: string;
-  transportNotes: string;
-};
-
-type Child = {
-  id: string;
-  lastName: string;
-  firstName: string;
-  birthDate: string;
-  gender: "F" | "M" | "";
-  health: HealthFormState;
-};
-
 type FamilyFormState = {
   id: string;
+  rowId?: number;
   civility: string;
   lastName: string;
   firstName: string;
@@ -72,6 +54,8 @@ type FamilyFormState = {
   prestashopP2: string;
   secondaryContact: SecondaryContact;
   children: Child[];
+  createdAt?: string;
+  updatedAt?: string;
 };
 
 type FamilyEditableField =
@@ -85,11 +69,6 @@ type FamilyEditableField =
   | "partner"
   | "prestashopP1"
   | "prestashopP2";
-
-type FamilyRecord = Omit<FamilyFormState, "secondaryContact"> & {
-  secondaryContact: SecondaryContact | null;
-};
-
 type CityLookupState = "idle" | "loading" | "error";
 
 const quickActions = [
@@ -155,6 +134,7 @@ const createEmptyHealthForm = (): HealthFormState => ({
 
 const createEmptyFamilyForm = (id = ""): FamilyFormState => ({
   id,
+  rowId: undefined,
   civility: "",
   lastName: "",
   firstName: "",
@@ -171,6 +151,8 @@ const createEmptyFamilyForm = (id = ""): FamilyFormState => ({
   prestashopP2: "",
   secondaryContact: createEmptySecondaryContact(),
   children: [],
+  createdAt: undefined,
+  updatedAt: undefined,
 });
 
 const createEmptyChildForm = (): ChildFormState => ({
@@ -252,6 +234,8 @@ const computeAgeFromBirthDate = (value: string) => {
 
 export default function ClientsPage() {
   const [families, setFamilies] = useState<FamilyRecord[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   const nextFamilyId = useMemo(
     () => computeNextFamilyId(families),
     [families],
@@ -280,6 +264,24 @@ export default function ClientsPage() {
     createEmptyHealthForm(),
   );
   const [healthFeedback, setHealthFeedback] = useState<string | null>(null);
+
+  // Charger les familles au montage du composant
+  useEffect(() => {
+    const loadFamilies = async () => {
+      try {
+        setIsLoading(true);
+        const familiesData = await fetchFamilies();
+        setFamilies(familiesData);
+      } catch (error) {
+        console.error("Erreur lors du chargement des familles:", error);
+        setSaveError("Erreur lors du chargement des familles");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadFamilies();
+  }, []);
 
   useEffect(() => {
     if (!selectedFamilyId) {
@@ -552,52 +554,88 @@ export default function ClientsPage() {
     setHealthFeedback(null);
   }, [nextFamilyId]);
 
-  const handleSaveFamily = (event: FormEvent<HTMLFormElement>) => {
+  const handleSaveFamily = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setSaveError(null);
     setFeedback(null);
+    setIsSaving(true);
 
     if (!familyForm.id.trim()) {
       setSaveError("Le numéro de client est manquant.");
+      setIsSaving(false);
       return;
     }
 
     if (!familyForm.lastName.trim()) {
       setSaveError("Veuillez renseigner le nom de famille.");
+      setIsSaving(false);
       return;
     }
 
     if (!familyForm.firstName.trim()) {
       setSaveError("Veuillez renseigner le prénom.");
+      setIsSaving(false);
       return;
     }
 
-    const record: FamilyRecord = {
-      ...familyForm,
-      secondaryContact: secondaryContactEnabled
-        ? { ...familyForm.secondaryContact }
-        : null,
-      children: familyForm.children.map((child) => ({
-        ...child,
-        health: { ...child.health },
-      })),
-    };
+    try {
+      const record: FamilyRecord = {
+        id: familyForm.id.trim(),
+        rowId: familyForm.rowId,
+        civility: familyForm.civility,
+        lastName: familyForm.lastName,
+        firstName: familyForm.firstName,
+        address: familyForm.address,
+        complement: familyForm.complement,
+        postalCode: familyForm.postalCode,
+        city: familyForm.city,
+        country: familyForm.country,
+        phone1: familyForm.phone1,
+        phone2: familyForm.phone2,
+        email: familyForm.email,
+        partner: familyForm.partner,
+        prestashopP1: familyForm.prestashopP1,
+        prestashopP2: familyForm.prestashopP2,
+        secondaryContact: secondaryContactEnabled
+          ? { ...familyForm.secondaryContact }
+          : null,
+        children: familyForm.children.map((child) => ({
+          ...child,
+          health: { ...child.health },
+        })),
+        createdAt: familyForm.createdAt,
+        updatedAt: familyForm.updatedAt,
+      };
 
-    setFamilies((prev) => {
-      const next = [...prev];
-      const existingIndex = next.findIndex((item) => item.id === record.id);
+      // Sauvegarder en base de données
+      const savedFamily = await saveFamily(record);
 
-      if (existingIndex >= 0) {
-        next[existingIndex] = record;
-      } else {
-        next.push(record);
-      }
+      // Mettre à jour l'état local
+      setFamilies((prev) => {
+        const next = [...prev];
+        const existingIndex = next.findIndex((item) => item.id === savedFamily.id);
 
-      return next;
-    });
+        if (existingIndex >= 0) {
+          next[existingIndex] = savedFamily;
+        } else {
+          next.push(savedFamily);
+        }
 
-    setSelectedFamilyId(record.id);
-    setFeedback("Fiche famille enregistrée.");
+        return next;
+      });
+
+      setSelectedFamilyId(savedFamily.id);
+      setFeedback("Fiche famille enregistrée avec succès.");
+    } catch (error) {
+      console.error("Erreur lors de la sauvegarde:", error);
+      setSaveError(
+        error instanceof Error 
+          ? error.message 
+          : "Erreur lors de la sauvegarde de la fiche famille"
+      );
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleToggleSecondaryContact = () => {
@@ -1162,16 +1200,18 @@ export default function ClientsPage() {
                   <div className="flex gap-2">
                     <button
                       type="button"
-                      className="inline-flex items-center gap-2 rounded-md border border-[#d4d7df] bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#2b2f36] transition hover:bg-[#f0f3f8]"
+                      className="inline-flex items-center gap-2 rounded-md border border-[#d4d7df] bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#2b2f36] transition hover:bg-[#f0f3f8] disabled:opacity-50"
                       onClick={resetFamilyForms}
+                      disabled={isSaving}
                     >
                       Réinitialiser
                     </button>
                     <button
                       type="submit"
-                      className="inline-flex items-center gap-2 rounded-md border border-[#b96d3c] bg-[#c77845] px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-[#b45b12]"
+                      className="inline-flex items-center gap-2 rounded-md border border-[#b96d3c] bg-[#c77845] px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-[#b45b12] disabled:opacity-50"
+                      disabled={isSaving}
                     >
-                      Enregistrer la fiche
+                      {isSaving ? "Enregistrement..." : "Enregistrer la fiche"}
                     </button>
                   </div>
                 </div>
