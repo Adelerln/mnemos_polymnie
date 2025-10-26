@@ -10,8 +10,8 @@ export const Navbar = () => {
   const pathname = usePathname();
 
   return (
-    <nav className="overflow-x-auto">
-      <ul className="flex min-w-full items-center gap-6 text-xs font-semibold uppercase tracking-[0.12em]">
+    <nav className="w-full overflow-x-auto">
+      <ul className="flex w-full items-center justify-between text-xs font-bold uppercase tracking-[0.12em]">
         {navItems.map((item) => {
           const isActive = pathname.startsWith(item.href);
           return (

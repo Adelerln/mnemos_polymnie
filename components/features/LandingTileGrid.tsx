@@ -49,7 +49,7 @@ export const LandingTileGrid = ({ items }: LandingTileGridProps) => {
               >
                 {Icon ? <Icon className="size-6" /> : null}
               </span>
-              <div className="space-y-1 px-4">
+              <div className="px-4">
                 <h3
                   className={cn(
                     "text-sm font-semibold uppercase tracking-[0.14em]",
@@ -58,16 +58,6 @@ export const LandingTileGrid = ({ items }: LandingTileGridProps) => {
                 >
                   {item.title}
                 </h3>
-                {item.description ? (
-                  <p
-                    className={cn(
-                      "text-xs",
-                      isActive ? "text-white/80" : "text-neutral-500"
-                    )}
-                  >
-                    {item.description}
-                  </p>
-                ) : null}
               </div>
               <Link
                 href={item.href}

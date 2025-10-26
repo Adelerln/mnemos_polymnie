@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import {
   Building2,
   CalendarDays,
@@ -20,6 +21,7 @@ import {
   useState,
 } from "react";
 import {
+  deleteFamily,
   fetchFamilies,
   saveFamily,
   type FamilyRecord,
@@ -76,6 +78,7 @@ const quickActions = [
     id: "inscriptions",
     label: "Consulter les inscriptions",
     icon: CalendarDays,
+    href: "/clients/inscriptions",
   },
   {
     id: "paiements",
@@ -297,6 +300,13 @@ const computeAgeFromBirthDate = (value: string) => {
   return `${yearLabel} et ${monthLabel}`;
 };
 
+const isSecondaryContactEmpty = (contact: SecondaryContact) =>
+  !contact.lastName.trim() &&
+  !contact.firstName.trim() &&
+  !contact.role.trim() &&
+  !contact.phone.trim() &&
+  !contact.email.trim();
+
 export default function ClientsPage() {
   const [families, setFamilies] = useState<FamilyRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -330,6 +340,9 @@ export default function ClientsPage() {
   );
   const [healthFeedback, setHealthFeedback] = useState<string | null>(null);
   const [isAutoSavingChildren, setIsAutoSavingChildren] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isSecondaryContactModalOpen, setIsSecondaryContactModalOpen] =
+    useState(false);
 
   // Charger les familles au montage du composant
   useEffect(() => {
@@ -502,6 +515,18 @@ export default function ClientsPage() {
     );
   }, [healthModalChildId, familyForm.children]);
 
+  const secondaryContactInfo = familyForm.secondaryContact;
+  const hasSecondaryContactInfo = !isSecondaryContactEmpty(
+    secondaryContactInfo,
+  );
+  const secondaryContactFullName = [
+    secondaryContactInfo.firstName.trim(),
+    secondaryContactInfo.lastName.trim(),
+  ]
+    .filter(Boolean)
+    .join(" ");
+  const canDeleteFamily = Boolean(selectedFamilyId || familyForm.rowId);
+
   const handleFamilyFieldChange =
     (field: FamilyEditableField) =>
     (event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -588,6 +613,7 @@ export default function ClientsPage() {
     setHealthModalChildId(null);
     setHealthForm(createEmptyHealthForm());
     setHealthFeedback(null);
+    setIsSecondaryContactModalOpen(false);
   };
 
   const resetFamilyForms = useCallback(() => {
@@ -605,6 +631,7 @@ export default function ClientsPage() {
     setHealthModalChildId(null);
     setHealthForm(createEmptyHealthForm());
     setHealthFeedback(null);
+    setIsSecondaryContactModalOpen(false);
   }, [nextFamilyId]);
 
   const upsertFamiliesState = useCallback((family: FamilyRecord) => {
@@ -677,17 +704,67 @@ export default function ClientsPage() {
     }
   };
 
-  const handleToggleSecondaryContact = () => {
-    setSecondaryContactEnabled((prev) => {
-      if (prev) {
-        setFamilyForm((current) => ({
-          ...current,
-          secondaryContact: createEmptySecondaryContact(),
-        }));
-      }
+  const handleOpenSecondaryContactModal = () => {
+    if (!secondaryContactEnabled) {
+      setSecondaryContactEnabled(true);
+    }
+    setIsSecondaryContactModalOpen(true);
+  };
 
-      return !prev;
-    });
+  const handleCloseSecondaryContactModal = () => {
+    if (isSecondaryContactEmpty(familyForm.secondaryContact)) {
+      setSecondaryContactEnabled(false);
+      setFamilyForm((current) => ({
+        ...current,
+        secondaryContact: createEmptySecondaryContact(),
+      }));
+    }
+    setIsSecondaryContactModalOpen(false);
+  };
+
+  const handleRemoveSecondaryContact = () => {
+    setSecondaryContactEnabled(false);
+    setFamilyForm((current) => ({
+      ...current,
+      secondaryContact: createEmptySecondaryContact(),
+    }));
+    setIsSecondaryContactModalOpen(false);
+  };
+
+  const handleDeleteFamily = async () => {
+    const targetId = selectedFamilyId ?? familyForm.id.trim();
+
+    if (!canDeleteFamily || !targetId) {
+      return;
+    }
+
+    const confirmation = window.confirm(
+      "Confirmer la suppression de cette fiche famille ?",
+    );
+
+    if (!confirmation) {
+      return;
+    }
+
+    setIsDeleting(true);
+    setSaveError(null);
+    setFeedback(null);
+
+    try {
+      await deleteFamily(targetId);
+      setFamilies((prev) => prev.filter((family) => family.id !== targetId));
+      resetFamilyForms();
+      setFeedback("Fiche famille supprimée.");
+    } catch (error) {
+      console.error("Erreur lors de la suppression de la famille:", error);
+      setSaveError(
+        error instanceof Error
+          ? error.message
+          : "Erreur lors de la suppression de la fiche famille.",
+      );
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const handleAddChild = async () => {
@@ -1000,83 +1077,61 @@ export default function ClientsPage() {
                 <p className="text-xs text-[#6d7280]">
                   Ajouter un responsable secondaire au dossier famille.
                 </p>
-                {secondaryContactEnabled ? (
-                  <div className="space-y-3">
-                    <div className="grid gap-3 text-xs">
-                      <label className="flex flex-col gap-1">
-                        <span className="font-medium text-[#5c606b]">
-                          Nom
-                        </span>
-                        <input
-                          className="rounded border border-[#d4d7df] bg-white px-3 py-2 text-sm text-[#2b2f36] focus:border-[#7f8696] focus:outline-none"
-                          value={familyForm.secondaryContact.lastName}
-                          onChange={handleSecondaryContactChange("lastName")}
-                          placeholder="Nom"
-                        />
-                      </label>
-                      <label className="flex flex-col gap-1">
-                        <span className="font-medium text-[#5c606b]">
-                          Prénom
-                        </span>
-                        <input
-                          className="rounded border border-[#d4d7df] bg-white px-3 py-2 text-sm text-[#2b2f36] focus:border-[#7f8696] focus:outline-none"
-                          value={familyForm.secondaryContact.firstName}
-                          onChange={handleSecondaryContactChange("firstName")}
-                          placeholder="Prénom"
-                        />
-                      </label>
-                      <label className="flex flex-col gap-1">
-                        <span className="font-medium text-[#5c606b]">
-                          Rôle dans la famille
-                        </span>
-                        <input
-                          className="rounded border border-[#d4d7df] bg-white px-3 py-2 text-sm text-[#2b2f36] focus:border-[#7f8696] focus:outline-none"
-                          value={familyForm.secondaryContact.role}
-                          onChange={handleSecondaryContactChange("role")}
-                          placeholder="Responsable légal, etc."
-                        />
-                      </label>
-                      <label className="flex flex-col gap-1">
-                        <span className="font-medium text-[#5c606b]">
-                          Téléphone
-                        </span>
-                        <input
-                          className="rounded border border-[#d4d7df] bg-white px-3 py-2 text-sm text-[#2b2f36] focus:border-[#7f8696] focus:outline-none"
-                          value={familyForm.secondaryContact.phone}
-                          onChange={handleSecondaryContactChange("phone")}
-                          placeholder="07 00 00 00 00"
-                        />
-                      </label>
-                      <label className="flex flex-col gap-1">
-                        <span className="font-medium text-[#5c606b]">
-                          Email
-                        </span>
-                        <input
-                          className="rounded border border-[#d4d7df] bg-white px-3 py-2 text-sm text-[#2b2f36] focus:border-[#7f8696] focus:outline-none"
-                          value={familyForm.secondaryContact.email}
-                          onChange={handleSecondaryContactChange("email")}
-                          placeholder="parent@example.com"
-                        />
-                      </label>
-                    </div>
-                    <button
-                      type="button"
-                      className="inline-flex w-full items-center justify-center gap-2 rounded-md border border-[#d4d7df] bg-white px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#2b2f36] transition hover:bg-[#f0f3f8]"
-                      onClick={handleToggleSecondaryContact}
-                    >
-                      Retirer le parent 2
-                    </button>
-                  </div>
-                ) : (
+                <div className="space-y-3">
                   <button
                     type="button"
                     className="inline-flex w-full items-center justify-center gap-2 rounded-md border border-[#d4d7df] bg-white px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#2b2f36] transition hover:bg-[#f0f3f8]"
-                    onClick={handleToggleSecondaryContact}
+                    onClick={handleOpenSecondaryContactModal}
                   >
-                    <UserRoundPlus className="size-4" />
-                    Ajouter
+                    {secondaryContactEnabled ? (
+                      <>
+                        <NotebookPen className="size-4" />
+                        Modifier le parent 2
+                      </>
+                    ) : (
+                      <>
+                        <UserRoundPlus className="size-4" />
+                        Ajouter le parent 2
+                      </>
+                    )}
                   </button>
-                )}
+                  {secondaryContactEnabled ? (
+                    <>
+                      <div className="rounded-lg border border-[#d4d7df] bg-white px-4 py-3 text-xs text-[#2b2f36] shadow-sm">
+                        <p className="font-semibold uppercase tracking-[0.12em] text-[#1f2330]">
+                          {secondaryContactFullName || "Informations à compléter"}
+                        </p>
+                        <p className="mt-1 text-[11px] font-medium uppercase tracking-[0.14em] text-[#5c606b]">
+                          {secondaryContactInfo.role || "Rôle non renseigné"}
+                        </p>
+                        <div className="mt-3 space-y-1 text-sm">
+                          {secondaryContactInfo.phone ? (
+                            <p className="text-[#2b2f36]">
+                              Tél. {secondaryContactInfo.phone}
+                            </p>
+                          ) : null}
+                          {secondaryContactInfo.email ? (
+                            <p className="text-[#2b2f36]">
+                              {secondaryContactInfo.email}
+                            </p>
+                          ) : null}
+                          {!hasSecondaryContactInfo ? (
+                            <p className="text-[#6d7280]">
+                              Aucun détail renseigné pour l&apos;instant.
+                            </p>
+                          ) : null}
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        className="inline-flex w-full items-center justify-center gap-2 rounded-md border border-[#d4d7df] bg-white px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#2b2f36] transition hover:bg-[#f0f3f8]"
+                        onClick={handleRemoveSecondaryContact}
+                      >
+                        Retirer le parent 2
+                      </button>
+                    </>
+                  ) : null}
+                </div>
               </div>
             </aside>
 
@@ -1278,19 +1333,29 @@ export default function ClientsPage() {
                       {feedback}
                     </p>
                   ) : null}
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    {canDeleteFamily ? (
+                      <button
+                        type="button"
+                        className="inline-flex items-center gap-2 rounded-md border border-neutral-900 bg-neutral-900 px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-black disabled:opacity-50"
+                        onClick={handleDeleteFamily}
+                        disabled={isSaving || isDeleting}
+                      >
+                        {isDeleting ? "Suppression..." : "Supprimer"}
+                      </button>
+                    ) : null}
                     <button
                       type="button"
                       className="inline-flex items-center gap-2 rounded-md border border-[#d4d7df] bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#2b2f36] transition hover:bg-[#f0f3f8] disabled:opacity-50"
                       onClick={resetFamilyForms}
-                      disabled={isSaving}
+                      disabled={isSaving || isDeleting}
                     >
                       Réinitialiser
                     </button>
                     <button
                       type="submit"
-                      className="inline-flex items-center gap-2 rounded-md border border-[#b96d3c] bg-[#c77845] px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-[#b45b12] disabled:opacity-50"
-                      disabled={isSaving}
+                      className="inline-flex items-center gap-2 rounded-md border border-[#8f1535] bg-[#b41c47] px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-[#97163a] disabled:opacity-50"
+                      disabled={isSaving || isDeleting}
                     >
                       {isSaving ? "Enregistrement..." : "Enregistrer la fiche"}
                     </button>
@@ -1480,18 +1545,35 @@ export default function ClientsPage() {
               </div>
 
               <div className="grid gap-4 rounded-xl border border-[#e3e6ed] bg-white p-6 shadow-lg sm:grid-cols-2 lg:grid-cols-3">
-                {quickActions.map(({ id, label, icon: Icon }) => (
-                  <button
-                    key={id}
-                    type="button"
-                    className="flex items-center gap-3 rounded-lg border border-[#e3e6ed] bg-[#f7f8fb] px-4 py-3 text-left text-sm font-semibold uppercase tracking-[0.14em] text-[#2b2f36] transition hover:-translate-y-0.5 hover:border-[#c77845] hover:bg-[#fff4ec] hover:shadow-xl"
-                  >
-                    <span className="flex size-10 items-center justify-center rounded-full bg-[#2f3442] text-white shadow-lg">
-                      <Icon className="size-5" />
-                    </span>
-                    <span className="leading-tight text-[#2b2f36]">{label}</span>
-                  </button>
-                ))}
+                {quickActions.map(({ id, label, icon: Icon, href }) =>
+                  href ? (
+                    <Link
+                      key={id}
+                      href={href}
+                      className="flex items-center gap-3 rounded-lg border border-[#e3e6ed] bg-[#f7f8fb] px-4 py-3 text-left text-sm font-semibold uppercase tracking-[0.14em] text-[#2b2f36] transition hover:-translate-y-0.5 hover:border-[#c77845] hover:bg-[#fff4ec] hover:shadow-xl"
+                    >
+                      <span className="flex size-10 items-center justify-center rounded-full bg-[#2f3442] text-white shadow-lg">
+                        <Icon className="size-5" />
+                      </span>
+                      <span className="leading-tight text-[#2b2f36]">
+                        {label}
+                      </span>
+                    </Link>
+                  ) : (
+                    <button
+                      key={id}
+                      type="button"
+                      className="flex items-center gap-3 rounded-lg border border-[#e3e6ed] bg-[#f7f8fb] px-4 py-3 text-left text-sm font-semibold uppercase tracking-[0.14em] text-[#2b2f36] transition hover:-translate-y-0.5 hover:border-[#c77845] hover:bg-[#fff4ec] hover:shadow-xl"
+                    >
+                      <span className="flex size-10 items-center justify-center rounded-full bg-[#2f3442] text-white shadow-lg">
+                        <Icon className="size-5" />
+                      </span>
+                      <span className="leading-tight text-[#2b2f36]">
+                        {label}
+                      </span>
+                    </button>
+                  ),
+                )}
               </div>
 
               <div className="grid gap-4 rounded-xl border border-[#e3e6ed] bg-white p-6 text-xs uppercase tracking-[0.16em] text-[#5c606b] shadow-lg sm:grid-cols-2 lg:grid-cols-4">
@@ -1508,6 +1590,101 @@ export default function ClientsPage() {
           </form>
         </section>
       </div>
+
+      {isSecondaryContactModalOpen ? (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-neutral-950/70 px-4 py-10 backdrop-blur">
+          <div className="relative w-full max-w-xl rounded-2xl border border-[#3f4350] bg-[#2b2f36] p-8 shadow-2xl">
+            <button
+              type="button"
+              className="absolute right-5 top-5 text-sm font-semibold uppercase tracking-[0.16em] text-[#d0d4de] transition hover:text-white"
+              onClick={handleCloseSecondaryContactModal}
+            >
+              Fermer
+            </button>
+            <header className="mb-4 text-center">
+              <h3 className="text-lg font-semibold uppercase tracking-[0.2em] text-white">
+                Parent 2
+              </h3>
+              <p className="mt-1 text-sm text-[#d0d4de]">
+                Renseignez les informations du responsable secondaire.
+              </p>
+            </header>
+            <div className="grid gap-4 text-sm text-[#e5e8f0] md:grid-cols-2">
+              <label className="flex flex-col gap-1">
+                <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#f0f1f5]">
+                  Nom
+                </span>
+                <input
+                  className="rounded border border-white/20 bg-white/90 px-3 py-2 text-[#1f2330] focus:border-[#c77845] focus:outline-none"
+                  value={familyForm.secondaryContact.lastName}
+                  onChange={handleSecondaryContactChange("lastName")}
+                  placeholder="Nom"
+                />
+              </label>
+              <label className="flex flex-col gap-1">
+                <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#f0f1f5]">
+                  Prénom
+                </span>
+                <input
+                  className="rounded border border-white/20 bg-white/90 px-3 py-2 text-[#1f2330] focus:border-[#c77845] focus:outline-none"
+                  value={familyForm.secondaryContact.firstName}
+                  onChange={handleSecondaryContactChange("firstName")}
+                  placeholder="Prénom"
+                />
+              </label>
+              <label className="flex flex-col gap-1 md:col-span-2">
+                <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#f0f1f5]">
+                  Rôle dans la famille
+                </span>
+                <input
+                  className="rounded border border-white/20 bg-white/90 px-3 py-2 text-[#1f2330] focus:border-[#c77845] focus:outline-none"
+                  value={familyForm.secondaryContact.role}
+                  onChange={handleSecondaryContactChange("role")}
+                  placeholder="Responsable légal, grand-parent..."
+                />
+              </label>
+              <label className="flex flex-col gap-1">
+                <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#f0f1f5]">
+                  Téléphone
+                </span>
+                <input
+                  className="rounded border border-white/20 bg-white/90 px-3 py-2 text-[#1f2330] focus:border-[#c77845] focus:outline-none"
+                  value={familyForm.secondaryContact.phone}
+                  onChange={handleSecondaryContactChange("phone")}
+                  placeholder="07 00 00 00 00"
+                />
+              </label>
+              <label className="flex flex-col gap-1">
+                <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#f0f1f5]">
+                  Email
+                </span>
+                <input
+                  className="rounded border border-white/20 bg-white/90 px-3 py-2 text-[#1f2330] focus:border-[#c77845] focus:outline-none"
+                  value={familyForm.secondaryContact.email}
+                  onChange={handleSecondaryContactChange("email")}
+                  placeholder="parent@example.com"
+                />
+              </label>
+            </div>
+            <div className="mt-6 flex flex-wrap items-center justify-end gap-2">
+              <button
+                type="button"
+                className="inline-flex items-center gap-2 rounded-md border border-[#505664] bg-transparent px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#d0d4de] transition hover:bg-[#3a3f4c]"
+                onClick={handleCloseSecondaryContactModal}
+              >
+                Fermer
+              </button>
+              <button
+                type="button"
+                className="inline-flex items-center gap-2 rounded-md border border-[#c7433c] bg-[#d65a52] px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-[#b9403a]"
+                onClick={handleRemoveSecondaryContact}
+              >
+                Retirer le parent 2
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       {healthModalChildId && activeHealthChild ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/70 px-4 py-10 backdrop-blur">
