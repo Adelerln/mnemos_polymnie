@@ -162,6 +162,71 @@ const createEmptyChildForm = (): ChildFormState => ({
   gender: "" as ChildFormState["gender"],
 });
 
+const mapChildrenForForm = (children: Child[]): Child[] =>
+  children.map((child) => ({
+    ...child,
+    gender: child.gender === "F" || child.gender === "M" ? child.gender : "",
+    health: child.health
+      ? { ...createEmptyHealthForm(), ...child.health }
+      : createEmptyHealthForm(),
+  }));
+
+const mapFamilyRecordToFormState = (record: FamilyRecord): FamilyFormState => ({
+  id: record.id,
+  rowId: record.rowId,
+  civility: record.civility,
+  lastName: record.lastName,
+  firstName: record.firstName,
+  address: record.address,
+  complement: record.complement,
+  postalCode: record.postalCode,
+  city: record.city,
+  country: record.country,
+  phone1: record.phone1,
+  phone2: record.phone2,
+  email: record.email,
+  partner: record.partner,
+  prestashopP1: record.prestashopP1,
+  prestashopP2: record.prestashopP2,
+  secondaryContact: record.secondaryContact
+    ? { ...record.secondaryContact }
+    : createEmptySecondaryContact(),
+  children: mapChildrenForForm(record.children),
+  createdAt: record.createdAt,
+  updatedAt: record.updatedAt,
+});
+
+const mapFormStateToFamilyRecord = (
+  form: FamilyFormState,
+  includeSecondaryContact: boolean,
+): FamilyRecord => ({
+  id: form.id.trim(),
+  rowId: form.rowId,
+  civility: form.civility,
+  lastName: form.lastName,
+  firstName: form.firstName,
+  address: form.address,
+  complement: form.complement,
+  postalCode: form.postalCode,
+  city: form.city,
+  country: form.country,
+  phone1: form.phone1,
+  phone2: form.phone2,
+  email: form.email,
+  partner: form.partner,
+  prestashopP1: form.prestashopP1,
+  prestashopP2: form.prestashopP2,
+  secondaryContact: includeSecondaryContact
+    ? { ...form.secondaryContact }
+    : null,
+  children: form.children.map((child) => ({
+    ...child,
+    health: { ...child.health },
+  })),
+  createdAt: form.createdAt,
+  updatedAt: form.updatedAt,
+});
+
 const generateChildId = () => {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
     return crypto.randomUUID();
@@ -264,6 +329,7 @@ export default function ClientsPage() {
     createEmptyHealthForm(),
   );
   const [healthFeedback, setHealthFeedback] = useState<string | null>(null);
+  const [isAutoSavingChildren, setIsAutoSavingChildren] = useState(false);
 
   // Charger les familles au montage du composant
   useEffect(() => {
@@ -509,20 +575,7 @@ export default function ClientsPage() {
     }
 
     setSelectedFamilyId(record.id);
-    setFamilyForm({
-      ...record,
-      secondaryContact: record.secondaryContact
-        ? { ...record.secondaryContact }
-        : createEmptySecondaryContact(),
-      children: record.children.map((child) => ({
-        ...child,
-        gender:
-          child.gender === "F" || child.gender === "M" ? child.gender : "",
-        health: child.health
-          ? { ...createEmptyHealthForm(), ...child.health }
-          : createEmptyHealthForm(),
-      })),
-    });
+    setFamilyForm(mapFamilyRecordToFormState(record));
     setSecondaryContactEnabled(Boolean(record.secondaryContact));
     setCityOptions(record.city ? [record.city] : []);
     setCityLookupState("idle");
@@ -554,6 +607,21 @@ export default function ClientsPage() {
     setHealthFeedback(null);
   }, [nextFamilyId]);
 
+  const upsertFamiliesState = useCallback((family: FamilyRecord) => {
+    setFamilies((prev) => {
+      const next = [...prev];
+      const existingIndex = next.findIndex((item) => item.id === family.id);
+
+      if (existingIndex >= 0) {
+        next[existingIndex] = family;
+      } else {
+        next.push(family);
+      }
+
+      return next;
+    });
+  }, []);
+
   const handleSaveFamily = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setSaveError(null);
@@ -579,52 +647,23 @@ export default function ClientsPage() {
     }
 
     try {
-      const record: FamilyRecord = {
-        id: familyForm.id.trim(),
-        rowId: familyForm.rowId,
-        civility: familyForm.civility,
-        lastName: familyForm.lastName,
-        firstName: familyForm.firstName,
-        address: familyForm.address,
-        complement: familyForm.complement,
-        postalCode: familyForm.postalCode,
-        city: familyForm.city,
-        country: familyForm.country,
-        phone1: familyForm.phone1,
-        phone2: familyForm.phone2,
-        email: familyForm.email,
-        partner: familyForm.partner,
-        prestashopP1: familyForm.prestashopP1,
-        prestashopP2: familyForm.prestashopP2,
-        secondaryContact: secondaryContactEnabled
-          ? { ...familyForm.secondaryContact }
-          : null,
-        children: familyForm.children.map((child) => ({
-          ...child,
-          health: { ...child.health },
-        })),
-        createdAt: familyForm.createdAt,
-        updatedAt: familyForm.updatedAt,
-      };
+      const record = mapFormStateToFamilyRecord(
+        familyForm,
+        secondaryContactEnabled,
+      );
 
       // Sauvegarder en base de données
       const savedFamily = await saveFamily(record);
 
       // Mettre à jour l'état local
-      setFamilies((prev) => {
-        const next = [...prev];
-        const existingIndex = next.findIndex((item) => item.id === savedFamily.id);
-
-        if (existingIndex >= 0) {
-          next[existingIndex] = savedFamily;
-        } else {
-          next.push(savedFamily);
-        }
-
-        return next;
-      });
+      upsertFamiliesState(savedFamily);
 
       setSelectedFamilyId(savedFamily.id);
+      setFamilyForm(mapFamilyRecordToFormState(savedFamily));
+      setSecondaryContactEnabled(Boolean(savedFamily.secondaryContact));
+      if (savedFamily.city) {
+        setCityOptions([savedFamily.city]);
+      }
       setFeedback("Fiche famille enregistrée avec succès.");
     } catch (error) {
       console.error("Erreur lors de la sauvegarde:", error);
@@ -651,7 +690,7 @@ export default function ClientsPage() {
     });
   };
 
-  const handleAddChild = () => {
+  const handleAddChild = async () => {
     setChildError(null);
 
     if (!childForm.lastName.trim() || !childForm.firstName.trim()) {
@@ -673,13 +712,55 @@ export default function ClientsPage() {
       health: createEmptyHealthForm(),
     };
 
+    const nextChildren = [...familyForm.children, newChild];
+
     setFamilyForm((prev) => ({
       ...prev,
-      children: [...prev.children, newChild],
+      children: nextChildren,
     }));
 
     setChildForm(createEmptyChildForm());
     setIsChildFormOpen(false);
+
+    const hasExistingFamily = Boolean(familyForm.rowId || selectedFamilyId);
+
+    if (!hasExistingFamily) {
+      setFeedback("Enfant ajouté. Enregistrez la fiche pour le conserver.");
+      return;
+    }
+
+    try {
+      setIsAutoSavingChildren(true);
+      const formToSave: FamilyFormState = {
+        ...familyForm,
+        children: nextChildren,
+      };
+      const record = mapFormStateToFamilyRecord(
+        formToSave,
+        secondaryContactEnabled,
+      );
+      const savedFamily = await saveFamily(record);
+      upsertFamiliesState(savedFamily);
+      setFamilyForm(mapFamilyRecordToFormState(savedFamily));
+      setSecondaryContactEnabled(Boolean(savedFamily.secondaryContact));
+      if (savedFamily.city) {
+        setCityOptions([savedFamily.city]);
+      }
+      setSelectedFamilyId(savedFamily.id);
+      setFeedback("Enfant ajouté et sauvegardé.");
+    } catch (error) {
+      console.error("Erreur lors de la sauvegarde de l'enfant:", error);
+      setChildError(
+        error instanceof Error
+          ? error.message
+          : "Erreur lors de la sauvegarde de l'enfant.",
+      );
+      setFeedback(
+        "Impossible de sauvegarder automatiquement l'enfant. Enregistrez la fiche.",
+      );
+    } finally {
+      setIsAutoSavingChildren(false);
+    }
   };
 
   const handleRemoveChild = (childId: string) => {
@@ -1385,10 +1466,13 @@ export default function ClientsPage() {
                       </button>
                       <button
                         type="button"
-                        className="inline-flex items-center gap-2 rounded-md border border-[#b96d3c] bg-[#c77845] px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-[#b45b12]"
+                        className="inline-flex items-center gap-2 rounded-md border border-[#b96d3c] bg-[#c77845] px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-[#b45b12] disabled:opacity-50"
                         onClick={handleAddChild}
+                        disabled={isAutoSavingChildren}
                       >
-                        Ajouter l&apos;enfant
+                        {isAutoSavingChildren
+                          ? "Sauvegarde..."
+                          : "Ajouter l'enfant"}
                       </button>
                     </div>
                   </div>

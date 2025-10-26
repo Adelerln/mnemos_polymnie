@@ -6,7 +6,7 @@ import type {
 } from "@/types";
 
 export const navItems: NavItem[] = [
-  { label: "Familles", href: "/familles" },
+  { label: "Familles", href: "/clients" },
   { label: "Centres", href: "/centres" },
   { label: "Séjours", href: "/centres" },
   { label: "Inscriptions", href: "/centres" },
@@ -387,7 +387,7 @@ export const landingMainTiles: FeatureItem[] = [
 ];
 
 export const primaryNavItems: PrimaryNavItem[] = [
-  { label: "Famille", href: "/familles" },
+  { label: "Famille", href: "/clients" },
   { label: "Séjours", href: "/sejours" },
   { label: "Inscription", href: "/inscription" },
   { label: "Fiche", href: "/fiche" },
