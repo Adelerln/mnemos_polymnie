@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Building2,
   CalendarDays,
@@ -8,6 +9,7 @@ import {
   FileText,
   LineChart,
   NotebookPen,
+  PenLine,
   Search,
   UserRoundPlus,
 } from "lucide-react";
@@ -78,7 +80,7 @@ const quickActions = [
     id: "inscriptions",
     label: "Consulter les inscriptions",
     icon: CalendarDays,
-    href: "/clients/inscriptions",
+    href: "/inscriptions",
   },
   {
     id: "paiements",
@@ -308,6 +310,7 @@ const isSecondaryContactEmpty = (contact: SecondaryContact) =>
   !contact.email.trim();
 
 export default function ClientsPage() {
+  const router = useRouter();
   const [families, setFamilies] = useState<FamilyRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -765,6 +768,27 @@ export default function ClientsPage() {
     } finally {
       setIsDeleting(false);
     }
+  };
+
+  const handleCreateChildRegistration = (childId: string) => {
+    const child = familyForm.children.find((item) => item.id === childId);
+
+    if (!child) {
+      setFeedback("Impossible de trouver les informations de l'enfant.");
+      return;
+    }
+
+    const params = new URLSearchParams({
+      mode: "new",
+      idClient: familyForm.id,
+      childId,
+      childFirstName: child.firstName,
+      childLastName: child.lastName,
+      childBirthDate: child.birthDate,
+      childGender: child.gender ?? "",
+    });
+
+    router.push(`/fiche?${params.toString()}`);
   };
 
   const handleAddChild = async () => {
@@ -1389,6 +1413,7 @@ export default function ClientsPage() {
                         <th className="px-5 py-3 text-left">Date de naissance</th>
                         <th className="px-5 py-3 text-left">Âge</th>
                         <th className="px-5 py-3 text-left">Sexe</th>
+                        <th className="px-5 py-3 text-center">Inscription</th>
                         <th className="px-5 py-3 text-center">Infos</th>
                       </tr>
                     </thead>
@@ -1397,7 +1422,7 @@ export default function ClientsPage() {
                         <tr>
                           <td
                             className="px-5 py-6 text-center text-sm text-[#7f8696]"
-                            colSpan={6}
+                            colSpan={7}
                           >
                             Les enfants de la famille apparaîtront ici une fois
                             ajoutés.
@@ -1420,6 +1445,16 @@ export default function ClientsPage() {
                             </td>
                             <td className="px-5 py-3 text-[#2b2f36]">
                               {child.gender}
+                            </td>
+                            <td className="px-5 py-3 text-center">
+                              <button
+                                type="button"
+                                className="inline-flex items-center justify-center rounded-full border border-[#d4d7df] bg-white p-2 text-[#2b2f36] transition hover:border-[#c77845] hover:text-[#c77845]"
+                                onClick={() => handleCreateChildRegistration(child.id)}
+                                aria-label={`Créer une inscription pour ${child.firstName} ${child.lastName}`}
+                              >
+                                <PenLine className="size-4" />
+                              </button>
                             </td>
                             <td className="px-5 py-3 text-center text-xs uppercase tracking-[0.16em] text-[#5c606b]">
                               <div className="flex flex-col items-center gap-2">

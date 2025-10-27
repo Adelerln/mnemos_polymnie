@@ -9,7 +9,7 @@ export const navItems: NavItem[] = [
   { label: "Familles", href: "/clients" },
   { label: "Centres", href: "/centres" },
   { label: "Séjours", href: "/centres" },
-  { label: "Inscriptions", href: "/centres" },
+  { label: "Inscriptions", href: "/inscriptions" },
   { label: "Partenaires", href: "/partenaires" },
   { label: "Convocations", href: "/direction" },
   { label: "Transports", href: "/transports" },
@@ -389,7 +389,7 @@ export const landingMainTiles: FeatureItem[] = [
 export const primaryNavItems: PrimaryNavItem[] = [
   { label: "Famille", href: "/clients" },
   { label: "Séjours", href: "/sejours" },
-  { label: "Inscription", href: "/inscription" },
+  { label: "Inscriptions", href: "/inscriptions" },
   { label: "Fiche", href: "/fiche" },
   { label: "Partenaires", href: "/partenaires" },
   { label: "Convocation", href: "/convocation" },
