@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Suspense,
   useCallback,
   useEffect,
   useMemo,
@@ -11,7 +12,6 @@ import {
 import { useSearchParams } from "next/navigation";
 import {
   ArrowLeft,
-  CalendarDays,
   Download,
   RefreshCw,
   Save,
@@ -103,6 +103,20 @@ const computeAgeAtDate = (birthDate: string, referenceDate: string) => {
 };
 
 export default function FichePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-neutral-200/70 px-4 text-[#1f2330]">
+          Chargement de la fiche…
+        </div>
+      }
+    >
+      <FichePageContent />
+    </Suspense>
+  );
+}
+
+function FichePageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const inscriptionIdParam = searchParams.get("id");

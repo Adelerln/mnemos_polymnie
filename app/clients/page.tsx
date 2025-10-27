@@ -312,7 +312,7 @@ const isSecondaryContactEmpty = (contact: SecondaryContact) =>
 export default function ClientsPage() {
   const router = useRouter();
   const [families, setFamilies] = useState<FamilyRecord[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const nextFamilyId = useMemo(
     () => computeNextFamilyId(families),

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import {
+  Suspense,
   useCallback,
   useEffect,
   useMemo,
@@ -68,6 +69,20 @@ const computeAge = (birthDate: string, referenceDate?: string) => {
 };
 
 export default function InscriptionsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-[#d8dce4] via-[#cfd4df] to-[#c4cad6] px-4 text-[#2b2f36]">
+          Chargement des inscriptions…
+        </div>
+      }
+    >
+      <InscriptionsPageContent />
+    </Suspense>
+  );
+}
+
+function InscriptionsPageContent() {
   const searchParams = useSearchParams();
   const initialFilters = useMemo(
     () => ({
