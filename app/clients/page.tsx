@@ -1064,38 +1064,6 @@ export default function ClientsPage() {
             <aside className="space-y-5 text-sm">
               <div className="space-y-3 rounded-xl border border-[#e3e6ed] bg-[#f7f8fb] p-5">
                 <h3 className="text-xs font-semibold uppercase tracking-[0.16em] text-[#5c606b]">
-                  Recherche presta
-                </h3>
-                <label className="flex flex-col gap-1 text-xs">
-                  <span className="font-medium text-[#5c606b]">
-                    ID Prestashop P1
-                  </span>
-                  <input
-                    className="rounded border border-[#d4d7df] bg-white px-3 py-2 text-sm text-[#2b2f36] focus:border-[#7f8696] focus:outline-none"
-                    value={familyForm.prestashopP1}
-                    onChange={handleFamilyFieldChange("prestashopP1")}
-                    placeholder="Ex: 12345"
-                  />
-                </label>
-                <label className="flex flex-col gap-1 text-xs">
-                  <span className="font-medium text-[#5c606b]">
-                    ID Prestashop P2
-                  </span>
-                  <input
-                    className="rounded border border-[#d4d7df] bg-white px-3 py-2 text-sm text-[#2b2f36] focus:border-[#7f8696] focus:outline-none"
-                    value={familyForm.prestashopP2}
-                    onChange={handleFamilyFieldChange("prestashopP2")}
-                    placeholder="Ex: 67890"
-                  />
-                </label>
-                <p className="text-xs text-[#6d7280]">
-                  Renseignez les identifiants avant de lancer la recherche dans
-                  Prestashop.
-                </p>
-              </div>
-
-              <div className="space-y-3 rounded-xl border border-[#e3e6ed] bg-[#f7f8fb] p-5">
-                <h3 className="text-xs font-semibold uppercase tracking-[0.16em] text-[#5c606b]">
                   Parent 2
                 </h3>
                 <p className="text-xs text-[#6d7280]">

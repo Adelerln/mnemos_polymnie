@@ -360,7 +360,7 @@ export const landingMainTiles: FeatureItem[] = [
     id: "inscriptions",
     title: "Inscriptions",
     description: "Dossiers en cours",
-    href: "/inscription",
+    href: "/inscriptions",
     icon: "ClipboardList",
   },
   {
