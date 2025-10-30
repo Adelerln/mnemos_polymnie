@@ -31,6 +31,7 @@ import {
   type Child,
   type HealthFormState,
 } from "@/services/api";
+import { useProjectLogger } from "@/hooks/useProjectLogger";
 
 type ChildFormState = {
   lastName: string;
@@ -311,6 +312,7 @@ const isSecondaryContactEmpty = (contact: SecondaryContact) =>
 
 export default function ClientsPage() {
   const router = useRouter();
+  const { logEdit, error: logError } = useProjectLogger();
   const [families, setFamilies] = useState<FamilyRecord[]>([]);
   const [, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -681,9 +683,32 @@ export default function ClientsPage() {
         familyForm,
         secondaryContactEnabled,
       );
+      const existingFamily = families.find(
+        (family) => family.id === record.id,
+      );
+      const actionType: "insert" | "update" = existingFamily
+        ? "update"
+        : "insert";
 
       // Sauvegarder en base de données
       const savedFamily = await saveFamily(record);
+
+      const recordIdForLog =
+        savedFamily.rowId ?? existingFamily?.rowId ?? undefined;
+
+      if (recordIdForLog !== undefined) {
+        await logEdit({
+          action: actionType,
+          tableName: "mnemos",
+          recordId: recordIdForLog,
+          before: existingFamily ?? null,
+          after: savedFamily,
+        });
+      } else {
+        console.warn(
+          "[Clients] Impossible d'enregistrer le log : identifiant de fiche introuvable.",
+        );
+      }
 
       // Mettre à jour l'état local
       upsertFamiliesState(savedFamily);
@@ -741,6 +766,8 @@ export default function ClientsPage() {
       return;
     }
 
+     const familyToDelete = families.find((family) => family.id === targetId);
+
     const confirmation = window.confirm(
       "Confirmer la suppression de cette fiche famille ?",
     );
@@ -758,6 +785,22 @@ export default function ClientsPage() {
       setFamilies((prev) => prev.filter((family) => family.id !== targetId));
       resetFamilyForms();
       setFeedback("Fiche famille supprimée.");
+
+      const recordIdForLog = familyToDelete?.rowId;
+
+      if (recordIdForLog !== undefined) {
+        await logEdit({
+          action: "delete",
+          tableName: "mnemos",
+          recordId: recordIdForLog,
+          before: familyToDelete ?? null,
+          after: null,
+        });
+      } else {
+        console.warn(
+          "[Clients] Impossible de consigner la suppression : identifiant de fiche introuvable.",
+        );
+      }
     } catch (error) {
       console.error("Erreur lors de la suppression de la famille:", error);
       setSaveError(
@@ -840,7 +883,28 @@ export default function ClientsPage() {
         formToSave,
         secondaryContactEnabled,
       );
+      const existingFamily = families.find(
+        (family) => family.id === record.id,
+      );
       const savedFamily = await saveFamily(record);
+
+      const recordIdForLog =
+        savedFamily.rowId ?? existingFamily?.rowId ?? undefined;
+
+      if (recordIdForLog !== undefined) {
+        await logEdit({
+          action: "update",
+          tableName: "mnemos",
+          recordId: recordIdForLog,
+          before: existingFamily ?? null,
+          after: savedFamily,
+        });
+      } else {
+        console.warn(
+          "[Clients] Impossible de consigner l'ajout d'enfant : identifiant mnemos introuvable.",
+        );
+      }
+
       upsertFamiliesState(savedFamily);
       setFamilyForm(mapFamilyRecordToFormState(savedFamily));
       setSecondaryContactEnabled(Boolean(savedFamily.secondaryContact));
@@ -1318,13 +1382,22 @@ export default function ClientsPage() {
                 </div>
 
                 <div className="flex flex-wrap items-center justify-end gap-2 pt-2">
-                  {saveError ? (
-                    <p className="text-sm font-medium text-red-600">{saveError}</p>
-                  ) : feedback ? (
-                    <p className="text-sm font-medium text-[#2f7a57]">
-                      {feedback}
-                    </p>
-                  ) : null}
+                  <div className="flex flex-col items-end gap-1">
+                    {saveError ? (
+                      <p className="text-sm font-medium text-red-600">
+                        {saveError}
+                      </p>
+                    ) : feedback ? (
+                      <p className="text-sm font-medium text-[#2f7a57]">
+                        {feedback}
+                      </p>
+                    ) : null}
+                    {logError ? (
+                      <p className="text-xs font-medium uppercase tracking-[0.14em] text-amber-600">
+                        Journalisation indisponible : {logError}
+                      </p>
+                    ) : null}
+                  </div>
                   <div className="flex flex-wrap items-center gap-2">
                     {canDeleteFamily ? (
                       <button

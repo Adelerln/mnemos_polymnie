@@ -18,7 +18,12 @@ Créer un fichier `.env.local` à la racine du projet :
 ```env
 NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+# Activez cette option uniquement si vous avez créé la table user_profiles (user_id ↔ mnemos_id)
+# NEXT_PUBLIC_SUPABASE_USE_USER_PROFILES=true
 ```
+
+> 🔐 Pour des raisons de sécurité, ne rendez jamais la clé `SUPABASE_SERVICE_ROLE_KEY` publique (pas de `NEXT_PUBLIC_`). Cette clé est requise pour permettre la création de comptes sans confirmation par email via l'API interne (`/api/auth/signup`).
 
 ### 3. Tester l'intégration
 ```bash

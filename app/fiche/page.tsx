@@ -5,6 +5,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ChangeEvent,
   type FormEvent,
@@ -24,6 +25,7 @@ import {
   saveInscription,
   type InscriptionRecord,
 } from "@/services/inscriptions";
+import { useProjectLogger } from "@/hooks/useProjectLogger";
 
 type InscriptionFormState = Omit<InscriptionRecord, "id"> & {
   id?: number;
@@ -119,6 +121,7 @@ export default function FichePage() {
 function FichePageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { logEdit, error: logError } = useProjectLogger();
   const inscriptionIdParam = searchParams.get("id");
   const prefillData = useMemo(() => {
     const birthDateParam = searchParams.get("childBirthDate") ?? "";
@@ -198,6 +201,7 @@ function FichePageContent() {
     amountPartner: "",
     status: "",
   });
+  const lastSavedInscriptionRef = useRef<InscriptionRecord | null>(null);
 
   const arrivalDate = form.dateEntree || form.dateSortie;
   const computedAge = useMemo(
@@ -224,6 +228,7 @@ function FichePageContent() {
           dateSortie: formatDateForInput(record.dateSortie),
           childBirthDate: formatDateForInput(record.childBirthDate),
         });
+        lastSavedInscriptionRef.current = record;
         setFeedback(null);
       } catch (err) {
         console.error(err);
@@ -267,6 +272,7 @@ function FichePageContent() {
           prefillData.childGender || prev.childGender || base.childGender,
       };
     });
+    lastSavedInscriptionRef.current = null;
     setIsPartnerLinked(false);
     setIsCancelled(false);
   }, [inscriptionIdParam, loadInscription, prefillData]);
@@ -358,8 +364,26 @@ function FichePageContent() {
         createdAt: form.createdAt,
         updatedAt: form.updatedAt,
       };
+      const previousRecord = lastSavedInscriptionRef.current;
+      const actionType: "insert" | "update" = previousRecord ? "update" : "insert";
 
       const saved = await saveInscription(record);
+
+      if (typeof saved.id === "number") {
+        await logEdit({
+          action: actionType,
+          tableName: "inscriptions",
+          recordId: saved.id,
+          before: previousRecord ?? null,
+          after: saved,
+          editedByInscription: saved.id,
+        });
+      } else {
+        console.warn(
+          "[Fiche] Impossible de consigner l'opération d'inscription : identifiant introuvable.",
+        );
+      }
+
       setForm({
         ...saved,
         id: saved.id,
@@ -367,6 +391,7 @@ function FichePageContent() {
         dateSortie: formatDateForInput(saved.dateSortie),
         childBirthDate: formatDateForInput(saved.childBirthDate),
       });
+      lastSavedInscriptionRef.current = saved;
       setFeedback("Inscription enregistrée avec succès.");
       if (!record.id && saved.id) {
         const params = new URLSearchParams({
@@ -1182,11 +1207,16 @@ function FichePageContent() {
           </section>
 
           <footer className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#d4d7df] bg-white px-4 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-[#5c606b]">
-            <div className="flex flex-wrap items-center gap-3">
+            <div className="flex flex-col gap-1 md:flex-row md:items-center md:gap-3">
               {error ? (
                 <span className="text-red-600">{error}</span>
               ) : feedback ? (
                 <span className="text-[#2f7a57]">{feedback}</span>
+              ) : null}
+              {logError ? (
+                <span className="text-[11px] uppercase tracking-[0.16em] text-amber-600">
+                  Journalisation indisponible : {logError}
+                </span>
               ) : null}
             </div>
             <button

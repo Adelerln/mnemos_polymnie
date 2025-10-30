@@ -1,4 +1,5 @@
 // Script de test pour vérifier l'intégration Supabase
+/* eslint-disable @typescript-eslint/no-require-imports */
 // Exécuter avec: node test-supabase-integration.js
 
 const { createClient } = require('@supabase/supabase-js');
