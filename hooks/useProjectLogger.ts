@@ -1,6 +1,6 @@
 import { useSession } from "@/hooks/useSession";
 import { supabase } from "@/lib/supabase-client";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 type ProjectLogAction = "insert" | "update" | "delete";
 
@@ -18,6 +18,22 @@ export const useProjectLogger = () => {
   const [isLogging, setIsLogging] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const effectiveEditedBy = useMemo(() => {
+    if (mnemosId) {
+      return mnemosId;
+    }
+    if (!user?.id) {
+      return null;
+    }
+    const hex = user.id.replace(/-/g, "");
+    const slice = hex.slice(-8);
+    const fallback = Number.parseInt(slice || "0", 16);
+    if (Number.isNaN(fallback)) {
+      return null;
+    }
+    return fallback;
+  }, [mnemosId, user?.id]);
+
   const logEdit = useCallback(
     async ({
       action,
@@ -34,9 +50,9 @@ export const useProjectLogger = () => {
         return;
       }
 
-      if (!mnemosId) {
+      if (effectiveEditedBy === null) {
         console.warn(
-          "[ProjectLogger] No mnemos identifier mapped to the user. Skipping log.",
+          "[ProjectLogger] Unable to compute an editor identifier. Skipping log.",
         );
         return;
       }
@@ -57,7 +73,7 @@ export const useProjectLogger = () => {
       const basePayload = {
         project_id: projectIdValue,
         action,
-        edited_by: mnemosId,
+        edited_by: effectiveEditedBy,
         edited_by_inscription: editedByInscription,
         before: before ?? null,
         after: after ?? null,
@@ -96,7 +112,7 @@ export const useProjectLogger = () => {
         setIsLogging(false);
       }
     },
-    [mnemosId, user],
+    [effectiveEditedBy, user],
   );
 
   return {

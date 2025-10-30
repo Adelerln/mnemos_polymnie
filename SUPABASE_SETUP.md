@@ -21,6 +21,8 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 # Activez cette option uniquement si vous avez créé la table user_profiles (user_id ↔ mnemos_id)
 # NEXT_PUBLIC_SUPABASE_USE_USER_PROFILES=true
+# Définissez sur "true" uniquement si vous souhaitez toujours créer une fiche famille lors du premier login
+# NEXT_PUBLIC_SUPABASE_SYNC_MNEMOS=true
 ```
 
 > 🔐 Pour des raisons de sécurité, ne rendez jamais la clé `SUPABASE_SERVICE_ROLE_KEY` publique (pas de `NEXT_PUBLIC_`). Cette clé est requise pour permettre la création de comptes sans confirmation par email via l'API interne (`/api/auth/signup`).

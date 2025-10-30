@@ -40,6 +40,8 @@ export const AuthProvider = ({
   const [error, setError] = useState<string | null>(null);
   const [mnemosId, setMnemosId] = useState<number | null>(null);
   const [mnemosLoading, setMnemosLoading] = useState<boolean>(false);
+  const syncMnemosWithFamilies =
+    process.env.NEXT_PUBLIC_SUPABASE_SYNC_MNEMOS === "true";
   const [supportsUserProfiles, setSupportsUserProfiles] = useState<boolean>(
     process.env.NEXT_PUBLIC_SUPABASE_USE_USER_PROFILES === "true",
   );
@@ -62,6 +64,9 @@ export const AuthProvider = ({
     if (sessionError) {
       setError(sessionError.message);
       setSession(null);
+      if (sessionError.message?.includes("Invalid Refresh Token")) {
+        await supabase.auth.signOut();
+      }
     } else {
       setSession(nextSession ?? null);
     }
@@ -93,6 +98,13 @@ export const AuthProvider = ({
       authListener.subscription.unsubscribe();
     };
   }, [bootstrapSession]);
+
+  const fallbackIdentifierForUser = useCallback((userId: string) => {
+    const safeHex = userId.replace(/-/g, "");
+    const slice = safeHex.slice(-8);
+    const intValue = Number.parseInt(slice || "0", 16);
+    return Number.isNaN(intValue) ? 0 : intValue;
+  }, []);
 
   const resolveMnemosId = useCallback(
     async (user: User): Promise<number | null> => {
@@ -148,6 +160,8 @@ export const AuthProvider = ({
         }
       }
 
+      let resolvedMnemosId: number | null = null;
+
       const {
         data: existingMnemos,
         error: mnemosLookupError,
@@ -163,9 +177,9 @@ export const AuthProvider = ({
         );
       }
 
-      let resolvedMnemosId = existingMnemos?.id ?? null;
-
-      if (!resolvedMnemosId) {
+      if (existingMnemos?.id) {
+        resolvedMnemosId = existingMnemos.id;
+      } else if (syncMnemosWithFamilies) {
         const {
           data: insertedMnemos,
           error: insertError,
@@ -188,9 +202,9 @@ export const AuthProvider = ({
       }
 
       if (!resolvedMnemosId) {
-        throw new Error(
-          "La création de l'entrée mnemos n'a pas retourné d'identifiant.",
-        );
+        const fallbackId = fallbackIdentifierForUser(user.id);
+        localProfileMapRef.current.set(user.id, fallbackId);
+        return fallbackId;
       }
 
       if (supportsUserProfiles) {
@@ -228,10 +242,9 @@ export const AuthProvider = ({
       }
 
       localProfileMapRef.current.set(user.id, resolvedMnemosId);
-
       return resolvedMnemosId;
     },
-    [supportsUserProfiles],
+    [fallbackIdentifierForUser, supportsUserProfiles, syncMnemosWithFamilies],
   );
 
   useEffect(() => {
@@ -294,6 +307,9 @@ export const AuthProvider = ({
       setSession(null);
       setMnemosId(null);
       lastSyncedUserId.current = null;
+      if (refreshError.message?.includes("Invalid Refresh Token")) {
+        await supabase.auth.signOut();
+      }
     } else {
       setSession(nextSession ?? null);
     }
@@ -312,6 +328,44 @@ export const AuthProvider = ({
     }),
     [error, mnemosError, mnemosId, mnemosLoading, refreshSession, session, sessionLoading],
   );
+
+  const loginLoggedRef = useRef<Set<string>>(new Set());
+
+  useEffect(() => {
+    const currentUser = session?.user;
+    if (!currentUser) {
+      return;
+    }
+
+    if (loginLoggedRef.current.has(currentUser.id)) {
+      return;
+    }
+
+    const effectiveId =
+      mnemosId ?? localProfileMapRef.current.get(currentUser.id) ?? fallbackIdentifierForUser(currentUser.id);
+
+    loginLoggedRef.current.add(currentUser.id);
+
+    void (async () => {
+      const { error: logError } = await supabase.from("project_edit_log").insert({
+        project_id: effectiveId,
+        action: "insert",
+        table_name: "auth.login",
+        edited_by: effectiveId,
+        edited_by_inscription: null,
+        before: null,
+        after: {
+          event: "login",
+          email: currentUser.email,
+          timestamp: new Date().toISOString(),
+        },
+      });
+
+      if (logError && process.env.NODE_ENV !== "production") {
+        console.warn("[Supabase] Impossible d'enregistrer l'authentification", logError);
+      }
+    })();
+  }, [fallbackIdentifierForUser, mnemosId, session?.user]);
 
   return (
     <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
