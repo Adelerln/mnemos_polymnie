@@ -23,7 +23,7 @@ export const FamilleCard = ({ item }: FamilleCardProps) => {
           className="flex h-full flex-col items-center gap-3 p-6 text-center text-neutral-900"
         >
           <span className="inline-flex size-12 items-center justify-center rounded-full bg-neutral-900/90 text-white transition group-hover:bg-neutral-900">
-            {Icon ? <Icon className="size-6" /> : null}
+            {Icon ? <Icon className="size-10" /> : null}
           </span>
           <div className="space-y-2">
             <h3 className="text-sm font-semibold uppercase tracking-wide">

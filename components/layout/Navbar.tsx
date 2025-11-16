@@ -11,11 +11,11 @@ export const Navbar = () => {
 
   return (
     <nav className="w-full overflow-x-auto">
-      <ul className="flex w-full items-center justify-between text-xs font-bold uppercase tracking-[0.12em]">
+      <ul className="flex w-full items-center gap-4 text-xs font-bold uppercase tracking-[0.12em]">
         {navItems.map((item) => {
           const isActive = pathname.startsWith(item.href);
           return (
-            <li key={item.label}>
+            <li key={item.label} className="flex-shrink-0 whitespace-nowrap">
               <Link
                 href={item.href}
                 className={cn(

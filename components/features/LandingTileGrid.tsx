@@ -47,7 +47,7 @@ export const LandingTileGrid = ({ items }: LandingTileGridProps) => {
                     : "bg-neutral-900 text-white group-hover:bg-neutral-800"
                 )}
               >
-                {Icon ? <Icon className="size-6" /> : null}
+                {Icon ? <Icon className="size-10" /> : null}
               </span>
               <div className="px-4">
                 <h3

@@ -21,7 +21,7 @@ export const SiteHeader = () => {
           Polymnie
         </Link>
         <div className="flex items-center gap-4">
-          <nav className="hidden items-center gap-6 text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500 md:flex">
+          <nav className="hidden items-center gap-4 text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500 md:flex lg:gap-6">
             {primaryNavItems.map((item) => {
               const isActive =
                 item.href === "/"
@@ -32,7 +32,7 @@ export const SiteHeader = () => {
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    "relative pb-1.5 transition hover:text-neutral-900",
+                    "relative flex-shrink-0 whitespace-nowrap pb-1.5 transition hover:text-neutral-900",
                     isActive && "text-neutral-900"
                   )}
                 >
