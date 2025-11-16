@@ -21,8 +21,8 @@ export const LandingTileGrid = ({ items }: LandingTileGridProps) => {
   };
 
   return (
-    <div className="space-y-8">
-      <div className="grid min-w-[1080px] grid-cols-6 gap-4 overflow-x-auto rounded-2xl bg-transparent pb-2 md:min-w-full md:overflow-visible md:pb-0">
+    <div className="space-y-16">
+      <div className="grid min-w-[1440px] grid-cols-6 gap-x-12 gap-y-14 overflow-x-auto rounded-[40px] bg-transparent px-4 pb-4 md:min-w-full md:overflow-visible md:px-0 md:pb-0">
         {items.map((item) => {
           const Icon = iconMap[item.icon];
           const isActive = activeId === item.id;
@@ -33,7 +33,7 @@ export const LandingTileGrid = ({ items }: LandingTileGridProps) => {
               type="button"
               onClick={() => handleSelect(item.id)}
               className={cn(
-                "group flex aspect-square min-h-[160px] flex-col items-center justify-center gap-3 rounded-2xl border bg-white text-center shadow-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900/50",
+                "group flex aspect-square min-h-[220px] flex-col items-center justify-center gap-6 rounded-[40px] border bg-white text-center shadow-md transition focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900/50",
                 isActive
                   ? "border-neutral-900 bg-neutral-900 text-white shadow-lg"
                   : "border-neutral-200 hover:-translate-y-1 hover:border-neutral-300 hover:shadow-lg"
@@ -41,7 +41,7 @@ export const LandingTileGrid = ({ items }: LandingTileGridProps) => {
             >
               <span
                 className={cn(
-                  "flex size-14 items-center justify-center rounded-full transition",
+                  "flex size-16 items-center justify-center rounded-full transition",
                   isActive
                     ? "bg-white text-neutral-900"
                     : "bg-neutral-900 text-white group-hover:bg-neutral-800"
@@ -75,11 +75,11 @@ export const LandingTileGrid = ({ items }: LandingTileGridProps) => {
       </div>
 
       {activeId ? (
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
+        <div className="grid grid-cols-2 gap-x-12 gap-y-14 md:grid-cols-5">
           {Array.from({ length: PLACEHOLDER_COUNT }).map((_, index) => (
             <div
               key={`${activeId}-placeholder-${index}`}
-              className="h-32 rounded-2xl border border-dashed border-neutral-300 bg-white/40"
+              className="h-40 rounded-[32px] border border-dashed border-neutral-300 bg-white/40"
             />
           ))}
         </div>
