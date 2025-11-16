@@ -3,7 +3,7 @@
 import { useSession } from "@/hooks/useSession";
 import { supabase } from "@/lib/supabase-client";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 
 type ResetStatus =
@@ -15,7 +15,6 @@ type ResetStatus =
 
 export const LoginForm = () => {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const { refreshSession } = useSession();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -54,8 +53,7 @@ export const LoginForm = () => {
       }
 
       await refreshSession();
-      const redirectTarget = searchParams.get("redirectedFrom") ?? "/dashboard";
-      router.replace(redirectTarget);
+      router.replace("/homepage");
       router.refresh();
     } finally {
       setIsSubmitting(false);
