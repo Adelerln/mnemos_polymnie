@@ -6,6 +6,13 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, useState } from "react";
 
+type ResetStatus =
+  | {
+      type: "success" | "error";
+      message: string;
+    }
+  | null;
+
 export const LoginForm = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -14,11 +21,14 @@ export const LoginForm = () => {
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isSendingReset, setIsSendingReset] = useState(false);
+  const [resetStatus, setResetStatus] = useState<ResetStatus>(null);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsSubmitting(true);
     setError(null);
+    setResetStatus(null);
 
     try {
       const normalizedEmail = email.trim().toLowerCase();
@@ -52,13 +62,72 @@ export const LoginForm = () => {
     }
   };
 
+  const handlePasswordReset = async () => {
+    setResetStatus(null);
+    const normalizedEmail = email.trim().toLowerCase();
+
+    if (!normalizedEmail) {
+      setResetStatus({
+        type: "error",
+        message:
+          "Indiquez votre adresse mail pour recevoir un lien sécurisé de réinitialisation.",
+      });
+      return;
+    }
+
+    try {
+      setIsSendingReset(true);
+      const redirectTo =
+        typeof window !== "undefined"
+          ? `${window.location.origin}/reset-password`
+          : undefined;
+
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(
+        normalizedEmail,
+        {
+          redirectTo,
+        },
+      );
+
+      if (resetError) {
+        setResetStatus({
+          type: "error",
+          message:
+            resetError.message ??
+            "Impossible d'envoyer le lien de réinitialisation pour le moment.",
+        });
+        return;
+      }
+
+      setResetStatus({
+        type: "success",
+        message:
+          "Nous venons de vous envoyer un lien de réinitialisation. Pensez à vérifier vos spams.",
+      });
+    } catch {
+      setResetStatus({
+        type: "error",
+        message:
+          "Impossible d'envoyer l'email de réinitialisation pour le moment.",
+      });
+    } finally {
+      setIsSendingReset(false);
+    }
+  };
+
   return (
-    <div className="w-full max-w-sm rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
+    <div className="w-full max-w-md rounded-2xl border border-neutral-200 bg-white p-8 shadow-lg">
       <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
         <div className="space-y-2 text-center">
-          <h1 className="text-xl font-semibold text-neutral-900">Connexion</h1>
+          <span className="text-xs font-semibold uppercase tracking-[0.3em] text-neutral-500">
+            Polymnie
+          </span>
+          <h1 className="text-2xl font-semibold text-neutral-900">
+            Connexion sécurisée
+          </h1>
           <p className="text-sm text-neutral-500">
-            Accédez à votre espace en utilisant vos identifiants.
+            L’accès à Polymnie se valide par une confirmation envoyée sur votre
+            adresse mail.
           </p>
         </div>
 
@@ -96,7 +165,10 @@ export const LoginForm = () => {
         </label>
 
         {error ? (
-          <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">
+          <p
+            className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600"
+            aria-live="assertive"
+          >
             {error}
           </p>
         ) : null}
@@ -108,6 +180,37 @@ export const LoginForm = () => {
         >
           {isSubmitting ? "Connexion..." : "Se connecter"}
         </button>
+
+        <div className="space-y-2 border-t border-dashed border-neutral-200 pt-4 text-sm">
+          <p className="text-xs text-neutral-500">
+            Une confirmation par mail vous permet de valider chaque connexion.
+          </p>
+          <button
+            type="button"
+            onClick={handlePasswordReset}
+            disabled={isSendingReset}
+            className="inline-flex w-full items-center justify-center rounded-md border border-neutral-900 px-3 py-2 text-sm font-medium text-neutral-900 transition hover:bg-neutral-900 hover:text-white disabled:cursor-not-allowed disabled:border-neutral-300 disabled:text-neutral-400"
+          >
+            {isSendingReset ? "Envoi en cours..." : "Mot de passe oublié"}
+          </button>
+          {resetStatus ? (
+            <p
+              className={`rounded-md px-3 py-2 text-xs ${
+                resetStatus.type === "success"
+                  ? "border border-emerald-200 bg-emerald-50 text-emerald-700"
+                  : "border border-red-200 bg-red-50 text-red-600"
+              }`}
+              aria-live="polite"
+            >
+              {resetStatus.message}
+            </p>
+          ) : (
+            <p className="text-xs text-neutral-500">
+              Ce lien est envoyé à l’adresse saisie ci-dessus et reste valable
+              pendant 30 minutes.
+            </p>
+          )}
+        </div>
       </form>
 
       <p className="mt-6 text-center text-sm text-neutral-500">
