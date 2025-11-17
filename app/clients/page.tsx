@@ -699,7 +699,7 @@ export default function ClientsPage() {
       if (recordIdForLog !== undefined) {
         await logEdit({
           action: actionType,
-          tableName: "mnemos",
+          tableName: "clients",
           recordId: recordIdForLog,
           before: existingFamily ?? null,
           after: savedFamily,
@@ -791,7 +791,7 @@ export default function ClientsPage() {
       if (recordIdForLog !== undefined) {
         await logEdit({
           action: "delete",
-          tableName: "mnemos",
+          tableName: "clients",
           recordId: recordIdForLog,
           before: familyToDelete ?? null,
           after: null,
@@ -894,14 +894,14 @@ export default function ClientsPage() {
       if (recordIdForLog !== undefined) {
         await logEdit({
           action: "update",
-          tableName: "mnemos",
+          tableName: "clients",
           recordId: recordIdForLog,
           before: existingFamily ?? null,
           after: savedFamily,
         });
       } else {
         console.warn(
-          "[Clients] Impossible de consigner l'ajout d'enfant : identifiant mnemos introuvable.",
+          "[Clients] Impossible de consigner l'ajout d'enfant : identifiant client introuvable.",
         );
       }
 

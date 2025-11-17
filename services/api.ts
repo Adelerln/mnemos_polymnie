@@ -1,5 +1,7 @@
 import { supabase } from "@/lib/supabase-client";
 
+const FAMILY_TABLE = "clients";
+
 // Types partagés avec le front (camelCase)
 export type SecondaryContact = {
   lastName: string;
@@ -124,7 +126,7 @@ const mapFamilyRecordToRow = (family: FamilyRecord): FamilyRowPayload => ({
 // Services pour les familles
 export const fetchFamilies = async (): Promise<FamilyRecord[]> => {
   const { data, error } = await supabase
-    .from("mnemos")
+    .from(FAMILY_TABLE)
     .select("*")
     .order("id_client", { ascending: true });
 
@@ -132,7 +134,7 @@ export const fetchFamilies = async (): Promise<FamilyRecord[]> => {
   console.log("[Supabase] fetchFamilies error:", error);
 
   if (error) {
-    throw new Error(`Erreur Supabase (mnemos): ${error.message}`);
+    throw new Error(`Erreur Supabase (${FAMILY_TABLE}): ${error.message}`);
   }
 
   return (data ?? []).map(mapRowToFamilyRecord);
@@ -145,7 +147,7 @@ export const saveFamily = async (family: FamilyRecord): Promise<FamilyRecord> =>
 
   // Vérifier si la famille existe déjà
   const { data: existingFamily, error: checkError } = await supabase
-    .from("mnemos")
+    .from(FAMILY_TABLE)
     .select("id")
     .eq("id_client", idClient)
     .single();
@@ -160,7 +162,7 @@ export const saveFamily = async (family: FamilyRecord): Promise<FamilyRecord> =>
   if (existingFamily) {
     // Mise à jour
     const result = await supabase
-      .from("mnemos")
+      .from(FAMILY_TABLE)
       .update({
         ...basePayload,
         updated_at: timestamp,
@@ -173,7 +175,7 @@ export const saveFamily = async (family: FamilyRecord): Promise<FamilyRecord> =>
   } else {
     // Insertion
     const result = await supabase
-      .from("mnemos")
+      .from(FAMILY_TABLE)
       .insert({
         ...basePayload,
         created_at: family.createdAt ?? timestamp,
@@ -198,7 +200,7 @@ export const saveFamily = async (family: FamilyRecord): Promise<FamilyRecord> =>
 export const deleteFamily = async (familyId: string): Promise<void> => {
   const idClient = familyId.trim();
   const { error } = await supabase
-    .from("mnemos")
+    .from(FAMILY_TABLE)
     .delete()
     .eq("id_client", idClient);
 

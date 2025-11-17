@@ -165,11 +165,11 @@ export const AuthProvider = ({
       const {
         data: existingMnemos,
         error: mnemosLookupError,
-      } = await supabase
-        .from("mnemos")
-        .select("id")
-        .eq("email", email)
-        .maybeSingle();
+        } = await supabase
+          .from("clients")
+          .select("id")
+          .eq("email", email)
+          .maybeSingle();
 
       if (mnemosLookupError && mnemosLookupError.code !== "PGRST116") {
         throw new Error(
@@ -184,7 +184,7 @@ export const AuthProvider = ({
           data: insertedMnemos,
           error: insertError,
         } = await supabase
-          .from("mnemos")
+          .from("clients")
           .insert({
             id_client: user.id,
             email,

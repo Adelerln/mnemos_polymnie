@@ -66,7 +66,7 @@ async function testSupabaseIntegration() {
     // 1. Test d'insertion
     console.log('1️⃣ Test d\'insertion...');
     const { data: insertedFamily, error: insertError } = await supabase
-      .from('mnemos')
+      .from('clients')
       .insert(testFamily)
       .select()
       .single();
@@ -85,7 +85,7 @@ async function testSupabaseIntegration() {
     // 2. Test de lecture
     console.log('\n2️⃣ Test de lecture...');
     const { data: families, error: readError } = await supabase
-      .from('mnemos')
+      .from('clients')
       .select('*')
       .order('id_client', { ascending: true });
 
@@ -99,7 +99,7 @@ async function testSupabaseIntegration() {
     // 3. Test de mise à jour
     console.log('\n3️⃣ Test de mise à jour...');
     const { data: updatedFamily, error: updateError } = await supabase
-      .from('mnemos')
+      .from('clients')
       .update({
         last_name: 'TEST-UPDATED',
         phone_1: '01 23 45 67 90',
@@ -123,7 +123,7 @@ async function testSupabaseIntegration() {
     // 4. Test de suppression
     console.log('\n4️⃣ Test de suppression...');
     const { error: deleteError } = await supabase
-      .from('mnemos')
+      .from('clients')
       .delete()
       .eq('id_client', testFamily.id_client);
 
@@ -137,7 +137,7 @@ async function testSupabaseIntegration() {
     // 5. Vérification finale
     console.log('\n5️⃣ Vérification finale...');
     const { data: finalCheck, error: finalError } = await supabase
-      .from('mnemos')
+      .from('clients')
       .select('id_client')
       .eq('id_client', testFamily.id_client);
 
@@ -154,7 +154,7 @@ async function testSupabaseIntegration() {
 
     console.log('\n🎉 Tous les tests d\'intégration sont passés avec succès!');
     console.log('\n📋 Prochaines étapes:');
-    console.log('1. Exécuter le script SQL create_mnemos_table.sql dans Supabase');
+    console.log('1. Exécuter le script SQL de création de la table clients dans Supabase');
     console.log('2. Configurer les variables d\'environnement dans .env.local');
     console.log('3. Tester le formulaire sur http://localhost:3000/clients');
 
