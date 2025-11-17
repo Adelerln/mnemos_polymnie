@@ -11,6 +11,10 @@ export const SiteHeader = () => {
   const pathname = usePathname();
   const { user, loading } = useSession();
 
+  if (pathname?.startsWith("/login")) {
+    return null;
+  }
+
   if (loading) {
     return null;
   }
