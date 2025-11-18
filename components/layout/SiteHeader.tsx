@@ -1,27 +1,29 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
-import { useSession } from "@/hooks/useSession";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/lib/supabase-client";
 import { primaryNavItems } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
 export const SiteHeader = () => {
   const pathname = usePathname();
-  const { user, loading } = useSession();
+  const router = useRouter();
+  const { user, loading } = useAuth();
+  const isAuthPage =
+    pathname?.startsWith("/login") || pathname?.startsWith("/signup");
 
-  if (pathname?.startsWith("/login")) {
+  if (isAuthPage) {
     return null;
   }
 
-  if (loading) {
-    return null;
-  }
-
-  if (!user) {
-    return null;
-  }
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    router.replace("/login");
+    router.refresh();
+  };
 
   return (
     <header className="sticky top-0 z-40 border-b border-neutral-200 bg-white/80 backdrop-blur">
@@ -32,8 +34,8 @@ export const SiteHeader = () => {
         >
           Polymnie
         </Link>
-        <div className="flex items-center gap-4">
-          <nav className="hidden items-center gap-4 text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500 md:flex lg:gap-6">
+        <div className="flex items-center gap-6">
+          <nav className="hidden items-center gap-4 text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500 md:flex">
             {primaryNavItems.map((item) => {
               const isActive =
                 item.href === "/"
@@ -56,14 +58,36 @@ export const SiteHeader = () => {
               );
             })}
           </nav>
-          {!loading ? (
-            <Link
-              href={user ? "/dashboard" : "/login"}
-              className="rounded-md border border-neutral-300 px-3 py-1.5 text-xs font-medium uppercase tracking-[0.18em] text-neutral-700 transition hover:border-neutral-900 hover:text-neutral-900"
-            >
-              Connexion
-            </Link>
-          ) : null}
+          {user ? (
+            <div className="flex items-center gap-3 text-xs font-medium uppercase tracking-[0.18em] text-neutral-600">
+              <span className="hidden truncate text-neutral-900 sm:inline">
+                {user.email}
+              </span>
+              <button
+                type="button"
+                onClick={handleSignOut}
+                className="rounded-md border border-neutral-300 px-3 py-1.5 text-neutral-700 transition hover:border-neutral-900 hover:text-neutral-900"
+                disabled={loading}
+              >
+                Déconnexion
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.18em]">
+              <Link
+                href="/login"
+                className="rounded-md border border-neutral-300 px-3 py-1.5 text-neutral-700 transition hover:border-neutral-900 hover:text-neutral-900"
+              >
+                Connexion
+              </Link>
+              <Link
+                href="/signup"
+                className="rounded-md bg-neutral-900 px-3 py-1.5 text-white transition hover:bg-neutral-800"
+              >
+                S&apos;inscrire
+              </Link>
+            </div>
+          )}
         </div>
       </div>
     </header>

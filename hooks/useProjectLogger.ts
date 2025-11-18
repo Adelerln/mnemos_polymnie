@@ -1,4 +1,4 @@
-import { useSession } from "@/hooks/useSession";
+import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/lib/supabase-client";
 import { useCallback, useMemo, useState } from "react";
 
@@ -14,7 +14,7 @@ type LogEditArgs = {
 };
 
 export const useProjectLogger = () => {
-  const { user, mnemosId } = useSession();
+  const { user, mnemosId } = useAuth();
   const [isLogging, setIsLogging] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

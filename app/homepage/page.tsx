@@ -17,7 +17,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 import { primaryNavItems } from "@/lib/constants";
-import { useSession } from "@/hooks/useSession";
+import { useAuth } from "@/hooks/useAuth";
 
 const navMeta: Record<
   string,
@@ -62,7 +62,7 @@ const navMeta: Record<
 
 export default function Homepage() {
   const router = useRouter();
-  const { user, loading } = useSession();
+  const { user, loading } = useAuth();
 
   useEffect(() => {
     if (!loading && !user) {

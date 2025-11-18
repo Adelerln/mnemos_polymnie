@@ -11,6 +11,25 @@ import {
   useState,
 } from "react";
 
+const SUPABASE_SESSION_NETWORK_ERROR_MESSAGE =
+  "Impossible de contacter Supabase. Vérifiez votre connexion internet et la configuration de vos clés Supabase.";
+
+const formatSupabaseSessionError = (cause: unknown) => {
+  if (cause instanceof Error) {
+    const normalizedMessage = cause.message?.toLowerCase() ?? "";
+    if (
+      normalizedMessage.includes("failed to fetch") ||
+      normalizedMessage.includes("fetch failed") ||
+      normalizedMessage.includes("network request failed")
+    ) {
+      return SUPABASE_SESSION_NETWORK_ERROR_MESSAGE;
+    }
+    return cause.message;
+  }
+
+  return SUPABASE_SESSION_NETWORK_ERROR_MESSAGE;
+};
+
 type AuthContextValue = {
   session: Session | null;
   user: User | null;
@@ -50,30 +69,53 @@ export const AuthProvider = ({
   const lastSyncedUserId = useRef<string | null>(null);
   const localProfileMapRef = useRef<Map<string, number>>(new Map());
 
+  const resetSessionState = useCallback(() => {
+    setSession(null);
+    setMnemosId(null);
+    lastSyncedUserId.current = null;
+  }, []);
+
+  const handleSupabaseSessionException = useCallback(
+    (cause: unknown, context: "bootstrap" | "refresh") => {
+      const formattedMessage = formatSupabaseSessionError(cause);
+      setError(formattedMessage);
+      resetSessionState();
+
+      if (process.env.NODE_ENV !== "production") {
+        console.error(`[Supabase] ${context} de session impossible`, cause);
+      }
+    },
+    [resetSessionState],
+  );
+
   const bootstrapSession = useCallback(async () => {
     if (hasBootstrappedSession.current) {
       return;
     }
 
     setSessionLoading(true);
-    const {
-      data: { session: nextSession },
-      error: sessionError,
-    } = await supabase.auth.getSession();
+    try {
+      const {
+        data: { session: nextSession },
+        error: sessionError,
+      } = await supabase.auth.getSession();
 
-    if (sessionError) {
-      setError(sessionError.message);
-      setSession(null);
-      if (sessionError.message?.includes("Invalid Refresh Token")) {
-        await supabase.auth.signOut();
+      if (sessionError) {
+        setError(sessionError.message);
+        resetSessionState();
+        if (sessionError.message?.includes("Invalid Refresh Token")) {
+          await supabase.auth.signOut();
+        }
+      } else {
+        setSession(nextSession ?? null);
       }
-    } else {
-      setSession(nextSession ?? null);
+    } catch (cause) {
+      handleSupabaseSessionException(cause, "bootstrap");
+    } finally {
+      hasBootstrappedSession.current = true;
+      setSessionLoading(false);
     }
-
-    hasBootstrappedSession.current = true;
-    setSessionLoading(false);
-  }, []);
+  }, [handleSupabaseSessionException, resetSessionState]);
 
   useEffect(() => {
     let isMounted = true;
@@ -297,25 +339,27 @@ export const AuthProvider = ({
 
   const refreshSession = useCallback(async () => {
     setSessionLoading(true);
-    const {
-      data: { session: nextSession },
-      error: refreshError,
-    } = await supabase.auth.getSession();
+    try {
+      const {
+        data: { session: nextSession },
+        error: refreshError,
+      } = await supabase.auth.getSession();
 
-    if (refreshError) {
-      setError(refreshError.message);
-      setSession(null);
-      setMnemosId(null);
-      lastSyncedUserId.current = null;
-      if (refreshError.message?.includes("Invalid Refresh Token")) {
-        await supabase.auth.signOut();
+      if (refreshError) {
+        setError(refreshError.message);
+        resetSessionState();
+        if (refreshError.message?.includes("Invalid Refresh Token")) {
+          await supabase.auth.signOut();
+        }
+      } else {
+        setSession(nextSession ?? null);
       }
-    } else {
-      setSession(nextSession ?? null);
+    } catch (cause) {
+      handleSupabaseSessionException(cause, "refresh");
+    } finally {
+      setSessionLoading(false);
     }
-
-    setSessionLoading(false);
-  }, []);
+  }, [handleSupabaseSessionException, resetSessionState]);
 
   const value = useMemo<AuthContextValue>(
     () => ({

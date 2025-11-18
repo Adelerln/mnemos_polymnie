@@ -1,4 +1,4 @@
-import { LoginForm } from "@/components/auth/LoginForm";
+import { AuthForm } from "@/components/auth/AuthForm";
 
 const contact = {
   company: "Mnémos",
@@ -13,35 +13,32 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-screen flex-col bg-neutral-50">
       <main className="flex flex-1 items-center justify-center px-4 py-12">
-        <div className="w-full max-w-4xl space-y-10">
+        <div className="grid w-full max-w-5xl gap-10 md:grid-cols-2">
           <section className="rounded-[32px] bg-neutral-900 p-8 text-white shadow-2xl">
             <p className="text-xs font-semibold uppercase tracking-[0.3em] text-neutral-400">
               Polymnie par Mnémos
             </p>
             <h1 className="mt-4 text-4xl font-semibold leading-tight">
-              Bienvenue sur Polymnie
+              Connectez-vous à votre espace
             </h1>
             <p className="mt-4 text-base text-neutral-200">
-              Centralisez vos séjours et dossiers familles dans un espace
-              sécurisé conçu pour les équipes Mnémos. Connectez-vous afin de
-              retrouver vos opérations, vos interlocuteurs et vos données
-              financières.
+              Centralisez vos dossiers familles, vos séjours et toutes les
+              opérations critiques de Mnémos. Chaque connexion est protégée par
+              un mot de passe et une confirmation par email.
             </p>
             <div className="mt-8 rounded-2xl bg-white/5 p-6 backdrop-blur">
               <p className="text-sm font-semibold">
-                Authentification avec confirmation par mail
+                Authentification email + mot de passe
               </p>
               <p className="mt-2 text-sm text-neutral-200">
-                Chaque connexion déclenche une validation envoyée sur votre
-                adresse mail professionnelle. Une fois confirmée, l’accès est
-                actif pour la session en cours et vous redirige vers le tableau
-                de bord.
+                Après votre inscription, un email de confirmation valide votre
+                adresse professionnelle avant la première connexion.
               </p>
             </div>
           </section>
 
-          <div className="flex justify-center">
-            <LoginForm />
+          <div className="flex items-center justify-center">
+            <AuthForm defaultMode="login" />
           </div>
         </div>
       </main>

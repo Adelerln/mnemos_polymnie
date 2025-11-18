@@ -4,11 +4,11 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 import { Dashboard } from "@/components/dashboard/Dashboard";
-import { useSession } from "@/hooks/useSession";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function DashboardPage() {
   const router = useRouter();
-  const { user, loading } = useSession();
+  const { user, loading } = useAuth();
 
   useEffect(() => {
     if (!loading && !user) {

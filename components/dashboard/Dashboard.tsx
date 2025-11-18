@@ -1,6 +1,6 @@
 "use client";
 
-import { useSession } from "@/hooks/useSession";
+import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/lib/supabase-client";
 import {
   Activity,
@@ -21,7 +21,7 @@ import {
 
 export const Dashboard = () => {
   const router = useRouter();
-  const { user, mnemosId, loading } = useSession();
+  const { user, mnemosId, loading } = useAuth();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [logoutError, setLogoutError] = useState<string | null>(null);
 
