@@ -97,14 +97,11 @@ export const AuthForm = ({ defaultMode = "login" }: AuthFormProps) => {
         if (user) {
           const { error: identError } = await supabase
             .from("identifications")
-            .insert(
-              {
-                user_id: user.id,
-                email: user.email ?? normalizedEmail,
-                status: "active",
-              },
-              { returning: "minimal" },
-            );
+            .insert({
+              user_id: user.id,
+              email: user.email ?? normalizedEmail,
+              status: "active",
+            });
 
           if (identError) {
             // si l’email n’est pas dans allowed_emails -> erreur RLS ici
