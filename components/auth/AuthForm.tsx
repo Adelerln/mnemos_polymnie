@@ -25,12 +25,12 @@ export const AuthForm = ({ defaultMode = "login" }: AuthFormProps) => {
   const [message, setMessage] = useState<string | null>(null);
 
   const redirectTarget = useMemo(() => {
-    return searchParams?.get("redirectedFrom") ?? "/dashboard";
+    return searchParams?.get("redirectedFrom") ?? "/homepage";
   }, [searchParams]);
 
   useEffect(() => {
     if (user) {
-      router.replace("/dashboard");
+      router.replace("/homepage");
     }
   }, [router, user]);
 
@@ -61,7 +61,10 @@ export const AuthForm = ({ defaultMode = "login" }: AuthFormProps) => {
 
     try {
       if (mode === "login") {
-        const { error: signInError } = await supabase.auth.signInWithPassword({
+        const {
+          data: signInData,
+          error: signInError,
+        } = await supabase.auth.signInWithPassword({
           email: normalizedEmail,
           password: sanitizedPassword,
         });
@@ -70,27 +73,45 @@ export const AuthForm = ({ defaultMode = "login" }: AuthFormProps) => {
           setError(
             signInError.message === "Invalid login credentials"
               ? "Identifiants incorrects. Vérifiez vos informations."
-              : signInError.message,
+              : signInError.message || "Impossible de se connecter pour le moment.",
+          );
+          return;
+        }
+
+        if (!signInData.session) {
+          setError(
+            "Connexion impossible : la session n'a pas été initialisée. Vérifiez votre email (confirmé) et réessayez.",
           );
           return;
         }
 
         const {
           data: { user },
+          error: getUserError,
         } = await supabase.auth.getUser();
+
+        if (getUserError) {
+          console.warn("Impossible de récupérer l'utilisateur Supabase", getUserError.message);
+        }
 
         if (user) {
           const { error: identError } = await supabase
             .from("identifications")
-            .insert({
-              user_id: user.id,
-              email: user.email,
-              status: "active",
-            });
+            .insert(
+              {
+                user_id: user.id,
+                email: user.email ?? normalizedEmail,
+                status: "active",
+              },
+              { returning: "minimal" },
+            );
 
           if (identError) {
             // si l’email n’est pas dans allowed_emails -> erreur RLS ici
-            console.error(identError);
+            console.warn(
+              "Insertion identifications refusée (probable règle RLS allowed_emails)",
+              identError.message ?? identError,
+            );
           }
         }
 
@@ -121,6 +142,12 @@ export const AuthForm = ({ defaultMode = "login" }: AuthFormProps) => {
       setMode("login");
       setPassword("");
       setConfirmPassword("");
+    } catch (caughtError) {
+      const errMessage =
+        caughtError instanceof Error
+          ? caughtError.message
+          : "Une erreur inattendue est survenue.";
+      setError(errMessage);
     } finally {
       setIsSubmitting(false);
     }
