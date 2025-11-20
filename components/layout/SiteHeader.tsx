@@ -14,8 +14,9 @@ export const SiteHeader = () => {
   const { user, loading } = useAuth();
   const isAuthPage =
     pathname?.startsWith("/login") || pathname?.startsWith("/signup");
+  const isLandingPage = pathname === "/";
 
-  if (isAuthPage) {
+  if (isAuthPage || isLandingPage) {
     return null;
   }
 

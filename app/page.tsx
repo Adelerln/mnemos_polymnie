@@ -53,15 +53,6 @@ export default function Home() {
               </div>
               <div>
                 <p className="text-sm font-semibold uppercase tracking-[0.2em] text-neutral-400">
-                  Projets
-                </p>
-                <p className="mt-2 text-base">
-                  APIs `/api/projects/generate` et `/api/projects/delete` pour
-                  orchestrer vos ressources et assets liés.
-                </p>
-              </div>
-              <div>
-                <p className="text-sm font-semibold uppercase tracking-[0.2em] text-neutral-400">
                   Dashboard
                 </p>
                 <p className="mt-2 text-base">

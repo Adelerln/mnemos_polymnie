@@ -75,6 +75,25 @@ export const AuthForm = ({ defaultMode = "login" }: AuthFormProps) => {
           return;
         }
 
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+
+        if (user) {
+          const { error: identError } = await supabase
+            .from("identifications")
+            .insert({
+              user_id: user.id,
+              email: user.email,
+              status: "active",
+            });
+
+          if (identError) {
+            // si l’email n’est pas dans allowed_emails -> erreur RLS ici
+            console.error(identError);
+          }
+        }
+
         router.replace(redirectTarget);
         router.refresh();
         return;
