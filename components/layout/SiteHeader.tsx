@@ -28,7 +28,7 @@ export const SiteHeader = () => {
 
   return (
     <header className="sticky top-0 z-40 border-b border-neutral-200 bg-white/80 backdrop-blur">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 md:px-6 lg:px-8">
+      <div className="flex h-16 w-full items-center justify-between px-4 md:px-6 lg:px-8">
         <Link
           href="/homepage"
           className="text-sm font-semibold uppercase tracking-[0.22em] text-neutral-800"
