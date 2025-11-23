@@ -360,6 +360,7 @@ export default function ClientsPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isSecondaryContactModalOpen, setIsSecondaryContactModalOpen] =
     useState(false);
+  const [isDirty, setIsDirty] = useState(false);
   const searchFilterRefs = {
     primary: useRef<HTMLInputElement | null>(null),
     lastUsed: useRef<HTMLInputElement | HTMLSelectElement | null>(null),
@@ -716,6 +717,7 @@ export default function ClientsPage() {
         ...prev,
         [field]: value,
       }));
+      setIsDirty(true);
     };
 
   const handleSecondaryContactChange =
@@ -729,6 +731,7 @@ export default function ClientsPage() {
           [field]: value,
         },
       }));
+      setIsDirty(true);
     };
 
   const handleChildFieldChange =
@@ -741,6 +744,7 @@ export default function ClientsPage() {
         ...prev,
         [field]: value,
       }));
+      setIsDirty(true);
     };
 
   const handlePostalCodeChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -751,6 +755,7 @@ export default function ClientsPage() {
     }));
     setCityOptions([]);
     setCityLookupError(null);
+    setIsDirty(true);
   };
 
   const handleCityManualChange = (
@@ -761,19 +766,25 @@ export default function ClientsPage() {
       ...prev,
       city: value,
     }));
+    setIsDirty(true);
   };
 
   const handlePhoneChange =
     (field: "phone1" | "phone2") =>
     (event: ChangeEvent<HTMLInputElement>) => {
       const formatted = formatFrenchPhoneNumber(event.target.value);
-      setFamilyForm((prev) => ({
-        ...prev,
-        [field]: formatted,
-      }));
-    };
+    setFamilyForm((prev) => ({
+      ...prev,
+      [field]: formatted,
+    }));
+    setIsDirty(true);
+  };
 
   const handleSelectFamily = (familyId: string) => {
+    if (isDirty) {
+      alert("Enregistrez ou annulez les modifications avant de changer de fiche.");
+      return;
+    }
     const record = families.find((family) => family.id === familyId);
 
     if (!record) {
@@ -795,6 +806,7 @@ export default function ClientsPage() {
     setHealthForm(createEmptyHealthForm());
     setHealthFeedback(null);
     setIsSecondaryContactModalOpen(false);
+    setIsDirty(false);
   };
 
   const resetFamilyForms = useCallback(() => {
@@ -813,6 +825,7 @@ export default function ClientsPage() {
     setHealthForm(createEmptyHealthForm());
     setHealthFeedback(null);
     setIsSecondaryContactModalOpen(false);
+    setIsDirty(false);
   }, [nextFamilyId]);
 
   const upsertFamiliesState = useCallback((family: FamilyRecord) => {
@@ -896,6 +909,7 @@ export default function ClientsPage() {
         setCityOptions([savedFamily.city]);
       }
       setFeedback("Fiche famille enregistrée avec succès.");
+      setIsDirty(false);
     } catch (error) {
       console.error("Erreur lors de la sauvegarde:", error);
       setSaveError(
@@ -1038,6 +1052,7 @@ export default function ClientsPage() {
       ...prev,
       children: nextChildren,
     }));
+    setIsDirty(true);
 
     setChildForm(createEmptyChildForm());
     setIsChildFormOpen(false);
@@ -1164,6 +1179,7 @@ export default function ClientsPage() {
       ),
     }));
     setHealthFeedback("Informations sanitaires enregistrées.");
+    setIsDirty(true);
   };
 
   const handleSearchFilterChange =
@@ -1211,6 +1227,10 @@ export default function ClientsPage() {
 
       if (isCmdK) {
         event.preventDefault();
+        if (isDirty) {
+          alert("Enregistrez ou annulez les modifications avant de rechercher.");
+          return;
+        }
         setIsSearchPanelOpen((prev) => !prev);
         const target =
           searchFilterRefs.lastUsed.current ?? searchFilterRefs.primary.current;
@@ -1230,7 +1250,32 @@ export default function ClientsPage() {
 
     window.addEventListener("keydown", handleGlobalShortcut);
     return () => window.removeEventListener("keydown", handleGlobalShortcut);
-  }, []);
+  }, [isDirty]);
+
+  useEffect(() => {
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      if (isDirty) {
+        event.preventDefault();
+        event.returnValue = "";
+      }
+    };
+    const handleClickCapture = (event: MouseEvent) => {
+      if (!isDirty) return;
+      const target = event.target as HTMLElement | null;
+      const link = target?.closest("a");
+      if (link) {
+        event.preventDefault();
+        event.stopPropagation();
+        alert("Enregistrez ou annulez les modifications avant de quitter la fiche.");
+      }
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    document.addEventListener("click", handleClickCapture, true);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      document.removeEventListener("click", handleClickCapture, true);
+    };
+  }, [isDirty]);
 
   const handleRowKeyDown =
     (familyId: string) => (event: KeyboardEvent<HTMLTableRowElement>) => {
@@ -1247,6 +1292,7 @@ export default function ClientsPage() {
       address: value,
     }));
     setAddressQuery(value);
+    setIsDirty(true);
   };
 
   const handleSelectAddressSuggestion = (suggestion: AddressSuggestion) => {
@@ -1259,6 +1305,14 @@ export default function ClientsPage() {
     }));
     setAddressQuery(suggestion.address || suggestion.label);
     setAddressSuggestions([]);
+    setIsDirty(true);
+  };
+
+  const formatClientName = (family: FamilyRecord) => {
+    const civ = family.civility ? `${family.civility} ` : "";
+    const last = family.lastName ? family.lastName.toUpperCase() : "";
+    const first = family.firstName ?? "";
+    return `${civ}${first} ${last}`.trim();
   };
 
   return (
@@ -1276,6 +1330,10 @@ export default function ClientsPage() {
                 type="button"
                 className="inline-flex items-center gap-2 rounded-md border border-[#ccd0d8] bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#2b2f36] transition hover:border-[#7f8696] hover:bg-[#f7f8fb]"
                 onClick={() => {
+                  if (isDirty) {
+                    alert("Enregistrez ou annulez les modifications avant de rechercher.");
+                    return;
+                  }
                   setIsSearchPanelOpen((prev) => !prev);
                   const target =
                     searchFilterRefs.lastUsed.current ?? searchFilterRefs.primary.current;
@@ -1301,13 +1359,6 @@ export default function ClientsPage() {
             <div className="mx-auto mb-4 grid w-full max-w-5xl gap-3 rounded-2xl border border-[#d4d7df] bg-white p-4 text-sm text-[#2b2f36] shadow-sm">
               <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-[0.16em] text-[#5c606b]">
                 <span>Mode recherche</span>
-                <button
-                  type="button"
-                  className="inline-flex items-center gap-1 rounded-md border border-[#d4d7df] bg-white px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#2b2f36] transition hover:bg-[#f7f8fb]"
-                  onClick={handleResetSearch}
-                >
-                  ✕ Réinitialiser
-                </button>
               </div>
               <div className="grid gap-3 md:grid-cols-3">
                 <label className="flex flex-col gap-1">
@@ -1388,6 +1439,54 @@ export default function ClientsPage() {
               <div className="grid gap-3 md:grid-cols-3">
                 <label className="flex flex-col gap-1">
                   <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[#5c606b]">
+                    Email
+                  </span>
+                  <input
+                    className="rounded border border-[#ccd0d8] bg-white px-3 py-2 outline-none focus:border-[#7f8696]"
+                    value={searchFilters.email}
+                    onChange={handleSearchFilterChange("email")}
+                    onKeyDown={handleSearchFiltersKeyDown}
+                    onFocus={(event) => {
+                      searchFilterRefs.lastUsed.current = event.currentTarget;
+                    }}
+                    inputMode="email"
+                  />
+                </label>
+                <label className="flex flex-col gap-1">
+                  <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[#5c606b]">
+                    Téléphone 1
+                  </span>
+                  <input
+                    className="rounded border border-[#ccd0d8] bg-white px-3 py-2 outline-none focus:border-[#7f8696]"
+                    value={searchFilters.phone1}
+                    onChange={handleSearchFilterChange("phone1")}
+                    onKeyDown={handleSearchFiltersKeyDown}
+                    onFocus={(event) => {
+                      searchFilterRefs.lastUsed.current = event.currentTarget;
+                    }}
+                    inputMode="tel"
+                  />
+                </label>
+                <label className="flex flex-col gap-1">
+                  <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[#5c606b]">
+                    Téléphone 2
+                  </span>
+                  <input
+                    className="rounded border border-[#ccd0d8] bg-white px-3 py-2 outline-none focus:border-[#7f8696]"
+                    value={searchFilters.phone2}
+                    onChange={handleSearchFilterChange("phone2")}
+                    onKeyDown={handleSearchFiltersKeyDown}
+                    onFocus={(event) => {
+                      searchFilterRefs.lastUsed.current = event.currentTarget;
+                    }}
+                    inputMode="tel"
+                  />
+                </label>
+              </div>
+
+              <div className="grid gap-3 md:grid-cols-[repeat(3,minmax(0,1fr))]">
+                <label className="flex flex-col gap-1">
+                  <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[#5c606b]">
                     Code postal
                   </span>
                   <input
@@ -1432,86 +1531,8 @@ export default function ClientsPage() {
                 </label>
               </div>
 
-              <div className="grid gap-3 md:grid-cols-4">
+              <div className="grid gap-3 md:grid-cols-[2fr_1fr]">
                 <label className="flex flex-col gap-1">
-                  <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[#5c606b]">
-                    Code postal
-                  </span>
-                  <input
-                    className="rounded border border-[#ccd0d8] bg-white px-3 py-2 outline-none focus:border-[#7f8696]"
-                    value={searchFilters.postalCode}
-                    onChange={handleSearchFilterChange("postalCode")}
-                    onKeyDown={handleSearchFiltersKeyDown}
-                    onFocus={(event) => {
-                      searchFilterRefs.lastUsed.current = event.currentTarget;
-                    }}
-                    inputMode="numeric"
-                    maxLength={10}
-                  />
-                </label>
-                <label className="flex flex-col gap-1">
-                  <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[#5c606b]">
-                    Ville
-                  </span>
-                  <input
-                    className="rounded border border-[#ccd0d8] bg-white px-3 py-2 outline-none focus:border-[#7f8696]"
-                    value={searchFilters.city}
-                    onChange={handleSearchFilterChange("city")}
-                    onKeyDown={handleSearchFiltersKeyDown}
-                    onFocus={(event) => {
-                      searchFilterRefs.lastUsed.current = event.currentTarget;
-                    }}
-                  />
-                </label>
-                <label className="flex flex-col gap-1">
-                  <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[#5c606b]">
-                    Téléphone 1
-                  </span>
-                  <input
-                    className="rounded border border-[#ccd0d8] bg-white px-3 py-2 outline-none focus:border-[#7f8696]"
-                    value={searchFilters.phone1}
-                    onChange={handleSearchFilterChange("phone1")}
-                    onKeyDown={handleSearchFiltersKeyDown}
-                    onFocus={(event) => {
-                      searchFilterRefs.lastUsed.current = event.currentTarget;
-                    }}
-                    inputMode="tel"
-                  />
-                </label>
-                <label className="flex flex-col gap-1">
-                  <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[#5c606b]">
-                    Téléphone 2
-                  </span>
-                  <input
-                    className="rounded border border-[#ccd0d8] bg-white px-3 py-2 outline-none focus:border-[#7f8696]"
-                    value={searchFilters.phone2}
-                    onChange={handleSearchFilterChange("phone2")}
-                    onKeyDown={handleSearchFiltersKeyDown}
-                    onFocus={(event) => {
-                      searchFilterRefs.lastUsed.current = event.currentTarget;
-                    }}
-                    inputMode="tel"
-                  />
-                </label>
-              </div>
-
-              <div className="grid gap-3 md:grid-cols-3">
-                <label className="flex flex-col gap-1">
-                  <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[#5c606b]">
-                    Email
-                  </span>
-                  <input
-                    className="rounded border border-[#ccd0d8] bg-white px-3 py-2 outline-none focus:border-[#7f8696]"
-                    value={searchFilters.email}
-                    onChange={handleSearchFilterChange("email")}
-                    onKeyDown={handleSearchFiltersKeyDown}
-                    onFocus={(event) => {
-                      searchFilterRefs.lastUsed.current = event.currentTarget;
-                    }}
-                    inputMode="email"
-                  />
-                </label>
-                <label className="flex flex-col gap-1 md:col-span-2">
                   <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[#5c606b]">
                     Partenaire principal
                   </span>
@@ -1525,6 +1546,7 @@ export default function ClientsPage() {
                     }}
                   />
                 </label>
+                <div />
               </div>
 
               <div className="grid gap-3 md:grid-cols-3">
@@ -1579,8 +1601,7 @@ export default function ClientsPage() {
               <thead className="bg-[#1f2330] text-left text-xs font-semibold uppercase tracking-[0.18em] text-white">
                 <tr>
                   <th className="px-5 py-3">ID client</th>
-                  <th className="px-5 py-3">Nom de famille</th>
-                  <th className="px-5 py-3">Prénom</th>
+                  <th className="px-5 py-3">Client</th>
                   <th className="px-5 py-3">Code postal</th>
                   <th className="px-5 py-3">Ville</th>
                 </tr>
@@ -1590,7 +1611,7 @@ export default function ClientsPage() {
                   <tr>
                     <td
                       className="px-5 py-6 text-center text-sm text-[#7f8696]"
-                      colSpan={5}
+                      colSpan={4}
                     >
                       Aucune famille enregistrée pour le moment.
                     </td>
@@ -1603,7 +1624,6 @@ export default function ClientsPage() {
                           key={`placeholder-${index}`}
                           className="border-t border-[#e3e6ed] bg-white/60 text-[#9aa0ad]"
                         >
-                          <td className="px-5 py-3">—</td>
                           <td className="px-5 py-3">—</td>
                           <td className="px-5 py-3">—</td>
                           <td className="px-5 py-3">—</td>
@@ -1626,11 +1646,8 @@ export default function ClientsPage() {
                         <td className="px-5 py-3 font-semibold text-[#1f2330]">
                           {item.id}
                         </td>
-                        <td className="px-5 py-3 uppercase tracking-wide text-[#1f2330]">
-                          {item.lastName}
-                        </td>
                         <td className="px-5 py-3 text-[#2b2f36]">
-                          {item.firstName}
+                          {formatClientName(item)}
                         </td>
                         <td className="px-5 py-3 text-[#4d525d]">
                           {item.postalCode}
@@ -1648,8 +1665,8 @@ export default function ClientsPage() {
         </header>
 
         <section className="mx-auto w-full max-w-6xl rounded-3xl border border-[#d4d7df] bg-red-200 shadow-xl">
-          <header className="rounded-t-3xl bg-[#1f2330] px-8 py-5 text-white">
-            <div className="flex items-start justify-between gap-4">
+          <header className="rounded-t-3xl bg-[#97163a] px-8 py-5 text-white">
+            <div className="flex items-center justify-between gap-4">
               <div className="space-y-1">
                 <h2 className="text-sm font-semibold uppercase tracking-[0.2em]">
                   Informations client
@@ -1658,53 +1675,62 @@ export default function ClientsPage() {
               <div className="flex flex-wrap items-center gap-2 text-xs uppercase tracking-[0.16em]">
                 <button
                   type="button"
-                  title="Ajouter"
-                  className="inline-flex size-9 items-center justify-center rounded-full border border-white/30 bg-white/10 text-white transition hover:bg-white/20 cursor-pointer"
+                  className="group relative inline-flex size-9 items-center justify-center rounded-full border border-white/30 bg-white/10 text-white transition hover:bg-white/20 cursor-pointer"
                   onClick={resetFamilyForms}
                 >
                   <Plus className="size-4" />
                   <span className="sr-only">Ajouter</span>
+                  <span className="pointer-events-none absolute -bottom-9 left-1/2 -translate-x-1/2 rounded-md bg-[#1f2330] px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-white opacity-0 shadow-sm transition group-hover:opacity-100">
+                    Ajouter
+                  </span>
                 </button>
                 <button
                   type="button"
-                  title="Supprimer"
-                  className="inline-flex size-9 items-center justify-center rounded-full border border-white/30 bg-white/10 text-white transition hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                  className="group relative inline-flex size-9 items-center justify-center rounded-full border border-white/30 bg-white/10 text-white transition hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                   onClick={handleDeleteFamily}
                   disabled={!canDeleteFamily || isDeleting || isSaving}
                 >
                   <Trash2 className="size-4" />
                   <span className="sr-only">Supprimer</span>
+                  <span className="pointer-events-none absolute -bottom-9 left-1/2 -translate-x-1/2 rounded-md bg-[#1f2330] px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-white opacity-0 shadow-sm transition group-hover:opacity-100">
+                    Supprimer
+                  </span>
                 </button>
                 <button
                   type="submit"
                   form="family-form"
-                  title="Enregistrer"
-                  className="inline-flex size-9 items-center justify-center rounded-full border border-white/30 bg-white/10 text-white transition hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                  className="group relative inline-flex size-9 items-center justify-center rounded-full border border-white/30 bg-white/10 text-white transition hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                   disabled={isSaving || isDeleting}
                 >
                   <Save className="size-4" />
                   <span className="sr-only">Enregistrer</span>
+                  <span className="pointer-events-none absolute -bottom-9 left-1/2 -translate-x-1/2 rounded-md bg-[#1f2330] px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-white opacity-0 shadow-sm transition group-hover:opacity-100">
+                    Enregistrer
+                  </span>
                 </button>
                 <button
                   type="button"
-                  title="Annuler les modifications"
-                  className="inline-flex size-9 items-center justify-center rounded-full border border-white/30 bg-white/10 text-white transition hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                  className="group relative inline-flex size-9 items-center justify-center rounded-full border border-white/30 bg-white/10 text-white transition hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                   onClick={resetFamilyForms}
                   disabled={isSaving || isDeleting}
                 >
                   <Undo2 className="size-4" />
                   <span className="sr-only">Annuler les modifications</span>
+                  <span className="pointer-events-none absolute -bottom-9 left-1/2 -translate-x-1/2 rounded-md bg-[#1f2330] px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-white opacity-0 shadow-sm transition group-hover:opacity-100">
+                    Annuler
+                  </span>
                 </button>
               </div>
             </div>
           </header>
 
-          <form
-            id="family-form"
-            className="grid gap-8 rounded-b-3xl bg-white px-8 py-8 text-[#2b2f36] lg:grid-cols-[280px_1fr]"
-            onSubmit={handleSaveFamily}
-            noValidate
-          >
+          {selectedFamilyId ? (
+            <form
+              id="family-form"
+              className="grid gap-8 rounded-b-3xl bg-white px-8 py-8 text-[#2b2f36] lg:grid-cols-[280px_1fr]"
+              onSubmit={handleSaveFamily}
+              noValidate
+            >
             <div className="lg:col-span-2">
               <div className="rounded-xl bg-[#1f2330] p-5 text-white">
                 <div className="grid gap-3 text-xs font-semibold uppercase tracking-[0.18em] sm:grid-cols-2 lg:grid-cols-[repeat(4,minmax(0,1fr))]">
@@ -1820,7 +1846,7 @@ export default function ClientsPage() {
 
             <div className="space-y-6">
               <div className="space-y-3 text-sm text-[#2b2f36]">
-                  <div className="grid gap-3 md:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+                <div className="grid gap-3 md:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
                     <label className="flex flex-col gap-1">
                       <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
                         Adresse
@@ -2008,33 +2034,6 @@ export default function ClientsPage() {
                         Journalisation indisponible : {logError}
                       </p>
                     ) : null}
-                  </div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    {canDeleteFamily ? (
-                      <button
-                        type="button"
-                        className="inline-flex items-center gap-2 rounded-md border border-neutral-900 bg-neutral-900 px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-black disabled:opacity-50"
-                        onClick={handleDeleteFamily}
-                        disabled={isSaving || isDeleting}
-                      >
-                        {isDeleting ? "Suppression..." : "Supprimer"}
-                      </button>
-                    ) : null}
-                    <button
-                      type="button"
-                      className="inline-flex items-center gap-2 rounded-md border border-[#d4d7df] bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#2b2f36] transition hover:bg-[#f0f3f8] disabled:opacity-50"
-                      onClick={resetFamilyForms}
-                      disabled={isSaving || isDeleting}
-                    >
-                      Réinitialiser
-                    </button>
-                    <button
-                      type="submit"
-                      className="inline-flex items-center gap-2 rounded-md border border-[#8f1535] bg-[#b41c47] px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-[#97163a] disabled:opacity-50"
-                      disabled={isSaving || isDeleting}
-                    >
-                      {isSaving ? "Enregistrement..." : "Enregistrer la fiche"}
-                    </button>
                   </div>
                 </div>
               </div>
@@ -2278,6 +2277,11 @@ export default function ClientsPage() {
               </div>
             </div>
           </form>
+        ) : (
+          <div className="rounded-b-3xl bg-white px-8 py-10 text-sm text-[#5c606b]">
+            Sélectionnez un dossier dans le tableau pour afficher la fiche.
+          </div>
+        )}
         </section>
       </div>
 
