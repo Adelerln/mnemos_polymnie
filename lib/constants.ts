@@ -387,7 +387,7 @@ export const landingMainTiles: FeatureItem[] = [
 ];
 
 export const primaryNavItems: PrimaryNavItem[] = [
-  { label: "Famille", href: "/clients" },
+  { label: "Clients", href: "/clients" },
   { label: "Séjours", href: "/sejours" },
   { label: "Inscriptions", href: "/inscriptions" },
   { label: "Fiche", href: "/fiche" },
