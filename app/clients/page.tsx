@@ -353,7 +353,26 @@ export default function ClientsPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isSecondaryContactModalOpen, setIsSecondaryContactModalOpen] =
     useState(false);
-  const searchInputRef = useRef<HTMLInputElement | null>(null);
+  const searchFilterRefs = {
+    id: useRef<HTMLInputElement | null>(null),
+    lastUsed: useRef<HTMLInputElement | HTMLSelectElement | null>(null),
+  };
+  const [searchFilters, setSearchFilters] = useState({
+    id: "",
+    civility: "",
+    lastName: "",
+    firstName: "",
+    address: "",
+    complement: "",
+    postalCode: "",
+    city: "",
+    country: "",
+    phone1: "",
+    phone2: "",
+    email: "",
+    partner: "",
+  });
+  const [isSearchPanelOpen, setIsSearchPanelOpen] = useState(false);
 
   // Charger les familles au montage du composant
   useEffect(() => {
@@ -490,12 +509,39 @@ export default function ClientsPage() {
 
   const filteredFamilies = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
+    const hasFilters = Object.values(searchFilters).some((value) => value.trim() !== "");
 
-    if (!term) {
+    if (!term && !hasFilters) {
       return orderedFamilies;
     }
 
     return orderedFamilies.filter((family) => {
+      if (hasFilters) {
+        const matches = [
+          !searchFilters.id || family.id.toLowerCase().includes(searchFilters.id.toLowerCase()),
+          !searchFilters.civility || (family.civility ?? "").toLowerCase().includes(searchFilters.civility.toLowerCase()),
+          !searchFilters.lastName || family.lastName.toLowerCase().includes(searchFilters.lastName.toLowerCase()),
+          !searchFilters.firstName || family.firstName.toLowerCase().includes(searchFilters.firstName.toLowerCase()),
+          !searchFilters.address || (family.address ?? "").toLowerCase().includes(searchFilters.address.toLowerCase()),
+          !searchFilters.complement || (family.complement ?? "").toLowerCase().includes(searchFilters.complement.toLowerCase()),
+          !searchFilters.postalCode || (family.postalCode ?? "").toLowerCase().includes(searchFilters.postalCode.toLowerCase()),
+          !searchFilters.city || (family.city ?? "").toLowerCase().includes(searchFilters.city.toLowerCase()),
+          !searchFilters.country || (family.country ?? "").toLowerCase().includes(searchFilters.country.toLowerCase()),
+          !searchFilters.phone1 || (family.phone1 ?? "").toLowerCase().includes(searchFilters.phone1.toLowerCase()),
+          !searchFilters.phone2 || (family.phone2 ?? "").toLowerCase().includes(searchFilters.phone2.toLowerCase()),
+          !searchFilters.email || (family.email ?? "").toLowerCase().includes(searchFilters.email.toLowerCase()),
+          !searchFilters.partner || (family.partner ?? "").toLowerCase().includes(searchFilters.partner.toLowerCase()),
+        ];
+
+        if (matches.some((value) => value === false)) {
+          return false;
+        }
+      }
+
+      if (!term) {
+        return true;
+      }
+
       const haystack = [
         family.id,
         family.lastName,
@@ -515,7 +561,20 @@ export default function ClientsPage() {
 
       return haystack.includes(term);
     });
-  }, [orderedFamilies, searchTerm]);
+  }, [orderedFamilies, searchFilters, searchTerm]);
+
+  const displayedFamilies = useMemo(
+    () => filteredFamilies.slice(0, 5),
+    [filteredFamilies],
+  );
+
+  const paddedFamilies = useMemo(() => {
+    const rows = [...displayedFamilies];
+    while (rows.length < 5) {
+      rows.push(null);
+    }
+    return rows;
+  }, [displayedFamilies]);
 
   const activeHealthChild = useMemo(() => {
     if (!healthModalChildId) {
@@ -998,29 +1057,65 @@ export default function ClientsPage() {
     setHealthFeedback("Informations sanitaires enregistrées.");
   };
 
-  const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(event.target.value);
-  };
+  const handleSearchFilterChange =
+    (field: keyof typeof searchFilters) =>
+    (event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+      const value = event.target.value;
+      setSearchFilters((prev) => ({ ...prev, [field]: value }));
+    };
 
-  const handleSearchKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+  const handleSearchFiltersKeyDown = (
+    event: KeyboardEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
     if (event.key === "Enter") {
       event.preventDefault();
-      setSearchTerm(event.currentTarget.value);
+      setIsSearchPanelOpen(false);
     }
+  };
+
+  const handleResetSearch = () => {
+    setSearchFilters({
+      id: "",
+      civility: "",
+      lastName: "",
+      firstName: "",
+      address: "",
+      complement: "",
+      postalCode: "",
+      city: "",
+      country: "",
+      phone1: "",
+      phone2: "",
+      email: "",
+      partner: "",
+    });
+    setSearchTerm("");
+    setIsSearchPanelOpen(false);
   };
 
   useEffect(() => {
     const handleGlobalShortcut = (event: globalThis.KeyboardEvent) => {
-      const isSlash =
-        event.key === "/" && !event.metaKey && !event.ctrlKey && !event.altKey;
       const isCmdK =
         event.key.toLowerCase() === "k" &&
         (event.metaKey || event.ctrlKey);
+      const isEsc = event.key === "Escape";
 
-      if (isSlash || isCmdK) {
+      if (isCmdK) {
         event.preventDefault();
-        searchInputRef.current?.focus();
-        searchInputRef.current?.select();
+        setIsSearchPanelOpen((prev) => !prev);
+        const target =
+          searchFilterRefs.lastUsed.current ?? searchFilterRefs.id.current;
+        if (target) {
+          target.focus();
+          if ("select" in target) {
+            target.select();
+          }
+        }
+      }
+
+      if (isEsc) {
+        event.preventDefault();
+        setIsSearchPanelOpen(false);
       }
     };
 
@@ -1039,7 +1134,7 @@ export default function ClientsPage() {
   return (
     <div className="min-h-screen bg-[#FDE2E4] py-12">
       <div className="flex w-full flex-col gap-10 px-6 text-[#2b2f36] md:px-10 xl:px-16">
-        <header className="mx-auto w-full max-w-6xl rounded-2xl border border-[#d4d7df] bg-red-200 shadow-xl">
+        <header className="mx-auto w-full max-w-6xl rounded-3xl border border-[#d4d7df] bg-red-200 shadow-xl">
           <div className="flex flex-col gap-4 border-b border-[#e3e6ed] px-8 py-6 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#5c606b]">
@@ -1050,23 +1145,250 @@ export default function ClientsPage() {
               </h1>
             </div>
             <div className="flex flex-wrap items-center gap-3 text-sm text-[#2b2f36]">
-              <label className="flex items-center gap-2 rounded-md border border-[#ccd0d8] bg-white px-4 py-2 text-sm font-medium text-[#2b2f36] focus-within:border-[#7f8696] focus-within:ring-1 focus-within:ring-[#b2b7c4]">
+              <button
+                type="button"
+                className="inline-flex items-center gap-2 rounded-md border border-[#ccd0d8] bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#2b2f36] transition hover:border-[#7f8696] hover:bg-[#f7f8fb]"
+                onClick={() => {
+                  setIsSearchPanelOpen((prev) => !prev);
+                  const target =
+                    searchFilterRefs.lastUsed.current ?? searchFilterRefs.id.current;
+                  if (target) {
+                    target.focus();
+                    if ("select" in target) {
+                      target.select();
+                    }
+                  }
+                }}
+              >
                 <Search className="size-4 text-[#7f8696]" />
-                <input
-                  ref={searchInputRef}
-                  className="w-72 border-none bg-transparent text-sm text-[#2b2f36] outline-none placeholder:text-[#868b97]"
-                  placeholder="Rechercher (nom, ville, CP, téléphone…)"
-                  value={searchTerm}
-                  onChange={handleSearchChange}
-                  onKeyDown={handleSearchKeyDown}
-                />
-              </label>
+                Ouvrir la recherche
+              </button>
             </div>
           </div>
           <div className="px-8 pb-4 text-sm text-[#5c606b]">
             Résultats : {filteredFamilies.length}
           </div>
-          <div className="mx-auto w-full max-w-5xl overflow-hidden">
+          {isSearchPanelOpen ? (
+            <div className="mx-auto mb-4 grid w-full max-w-5xl gap-3 rounded-2xl border border-[#d4d7df] bg-white p-4 text-sm text-[#2b2f36] shadow-sm">
+              <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-[0.16em] text-[#5c606b]">
+                <span>Mode recherche</span>
+                <button
+                  type="button"
+                  className="inline-flex items-center gap-1 rounded-md border border-[#d4d7df] bg-white px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#2b2f36] transition hover:bg-[#f7f8fb]"
+                  onClick={handleResetSearch}
+                >
+                  ✕ Réinitialiser
+                </button>
+              </div>
+              <div className="grid gap-3 md:grid-cols-4">
+                <label className="flex flex-col gap-1">
+                  <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[#5c606b]">
+                    ID client
+                  </span>
+                  <input
+                    ref={searchFilterRefs.id}
+                    className="rounded border border-[#ccd0d8] bg-white px-3 py-2 outline-none focus:border-[#7f8696]"
+                    value={searchFilters.id}
+                    onChange={handleSearchFilterChange("id")}
+                    onKeyDown={handleSearchFiltersKeyDown}
+                    onFocus={(event) => {
+                      searchFilterRefs.lastUsed.current = event.currentTarget;
+                    }}
+                  />
+                </label>
+                <label className="flex flex-col gap-1">
+                  <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[#5c606b]">
+                    Civilité
+                  </span>
+                  <select
+                    className="rounded border border-[#ccd0d8] bg-white px-3 py-2 outline-none focus:border-[#7f8696]"
+                    value={searchFilters.civility}
+                    onChange={handleSearchFilterChange("civility")}
+                    onKeyDown={handleSearchFiltersKeyDown}
+                    onFocus={(event) => {
+                      searchFilterRefs.lastUsed.current = event.currentTarget;
+                    }}
+                  >
+                    <option value="">Toutes</option>
+                    {CIVILITY_OPTIONS.map((option) => (
+                      <option key={option} value={option}>
+                        {option || "—"}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="flex flex-col gap-1">
+                  <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[#5c606b]">
+                    Nom
+                  </span>
+                  <input
+                    className="rounded border border-[#ccd0d8] bg-white px-3 py-2 outline-none focus:border-[#7f8696]"
+                    value={searchFilters.lastName}
+                    onChange={handleSearchFilterChange("lastName")}
+                    onKeyDown={handleSearchFiltersKeyDown}
+                    onFocus={(event) => {
+                      searchFilterRefs.lastUsed.current = event.currentTarget;
+                    }}
+                  />
+                </label>
+                <label className="flex flex-col gap-1">
+                  <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[#5c606b]">
+                    Prénom
+                  </span>
+                  <input
+                    className="rounded border border-[#ccd0d8] bg-white px-3 py-2 outline-none focus:border-[#7f8696]"
+                    value={searchFilters.firstName}
+                    onChange={handleSearchFilterChange("firstName")}
+                    onKeyDown={handleSearchFiltersKeyDown}
+                    onFocus={(event) => {
+                      searchFilterRefs.lastUsed.current = event.currentTarget;
+                    }}
+                  />
+                </label>
+              </div>
+
+              <div className="grid gap-3 md:grid-cols-3">
+                <label className="flex flex-col gap-1">
+                  <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[#5c606b]">
+                    Adresse
+                  </span>
+                  <input
+                    className="rounded border border-[#ccd0d8] bg-white px-3 py-2 outline-none focus:border-[#7f8696]"
+                    value={searchFilters.address}
+                    onChange={handleSearchFilterChange("address")}
+                    onKeyDown={handleSearchFiltersKeyDown}
+                    onFocus={(event) => {
+                      searchFilterRefs.lastUsed.current = event.currentTarget;
+                    }}
+                  />
+                </label>
+                <label className="flex flex-col gap-1">
+                  <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[#5c606b]">
+                    Complément
+                  </span>
+                  <input
+                    className="rounded border border-[#ccd0d8] bg-white px-3 py-2 outline-none focus:border-[#7f8696]"
+                    value={searchFilters.complement}
+                    onChange={handleSearchFilterChange("complement")}
+                    onKeyDown={handleSearchFiltersKeyDown}
+                    onFocus={(event) => {
+                      searchFilterRefs.lastUsed.current = event.currentTarget;
+                    }}
+                  />
+                </label>
+                <label className="flex flex-col gap-1">
+                  <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[#5c606b]">
+                    Pays
+                  </span>
+                  <input
+                    className="rounded border border-[#ccd0d8] bg-white px-3 py-2 outline-none focus:border-[#7f8696]"
+                    value={searchFilters.country}
+                    onChange={handleSearchFilterChange("country")}
+                    onKeyDown={handleSearchFiltersKeyDown}
+                    onFocus={(event) => {
+                      searchFilterRefs.lastUsed.current = event.currentTarget;
+                    }}
+                  />
+                </label>
+              </div>
+
+              <div className="grid gap-3 md:grid-cols-4">
+                <label className="flex flex-col gap-1">
+                  <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[#5c606b]">
+                    Code postal
+                  </span>
+                  <input
+                    className="rounded border border-[#ccd0d8] bg-white px-3 py-2 outline-none focus:border-[#7f8696]"
+                    value={searchFilters.postalCode}
+                    onChange={handleSearchFilterChange("postalCode")}
+                    onKeyDown={handleSearchFiltersKeyDown}
+                    onFocus={(event) => {
+                      searchFilterRefs.lastUsed.current = event.currentTarget;
+                    }}
+                    inputMode="numeric"
+                    maxLength={10}
+                  />
+                </label>
+                <label className="flex flex-col gap-1">
+                  <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[#5c606b]">
+                    Ville
+                  </span>
+                  <input
+                    className="rounded border border-[#ccd0d8] bg-white px-3 py-2 outline-none focus:border-[#7f8696]"
+                    value={searchFilters.city}
+                    onChange={handleSearchFilterChange("city")}
+                    onKeyDown={handleSearchFiltersKeyDown}
+                    onFocus={(event) => {
+                      searchFilterRefs.lastUsed.current = event.currentTarget;
+                    }}
+                  />
+                </label>
+                <label className="flex flex-col gap-1">
+                  <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[#5c606b]">
+                    Téléphone 1
+                  </span>
+                  <input
+                    className="rounded border border-[#ccd0d8] bg-white px-3 py-2 outline-none focus:border-[#7f8696]"
+                    value={searchFilters.phone1}
+                    onChange={handleSearchFilterChange("phone1")}
+                    onKeyDown={handleSearchFiltersKeyDown}
+                    onFocus={(event) => {
+                      searchFilterRefs.lastUsed.current = event.currentTarget;
+                    }}
+                    inputMode="tel"
+                  />
+                </label>
+                <label className="flex flex-col gap-1">
+                  <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[#5c606b]">
+                    Téléphone 2
+                  </span>
+                  <input
+                    className="rounded border border-[#ccd0d8] bg-white px-3 py-2 outline-none focus:border-[#7f8696]"
+                    value={searchFilters.phone2}
+                    onChange={handleSearchFilterChange("phone2")}
+                    onKeyDown={handleSearchFiltersKeyDown}
+                    onFocus={(event) => {
+                      searchFilterRefs.lastUsed.current = event.currentTarget;
+                    }}
+                    inputMode="tel"
+                  />
+                </label>
+              </div>
+
+              <div className="grid gap-3 md:grid-cols-3">
+                <label className="flex flex-col gap-1">
+                  <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[#5c606b]">
+                    Email
+                  </span>
+                  <input
+                    className="rounded border border-[#ccd0d8] bg-white px-3 py-2 outline-none focus:border-[#7f8696]"
+                    value={searchFilters.email}
+                    onChange={handleSearchFilterChange("email")}
+                    onKeyDown={handleSearchFiltersKeyDown}
+                    onFocus={(event) => {
+                      searchFilterRefs.lastUsed.current = event.currentTarget;
+                    }}
+                    inputMode="email"
+                  />
+                </label>
+                <label className="flex flex-col gap-1 md:col-span-2">
+                  <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[#5c606b]">
+                    Partenaire principal
+                  </span>
+                  <input
+                    className="rounded border border-[#ccd0d8] bg-white px-3 py-2 outline-none focus:border-[#7f8696]"
+                    value={searchFilters.partner}
+                    onChange={handleSearchFilterChange("partner")}
+                    onKeyDown={handleSearchFiltersKeyDown}
+                    onFocus={(event) => {
+                      searchFilterRefs.lastUsed.current = event.currentTarget;
+                    }}
+                  />
+                </label>
+              </div>
+            </div>
+          ) : null}
+          <div className="mx-auto mb-6 w-full max-w-5xl overflow-hidden rounded-2xl border border-[#d4d7df] bg-white shadow-sm">
             <table className="w-full border-collapse text-sm text-[#2b2f36]">
               <thead className="bg-[#1f2330] text-left text-xs font-semibold uppercase tracking-[0.18em] text-white">
                 <tr>
@@ -1078,7 +1400,7 @@ export default function ClientsPage() {
                 </tr>
               </thead>
               <tbody className="bg-white">
-                {filteredFamilies.length === 0 ? (
+                {paddedFamilies.every((item) => item === null) ? (
                   <tr>
                     <td
                       className="px-5 py-6 text-center text-sm text-[#7f8696]"
@@ -1088,7 +1410,22 @@ export default function ClientsPage() {
                     </td>
                   </tr>
                 ) : (
-                  filteredFamilies.map((item) => {
+                  paddedFamilies.map((item, index) => {
+                    if (!item) {
+                      return (
+                        <tr
+                          key={`placeholder-${index}`}
+                          className="border-t border-[#e3e6ed] bg-white/60 text-[#9aa0ad]"
+                        >
+                          <td className="px-5 py-3">—</td>
+                          <td className="px-5 py-3">—</td>
+                          <td className="px-5 py-3">—</td>
+                          <td className="px-5 py-3">—</td>
+                          <td className="px-5 py-3">—</td>
+                        </tr>
+                      );
+                    }
+
                     const isSelected = selectedFamilyId === item.id;
                     return (
                       <tr
@@ -1124,8 +1461,8 @@ export default function ClientsPage() {
           </div>
         </header>
 
-        <section className="mx-auto w-full max-w-6xl rounded-2xl border border-[#d4d7df] bg-red-200 shadow-xl">
-          <header className="rounded-t-2xl bg-[#1f2330] px-8 py-5 text-white">
+        <section className="mx-auto w-full max-w-6xl rounded-3xl border border-[#d4d7df] bg-red-200 shadow-xl">
+          <header className="rounded-t-3xl bg-[#1f2330] px-8 py-5 text-white">
             <div className="flex items-start justify-between gap-4">
               <div className="space-y-1">
                 <h2 className="text-sm font-semibold uppercase tracking-[0.2em]">
@@ -1135,6 +1472,7 @@ export default function ClientsPage() {
               <div className="flex flex-wrap items-center gap-2 text-xs uppercase tracking-[0.16em]">
                 <button
                   type="button"
+                  title="Ajouter"
                   className="inline-flex size-9 items-center justify-center rounded-full border border-white/30 bg-white/10 text-white transition hover:bg-white/20"
                   onClick={resetFamilyForms}
                 >
@@ -1144,6 +1482,7 @@ export default function ClientsPage() {
                 {canDeleteFamily ? (
                   <button
                     type="button"
+                    title="Supprimer"
                     className="inline-flex size-9 items-center justify-center rounded-full border border-white/30 bg-white/10 text-white transition hover:bg-white/20 disabled:opacity-50"
                     onClick={handleDeleteFamily}
                     disabled={isDeleting || isSaving}
@@ -1155,6 +1494,7 @@ export default function ClientsPage() {
                 <button
                   type="submit"
                   form="family-form"
+                  title="Enregistrer"
                   className="inline-flex size-9 items-center justify-center rounded-full border border-white/30 bg-white/10 text-white transition hover:bg-white/20 disabled:opacity-50"
                   disabled={isSaving || isDeleting}
                 >
@@ -1163,6 +1503,7 @@ export default function ClientsPage() {
                 </button>
                 <button
                   type="button"
+                  title="Annuler"
                   className="inline-flex size-9 items-center justify-center rounded-full border border-white/30 bg-white/10 text-white transition hover:bg-white/20 disabled:opacity-50"
                   onClick={resetFamilyForms}
                   disabled={isSaving || isDeleting}
@@ -1176,7 +1517,7 @@ export default function ClientsPage() {
 
           <form
             id="family-form"
-            className="grid gap-8 rounded-b-2xl bg-white px-8 py-8 text-[#2b2f36] lg:grid-cols-[280px_1fr]"
+            className="grid gap-8 rounded-b-3xl bg-white px-8 py-8 text-[#2b2f36] lg:grid-cols-[280px_1fr]"
             onSubmit={handleSaveFamily}
             noValidate
           >
