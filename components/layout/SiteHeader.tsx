@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { UserRound } from "lucide-react";
+import { LogOut, UserRound } from "lucide-react";
 
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/lib/supabase-client";
@@ -69,7 +69,8 @@ export const SiteHeader = () => {
                 className="rounded-md border border-neutral-300 px-3 py-1.5 text-neutral-700 transition hover:border-neutral-900 hover:text-neutral-900"
                 disabled={loading}
               >
-                Déconnexion
+                <LogOut className="size-5" aria-hidden />
+                <span className="sr-only">Déconnexion</span>
               </button>
             </div>
           ) : (
