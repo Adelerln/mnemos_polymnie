@@ -188,7 +188,7 @@ export default function Homepage() {
           </p>
         </header>
 
-        <section className="rounded-[32px] border border-neutral-200 bg-[#FFD9CC] p-6 shadow-lg">
+        <section className="rounded-[32px] border border-neutral-200 bg-[#FFF8F6] p-6 shadow-lg">
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
             {cards.map((card) => {
               const isOpen = openCardId === card.id;
