@@ -81,6 +81,13 @@ type FamilyEditableField =
   | "prestashopP2";
 type CityLookupState = "idle" | "loading" | "error";
 
+type AddressSuggestion = {
+  label: string;
+  address: string;
+  city: string;
+  postcode: string;
+};
+
 const quickActions = [
   {
     id: "inscriptions",
@@ -357,6 +364,12 @@ export default function ClientsPage() {
     id: useRef<HTMLInputElement | null>(null),
     lastUsed: useRef<HTMLInputElement | HTMLSelectElement | null>(null),
   };
+  const [addressQuery, setAddressQuery] = useState("");
+  const [addressSuggestions, setAddressSuggestions] = useState<
+    AddressSuggestion[]
+  >([]);
+  const [isAddressLoading, setIsAddressLoading] = useState(false);
+  const [addressError, setAddressError] = useState<string | null>(null);
   const [searchFilters, setSearchFilters] = useState({
     id: "",
     civility: "",
@@ -498,6 +511,91 @@ export default function ClientsPage() {
       controller.abort();
     };
   }, [postalCode]);
+
+  useEffect(() => {
+    const hasCountry = (familyForm.country ?? "").trim() !== "";
+    const hasPostalOrCity =
+      (familyForm.postalCode ?? "").trim() !== "" ||
+      (familyForm.city ?? "").trim() !== "";
+
+    if (!hasCountry && hasPostalOrCity) {
+      setFamilyForm((prev) => {
+        if ((prev.country ?? "").trim() !== "") {
+          return prev;
+        }
+        return { ...prev, country: "France" };
+      });
+    }
+  }, [familyForm.postalCode, familyForm.city, familyForm.country]);
+
+  useEffect(() => {
+    const query = addressQuery.trim();
+    if (query.length < 3) {
+      setAddressSuggestions([]);
+      setAddressError(null);
+      return;
+    }
+
+    const controller = new AbortController();
+    setIsAddressLoading(true);
+    setAddressError(null);
+
+    const timer = setTimeout(async () => {
+      try {
+        const response = await fetch(
+          `https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(query)}&limit=5`,
+          { signal: controller.signal },
+        );
+        if (!response.ok) {
+          throw new Error("Adresse API indisponible");
+        }
+        const data = (await response.json()) as {
+          features: Array<{ properties: { label: string; name: string; city: string; postcode: string } }>;
+        };
+        const options =
+          data.features?.map((item) => ({
+            label: item.properties.label,
+            address: item.properties.name,
+            city: item.properties.city,
+            postcode: item.properties.postcode,
+          })) ?? [];
+        if (!controller.signal.aborted) {
+          setAddressSuggestions(options);
+        }
+      } catch (error) {
+        if (controller.signal.aborted) return;
+        const message =
+          error instanceof Error ? error.message : "Erreur lors de la récupération des adresses.";
+        setAddressError(message);
+        setAddressSuggestions([]);
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsAddressLoading(false);
+        }
+      }
+    }, 300);
+
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [addressQuery]);
+
+  useEffect(() => {
+    const hasCountry = (familyForm.country ?? "").trim() !== "";
+    const hasPostalOrCity =
+      (familyForm.postalCode ?? "").trim() !== "" ||
+      (familyForm.city ?? "").trim() !== "";
+
+    if (!hasCountry && hasPostalOrCity) {
+      setFamilyForm((prev) => {
+        if ((prev.country ?? "").trim() !== "") {
+          return prev;
+        }
+        return { ...prev, country: "France" };
+      });
+    }
+  }, [familyForm.postalCode, familyForm.city, familyForm.country]);
 
   const orderedFamilies = useMemo(
     () =>
@@ -1131,11 +1229,32 @@ export default function ClientsPage() {
       }
     };
 
+  const handleAddressChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value;
+    setFamilyForm((prev) => ({
+      ...prev,
+      address: value,
+    }));
+    setAddressQuery(value);
+  };
+
+  const handleSelectAddressSuggestion = (suggestion: AddressSuggestion) => {
+    setFamilyForm((prev) => ({
+      ...prev,
+      address: suggestion.address || suggestion.label,
+      city: suggestion.city || prev.city,
+      postalCode: suggestion.postcode || prev.postalCode,
+      country: prev.country || "France",
+    }));
+    setAddressQuery(suggestion.address || suggestion.label);
+    setAddressSuggestions([]);
+  };
+
   return (
     <div className="min-h-screen bg-[#FDE2E4] py-12">
       <div className="flex w-full flex-col gap-10 px-6 text-[#2b2f36] md:px-10 xl:px-16">
         <header className="mx-auto w-full max-w-6xl rounded-3xl border border-[#d4d7df] bg-red-200 shadow-xl">
-          <div className="flex flex-col gap-4 border-b border-[#e3e6ed] px-8 py-6 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex flex-col gap-4 px-8 py-6 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#5c606b]">
                 Fiches familles
@@ -1644,9 +1763,39 @@ export default function ClientsPage() {
                       <input
                         className="rounded border border-[#d4d7df] bg-white px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none"
                         value={familyForm.address}
-                        onChange={handleFamilyFieldChange("address")}
+                        onChange={handleAddressChange}
                         placeholder="N° et rue"
                       />
+                      {addressError ? (
+                        <p className="mt-1 text-xs font-semibold text-red-600">
+                          {addressError}
+                        </p>
+                      ) : null}
+                      {isAddressLoading ? (
+                        <p className="mt-1 text-xs text-[#5c606b]">
+                          Recherche d&apos;adresses...
+                        </p>
+                      ) : null}
+                      {addressSuggestions.length > 0 ? (
+                        <div className="mt-2 rounded-lg border border-[#ccd0d8] bg-white shadow-lg">
+                          <ul className="divide-y divide-[#e7e9ef]">
+                            {addressSuggestions.map((suggestion, index) => (
+                              <li
+                                key={`${suggestion.label}-${index}`}
+                                className="cursor-pointer px-3 py-2 text-sm hover:bg-[#f7f8fb]"
+                                onClick={() => handleSelectAddressSuggestion(suggestion)}
+                              >
+                                <p className="font-semibold text-[#1f2330]">
+                                  {suggestion.label}
+                                </p>
+                                <p className="text-xs text-[#5c606b]">
+                                  {suggestion.postcode} {suggestion.city}
+                                </p>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      ) : null}
                     </label>
                     <label className="flex flex-col gap-1">
                       <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
