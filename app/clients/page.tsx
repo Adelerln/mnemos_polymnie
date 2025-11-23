@@ -10,7 +10,11 @@ import {
   LineChart,
   NotebookPen,
   PenLine,
+  Plus,
   Search,
+  Save,
+  Trash2,
+  Undo2,
   UserRoundPlus,
 } from "lucide-react";
 import {
@@ -1120,38 +1124,109 @@ export default function ClientsPage() {
           </div>
         </header>
 
-        <section className="rounded-2xl border border-[#d4d7df] bg-white shadow-xl">
-          <header className="rounded-t-2xl bg-[#2f3442] px-8 py-5 text-white">
-            <div className="flex items-center justify-between">
-              <h2 className="text-sm font-semibold uppercase tracking-[0.2em]">
-                Informations famille
-              </h2>
-              <div className="flex items-center gap-2 text-xs uppercase tracking-[0.16em]">
+        <section className="mx-auto w-full max-w-6xl rounded-2xl border border-[#d4d7df] bg-red-200 shadow-xl">
+          <header className="rounded-t-2xl bg-[#1f2330] px-8 py-5 text-white">
+            <div className="flex items-start justify-between gap-4">
+              <div className="space-y-1">
+                <h2 className="text-sm font-semibold uppercase tracking-[0.2em]">
+                  Informations client
+                </h2>
+              </div>
+              <div className="flex flex-wrap items-center gap-2 text-xs uppercase tracking-[0.16em]">
                 <button
                   type="button"
-                  className="inline-flex size-9 items-center justify-center rounded-full border border-white/30 bg-white/10 transition hover:bg-white/20"
+                  className="inline-flex size-9 items-center justify-center rounded-full border border-white/30 bg-white/10 text-white transition hover:bg-white/20"
                   onClick={resetFamilyForms}
                 >
-                  <NotebookPen className="size-4" />
-                  <span className="sr-only">Nouvelle fiche famille</span>
+                  <Plus className="size-4" />
+                  <span className="sr-only">Ajouter</span>
+                </button>
+                {canDeleteFamily ? (
+                  <button
+                    type="button"
+                    className="inline-flex size-9 items-center justify-center rounded-full border border-white/30 bg-white/10 text-white transition hover:bg-white/20 disabled:opacity-50"
+                    onClick={handleDeleteFamily}
+                    disabled={isDeleting || isSaving}
+                  >
+                    <Trash2 className="size-4" />
+                    <span className="sr-only">Supprimer</span>
+                  </button>
+                ) : null}
+                <button
+                  type="submit"
+                  form="family-form"
+                  className="inline-flex size-9 items-center justify-center rounded-full border border-white/30 bg-white/10 text-white transition hover:bg-white/20 disabled:opacity-50"
+                  disabled={isSaving || isDeleting}
+                >
+                  <Save className="size-4" />
+                  <span className="sr-only">Enregistrer</span>
                 </button>
                 <button
                   type="button"
-                  className="inline-flex size-9 items-center justify-center rounded-full border border-white/30 bg-white/10 transition hover:bg-white/20"
+                  className="inline-flex size-9 items-center justify-center rounded-full border border-white/30 bg-white/10 text-white transition hover:bg-white/20 disabled:opacity-50"
                   onClick={resetFamilyForms}
+                  disabled={isSaving || isDeleting}
                 >
-                  <UserRoundPlus className="size-4" />
-                  <span className="sr-only">Ajouter une famille</span>
+                  <Undo2 className="size-4" />
+                  <span className="sr-only">Annuler les modifications</span>
                 </button>
               </div>
             </div>
           </header>
 
           <form
-            className="grid gap-8 px-8 py-8 text-[#2b2f36] lg:grid-cols-[280px_1fr]"
+            id="family-form"
+            className="grid gap-8 rounded-b-2xl bg-white px-8 py-8 text-[#2b2f36] lg:grid-cols-[280px_1fr]"
             onSubmit={handleSaveFamily}
             noValidate
           >
+            <div className="lg:col-span-2">
+              <div className="rounded-xl bg-[#1f2330] p-5 text-white">
+                <div className="grid gap-3 text-xs font-semibold uppercase tracking-[0.18em] sm:grid-cols-2 lg:grid-cols-[repeat(4,minmax(0,1fr))]">
+                  <label className="space-y-1">
+                    <span>ID client</span>
+                    <input
+                      className="w-full rounded-lg border border-[#4b5163] bg-[#eef1f5] px-3 py-2 text-base font-semibold uppercase text-[#1f2330] outline-none"
+                      value={familyForm.id}
+                      readOnly
+                    />
+                  </label>
+                  <label className="space-y-1">
+                    <span>Civilité</span>
+                    <select
+                      className="w-full rounded-lg border border-[#4b5163] bg-white/90 px-3 py-2 text-sm font-medium text-[#1f2330] outline-none"
+                      value={familyForm.civility}
+                      onChange={handleFamilyFieldChange("civility")}
+                    >
+                      {CIVILITY_OPTIONS.map((option) => (
+                        <option key={option} value={option}>
+                          {option ? option : "Sélectionner"}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="space-y-1">
+                    <span>Nom de famille</span>
+                    <input
+                      className="w-full rounded-lg border border-[#4b5163] bg-white/90 px-3 py-2 text-sm font-medium uppercase text-[#1f2330] outline-none"
+                      value={familyForm.lastName}
+                      onChange={handleFamilyFieldChange("lastName")}
+                      placeholder="Nom"
+                    />
+                  </label>
+                  <label className="space-y-1">
+                    <span>Prénom</span>
+                    <input
+                      className="w-full rounded-lg border border-[#4b5163] bg-white/90 px-3 py-2 text-sm font-medium text-[#1f2330] outline-none"
+                      value={familyForm.firstName}
+                      onChange={handleFamilyFieldChange("firstName")}
+                      placeholder="Prénom"
+                    />
+                  </label>
+                </div>
+              </div>
+            </div>
+
             <aside className="space-y-5 text-sm">
               <div className="space-y-3 rounded-xl border border-[#e3e6ed] bg-[#f7f8fb] p-5">
                 <h3 className="text-xs font-semibold uppercase tracking-[0.16em] text-[#5c606b]">
@@ -1219,51 +1294,7 @@ export default function ClientsPage() {
             </aside>
 
             <div className="space-y-6">
-              <div className="grid gap-4 rounded-xl border border-[#e3e6ed] bg-[#f7f8fb] p-6">
-                <div className="grid gap-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#5c606b] sm:grid-cols-2 lg:grid-cols-4">
-                  <label className="space-y-1">
-                    <span>ID client</span>
-                    <input
-                      className="w-full rounded-lg border border-[#d4d7df] bg-white px-3 py-2 text-base font-semibold uppercase text-[#1f2330] focus:border-[#7f8696] focus:outline-none"
-                      value={familyForm.id}
-                      readOnly
-                    />
-                  </label>
-                  <label className="space-y-1">
-                    <span>Civilité</span>
-                    <select
-                      className="w-full rounded-lg border border-[#d4d7df] bg-white px-3 py-2 text-sm font-medium text-[#2b2f36] focus:border-[#7f8696] focus:outline-none"
-                      value={familyForm.civility}
-                      onChange={handleFamilyFieldChange("civility")}
-                    >
-                      {CIVILITY_OPTIONS.map((option) => (
-                        <option key={option} value={option}>
-                          {option ? option : "Sélectionner"}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <label className="space-y-1">
-                    <span>Nom de famille</span>
-                    <input
-                      className="w-full rounded-lg border border-[#d4d7df] bg-white px-3 py-2 text-sm font-medium uppercase text-[#1f2330] focus:border-[#7f8696] focus:outline-none"
-                      value={familyForm.lastName}
-                      onChange={handleFamilyFieldChange("lastName")}
-                      placeholder="Nom"
-                    />
-                  </label>
-                  <label className="space-y-1">
-                    <span>Prénom</span>
-                    <input
-                      className="w-full rounded-lg border border-[#d4d7df] bg-white px-3 py-2 text-sm font-medium text-[#1f2330] focus:border-[#7f8696] focus:outline-none"
-                      value={familyForm.firstName}
-                      onChange={handleFamilyFieldChange("firstName")}
-                      placeholder="Prénom"
-                    />
-                  </label>
-                </div>
-
-                <div className="space-y-3 text-sm text-[#2b2f36]">
+              <div className="space-y-3 text-sm text-[#2b2f36]">
                   <div className="grid gap-3 md:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
                     <label className="flex flex-col gap-1">
                       <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
@@ -1405,8 +1436,6 @@ export default function ClientsPage() {
                       />
                     </label>
                   </div>
-
-                </div>
 
                 <div className="flex flex-wrap items-center justify-end gap-2 pt-2">
                   <div className="flex flex-col items-end gap-1">
@@ -1648,35 +1677,38 @@ export default function ClientsPage() {
               </div>
 
               <div className="grid gap-4 rounded-xl border border-[#e3e6ed] bg-white p-6 shadow-lg sm:grid-cols-2 lg:grid-cols-3">
-                {quickActions.map(({ id, label, icon: Icon, href }) =>
-                  href ? (
-                    <Link
-                      key={id}
-                      href={href}
-                      className="flex items-center gap-3 rounded-lg border border-[#e3e6ed] bg-[#f7f8fb] px-4 py-3 text-left text-sm font-semibold uppercase tracking-[0.14em] text-[#2b2f36] transition hover:-translate-y-0.5 hover:border-[#c77845] hover:bg-[#fff4ec] hover:shadow-xl"
-                    >
+                {quickActions.map(({ id, label, icon: Icon, href }) => {
+                  const content = (
+                    <>
                       <span className="flex size-10 items-center justify-center rounded-full bg-[#2f3442] text-white shadow-lg">
                         <Icon className="size-5" />
                       </span>
-                      <span className="leading-tight text-[#2b2f36]">
-                        {label}
-                      </span>
-                    </Link>
-                  ) : (
+                      <span className="leading-tight text-[#2b2f36]">{label}</span>
+                    </>
+                  );
+
+                  if (href) {
+                    return (
+                      <Link
+                        key={id}
+                        href={href}
+                        className="flex items-center gap-3 rounded-lg border border-[#e3e6ed] bg-[#f7f8fb] px-4 py-3 text-left text-sm font-semibold uppercase tracking-[0.14em] text-[#2b2f36] transition hover:-translate-y-0.5 hover:border-[#c77845] hover:bg-[#fff4ec] hover:shadow-xl"
+                      >
+                        {content}
+                      </Link>
+                    );
+                  }
+
+                  return (
                     <button
                       key={id}
                       type="button"
                       className="flex items-center gap-3 rounded-lg border border-[#e3e6ed] bg-[#f7f8fb] px-4 py-3 text-left text-sm font-semibold uppercase tracking-[0.14em] text-[#2b2f36] transition hover:-translate-y-0.5 hover:border-[#c77845] hover:bg-[#fff4ec] hover:shadow-xl"
                     >
-                      <span className="flex size-10 items-center justify-center rounded-full bg-[#2f3442] text-white shadow-lg">
-                        <Icon className="size-5" />
-                      </span>
-                      <span className="leading-tight text-[#2b2f36]">
-                        {label}
-                      </span>
+                      {content}
                     </button>
-                  ),
-                )}
+                  );
+                })}
               </div>
 
               <div className="grid gap-4 rounded-xl border border-[#e3e6ed] bg-white p-6 text-xs uppercase tracking-[0.16em] text-[#5c606b] shadow-lg sm:grid-cols-2 lg:grid-cols-4">
@@ -1684,7 +1716,7 @@ export default function ClientsPage() {
                   <div key={label}>
                     {label}
                     <p className="mt-1 text-sm font-semibold text-[#1f2330]">
-                      À compléter
+                      A completer
                     </p>
                   </div>
                 ))}
