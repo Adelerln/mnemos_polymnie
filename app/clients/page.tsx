@@ -20,6 +20,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import {
@@ -348,6 +349,7 @@ export default function ClientsPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isSecondaryContactModalOpen, setIsSecondaryContactModalOpen] =
     useState(false);
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
 
   // Charger les familles au montage du composant
   useEffect(() => {
@@ -1003,6 +1005,25 @@ export default function ClientsPage() {
     }
   };
 
+  useEffect(() => {
+    const handleGlobalShortcut = (event: globalThis.KeyboardEvent) => {
+      const isSlash =
+        event.key === "/" && !event.metaKey && !event.ctrlKey && !event.altKey;
+      const isCmdK =
+        event.key.toLowerCase() === "k" &&
+        (event.metaKey || event.ctrlKey);
+
+      if (isSlash || isCmdK) {
+        event.preventDefault();
+        searchInputRef.current?.focus();
+        searchInputRef.current?.select();
+      }
+    };
+
+    window.addEventListener("keydown", handleGlobalShortcut);
+    return () => window.removeEventListener("keydown", handleGlobalShortcut);
+  }, []);
+
   const handleRowKeyDown =
     (familyId: string) => (event: KeyboardEvent<HTMLTableRowElement>) => {
       if (event.key === "Enter" || event.key === " ") {
@@ -1021,13 +1042,14 @@ export default function ClientsPage() {
                 Fiches familles
               </p>
               <h1 className="text-3xl font-semibold tracking-tight text-[#1f2330]">
-                Dossier client
+                Dossiers clients
               </h1>
             </div>
             <div className="flex flex-wrap items-center gap-3 text-sm text-[#2b2f36]">
               <label className="flex items-center gap-2 rounded-md border border-[#ccd0d8] bg-white px-4 py-2 text-sm font-medium text-[#2b2f36] focus-within:border-[#7f8696] focus-within:ring-1 focus-within:ring-[#b2b7c4]">
                 <Search className="size-4 text-[#7f8696]" />
                 <input
+                  ref={searchInputRef}
                   className="w-72 border-none bg-transparent text-sm text-[#2b2f36] outline-none placeholder:text-[#868b97]"
                   placeholder="Rechercher (nom, ville, CP, téléphone…)"
                   value={searchTerm}
@@ -1036,6 +1058,9 @@ export default function ClientsPage() {
                 />
               </label>
             </div>
+          </div>
+          <div className="px-8 pb-4 text-sm text-[#5c606b]">
+            Résultats : {filteredFamilies.length}
           </div>
           <div className="mx-auto w-full max-w-5xl overflow-hidden">
             <table className="w-full border-collapse text-sm text-[#2b2f36]">
