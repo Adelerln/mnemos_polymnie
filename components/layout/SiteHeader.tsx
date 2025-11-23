@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { UserRound } from "lucide-react";
 
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/lib/supabase-client";
@@ -61,9 +62,7 @@ export const SiteHeader = () => {
           </nav>
           {user ? (
             <div className="flex items-center gap-3 text-xs font-medium uppercase tracking-[0.18em] text-neutral-600">
-              <span className="hidden truncate text-neutral-900 sm:inline">
-                {user.email}
-              </span>
+              <UserRound className="hidden size-5 text-neutral-900 sm:inline" />
               <button
                 type="button"
                 onClick={handleSignOut}
