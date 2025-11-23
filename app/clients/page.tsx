@@ -1003,9 +1003,9 @@ export default function ClientsPage() {
     };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#d9dce1] via-[#ced1d7] to-[#c3c7ce] py-12">
+    <div className="min-h-screen bg-[#FDE2E4] py-12">
       <div className="flex w-full flex-col gap-10 px-6 text-[#2b2f36] md:px-10 xl:px-16">
-        <header className="rounded-2xl border border-[#d4d7df] bg-white shadow-xl">
+        <header className="rounded-2xl border border-[#d4d7df] bg-red-200 shadow-xl">
           <div className="flex flex-col gap-4 border-b border-[#e3e6ed] px-8 py-6 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#5c606b]">
@@ -1016,7 +1016,7 @@ export default function ClientsPage() {
               </h1>
             </div>
             <div className="flex flex-wrap items-center gap-3 text-sm text-[#2b2f36]">
-              <div className="flex items-center gap-2 rounded-full border border-[#d4d7df] bg-[#eef0f5] px-5 py-2">
+              <div className="flex items-center gap-2 rounded-full border border-[#d4d7df] bg-[#E5F2FF] px-5 py-2">
                 <span className="text-xs font-semibold uppercase tracking-[0.18em] text-[#5c606b]">
                   Inscrits mineurs
                 </span>
