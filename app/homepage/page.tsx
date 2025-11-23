@@ -1,19 +1,58 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, ChevronDown, ChevronRight, FolderOpen } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import {
+  ArrowRight,
+  Bed,
+  BriefcaseBusiness,
+  Building2,
+  Bus,
+  CalendarClock,
+  CalendarRange,
+  Calculator,
+  ChevronDown,
+  ChevronRight,
+  ClipboardCheck,
+  ClipboardList,
+  CreditCard,
+  FilePieChart,
+  FileText,
+  Files,
+  HandCoins,
+  Handshake,
+  IdCard,
+  LineChart,
+  Megaphone,
+  NotebookPen,
+  Phone,
+  Plane,
+  Receipt,
+  Route,
+  ScrollText,
+  Ticket,
+  UserPlus,
+  Users,
+  UsersRound,
+  Wallet,
+  Wrench,
+} from "lucide-react";
+import { useEffect, useMemo, useState, type ComponentType } from "react";
 import { useRouter } from "next/navigation";
 
 import { useAuth } from "@/hooks/useAuth";
 
-type SubCard = { label: string; href: string };
+type SubCard = {
+  label: string;
+  href: string;
+  icon: ComponentType<{ className?: string; strokeWidth?: number }>;
+};
 
 type HomeCard = {
   id: string;
   title: string;
   href: string;
   subCards: SubCard[];
+  icon: ComponentType<{ className?: string; strokeWidth?: number }>;
 };
 
 const cards: HomeCard[] = [
@@ -21,68 +60,74 @@ const cards: HomeCard[] = [
     id: "clients",
     title: "Clients",
     href: "/clients",
+    icon: Users,
     subCards: [
-      { label: "Règlements", href: "/clients/reglements" },
-      { label: "Factures", href: "/clients/factures" },
-      { label: "Avoirs", href: "/clients/avoirs" },
-      { label: "Devis", href: "/clients/devis" },
+      { label: "Règlements", href: "/clients/reglements", icon: CreditCard },
+      { label: "Factures", href: "/clients/factures", icon: FileText },
+      { label: "Avoirs", href: "/clients/avoirs", icon: Receipt },
+      { label: "Devis", href: "/clients/devis", icon: LineChart },
     ],
   },
   {
     id: "sejours",
     title: "Séjours",
     href: "/sejours",
+    icon: CalendarRange,
     subCards: [
-      { label: "Centres", href: "/centres" },
-      { label: "Gestion Séjours", href: "/sejours" },
-      { label: "Repos Compensateurs", href: "/sejours/repos-compensateurs" },
-      { label: "Prestations", href: "/prestations" },
-      { label: "Prestataires", href: "/prestations/prestataires" },
-      { label: "Calendrier", href: "/prestations/calendrier" },
-      { label: "Budget", href: "/prestations/budgets" },
-      { label: "Numéros utiles", href: "/familles/numeros-utiles" },
+      { label: "Centres", href: "/centres", icon: Building2 },
+      { label: "Gestion Séjours", href: "/sejours", icon: ClipboardCheck },
+      { label: "Repos Compensateurs", href: "/sejours/repos-compensateurs", icon: Bed },
+      { label: "Prestations", href: "/prestations", icon: Wrench },
+      { label: "Prestataires", href: "/prestations/prestataires", icon: BriefcaseBusiness },
+      { label: "Calendrier", href: "/prestations/calendrier", icon: CalendarClock },
+      { label: "Budget", href: "/prestations/budgets", icon: Wallet },
+      { label: "Numéros utiles", href: "/familles/numeros-utiles", icon: Phone },
     ],
   },
   {
     id: "inscriptions",
     title: "Inscriptions",
     href: "/inscriptions",
+    icon: ClipboardList,
     subCards: [],
   },
   {
     id: "partenaires",
     title: "Partenaires",
     href: "/partenaires",
+    icon: Handshake,
     subCards: [
-      { label: "Tableau de bord financier", href: "/partenaires/finances" },
-      { label: "Factures et devis", href: "/partenaires/facturation" },
-      { label: "Prises en charge", href: "/partenaires/prises-en-charge" },
+      { label: "Tableau de bord financier", href: "/partenaires/finances", icon: LineChart },
+      { label: "Factures et devis", href: "/partenaires/facturation", icon: FilePieChart },
+      { label: "Prises en charge", href: "/partenaires/prises-en-charge", icon: HandCoins },
     ],
   },
   {
     id: "transports",
     title: "Transports",
     href: "/transports",
+    icon: Bus,
     subCards: [
-      { label: "Convocations (Aller / Retour)", href: "/transports/convocations" },
-      { label: "Tronçons", href: "/transports/troncons" },
-      { label: "Planning", href: "/transports/planning" },
-      { label: "Billets", href: "/transports/billets" },
-      { label: "Fiches / documents", href: "/transports/documents" },
-      { label: "Voyagistes et émissions", href: "/transports/voyagistes" },
+      { label: "Convocations (Aller / Retour)", href: "/transports/convocations", icon: Megaphone },
+      { label: "Tronçons", href: "/transports/troncons", icon: Route },
+      { label: "Planning", href: "/transports/planning", icon: CalendarClock },
+      { label: "Billets", href: "/transports/billets", icon: Ticket },
+      { label: "Fiches / documents", href: "/transports/documents", icon: Files },
+      { label: "Voyagistes et émissions", href: "/transports/voyagistes", icon: Plane },
     ],
   },
   {
     id: "personnel",
     title: "Personnel",
     href: "/personnel",
+    icon: IdCard,
     subCards: [
-      { label: "Documents", href: "/personnel/documents" },
-      { label: "Contrats", href: "/personnel/contrats" },
-      { label: "Registres perso", href: "/personnel/registres" },
-      { label: "Tableau équipes", href: "/direction/encadrants" },
-      { label: "Comptabilité", href: "/personnel/comptabilite" },
-      { label: "Recrutement", href: "/direction/recrutement" },
+      { label: "Documents", href: "/personnel/documents", icon: FileText },
+      { label: "Contrats", href: "/personnel/contrats", icon: ScrollText },
+      { label: "Registres perso", href: "/personnel/registres", icon: NotebookPen },
+      { label: "Tableau équipes", href: "/direction/encadrants", icon: UsersRound },
+      { label: "Comptabilité", href: "/personnel/comptabilite", icon: Calculator },
+      { label: "Recrutement", href: "/direction/recrutement", icon: UserPlus },
     ],
   },
 ];
@@ -109,9 +154,14 @@ export default function Homepage() {
   const heading = useMemo(
     () => ({
       title: "Espace Polymnie",
-      subtitle: "Ouvrez un module pour afficher ses sous-menus.",
+      subtitle: "Sélectionnez un module pour afficher les sous-éléments en dessous.",
     }),
     []
+  );
+
+  const activeCard = useMemo(
+    () => cards.find((card) => card.id === openCardId),
+    [openCardId]
   );
 
   if (loading || !user) {
@@ -138,82 +188,92 @@ export default function Homepage() {
         </header>
 
         <section className="rounded-[32px] border border-neutral-200 bg-white/80 p-8 shadow-lg">
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
             {cards.map((card) => {
               const isOpen = openCardId === card.id;
               const hasSubCards = card.subCards.length > 0;
+              const Icon = card.icon;
 
               return (
                 <div
                   key={card.id}
-                  className="rounded-3xl border border-neutral-200 bg-white px-6 py-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
+                  className="flex min-h-[220px] flex-col items-center justify-between rounded-3xl border border-neutral-200 bg-white px-5 py-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
                 >
                   <button
                     type="button"
-                    className="flex w-full items-center justify-between gap-3 text-left"
+                    className="flex h-full w-full flex-col items-center gap-4 text-center"
                     onClick={() => toggleCard(card.id, hasSubCards)}
                   >
-                    <div className="space-y-1">
-                      <div className="inline-flex items-center gap-2 rounded-full bg-neutral-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-neutral-500">
-                        <FolderOpen className="h-4 w-4" strokeWidth={1.6} />
-                        {card.title}
-                      </div>
-                      <p className="text-lg font-semibold text-neutral-900">
-                        {hasSubCards ? "Ouvrir les sous-cartes" : "Accéder directement"}
-                      </p>
+                    <div className="flex size-14 items-center justify-center rounded-2xl bg-neutral-100 text-neutral-800">
+                      <Icon className="h-7 w-7" strokeWidth={1.6} />
                     </div>
-                    <span className="flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.2em] text-neutral-500">
-                      {hasSubCards ? (
-                        <>
-                          <ChevronDown
-                            className={`h-5 w-5 transition ${isOpen ? "rotate-180" : ""}`}
-                          />
-                        </>
-                      ) : (
-                        <ChevronRight className="h-5 w-5" />
-                      )}
-                    </span>
+                    <p className="text-base font-semibold text-neutral-900">
+                      {card.title}
+                    </p>
+                    {hasSubCards ? (
+                      <ChevronDown
+                        className={`h-5 w-5 text-neutral-500 transition ${isOpen ? "rotate-180" : ""}`}
+                      />
+                    ) : (
+                      <ChevronRight className="h-5 w-5 text-neutral-500" />
+                    )}
                   </button>
-
-                  {hasSubCards && isOpen ? (
-                    <div className="mt-4 space-y-2 rounded-2xl border border-neutral-100 bg-neutral-50 p-3">
-                      {card.subCards.map((sub) => (
-                        <Link
-                          key={sub.label}
-                          href={sub.href}
-                          className="flex items-center justify-between rounded-xl px-4 py-3 text-sm font-medium text-neutral-800 transition hover:bg-white hover:shadow-sm"
-                        >
-                          <span>{sub.label}</span>
-                          <ArrowRight className="h-4 w-4 text-neutral-500" />
-                        </Link>
-                      ))}
-                    </div>
-                  ) : null}
-
-                  {!hasSubCards ? (
-                    <div className="mt-4">
-                      <Link
-                        href={card.href}
-                        className="inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.18em] text-neutral-700 transition hover:text-neutral-900"
-                      >
-                        Accéder
-                        <ArrowRight className="h-4 w-4" />
-                      </Link>
-                    </div>
-                  ) : (
-                    <div className="mt-4">
-                      <Link
-                        href={card.href}
-                        className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500 transition hover:text-neutral-900"
-                      >
-                        Accès principal
-                        <ArrowRight className="h-4 w-4" />
-                      </Link>
-                    </div>
-                  )}
                 </div>
               );
             })}
+          </div>
+
+          <div className="mt-6 rounded-3xl border border-neutral-200 bg-white/80 p-6 shadow-sm">
+            {activeCard ? (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <activeCard.icon className="h-6 w-6 text-neutral-800" strokeWidth={1.5} />
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-[0.22em] text-neutral-500">
+                        {activeCard.title}
+                      </p>
+                      <p className="text-sm text-neutral-600">
+                        {activeCard.subCards.length > 0
+                          ? "Choisissez un élément ci-dessous."
+                          : "Accès direct disponible."}
+                      </p>
+                    </div>
+                  </div>
+                  <Link
+                    href={activeCard.href}
+                    className="inline-flex items-center gap-2 rounded-full border border-neutral-200 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-neutral-700 transition hover:border-neutral-900 hover:text-neutral-900"
+                  >
+                    Accès principal
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </div>
+
+                {activeCard.subCards.length > 0 ? (
+                  <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                    {activeCard.subCards.map((sub) => (
+                      <Link
+                        key={sub.label}
+                        href={sub.href}
+                        className="flex items-center justify-between rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm font-medium text-neutral-800 transition hover:-translate-y-0.5 hover:border-neutral-900 hover:shadow-md"
+                      >
+                        <span className="flex items-center gap-2">
+                          <sub.icon className="h-4 w-4 text-neutral-600" strokeWidth={1.6} />
+                          {sub.label}
+                        </span>
+                        <ArrowRight className="h-4 w-4 text-neutral-500" />
+                      </Link>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-neutral-600">
+                    Aucun élément secondaire. Utilisez l&apos;accès principal ci-dessus.
+                  </p>
+                )}
+              </div>
+            ) : (
+              <p className="text-sm text-neutral-600">Sélectionnez une carte pour afficher ses éléments ici.</p>
+            )}
           </div>
         </section>
       </div>
