@@ -361,7 +361,7 @@ export default function ClientsPage() {
   const [isSecondaryContactModalOpen, setIsSecondaryContactModalOpen] =
     useState(false);
   const searchFilterRefs = {
-    id: useRef<HTMLInputElement | null>(null),
+    primary: useRef<HTMLInputElement | null>(null),
     lastUsed: useRef<HTMLInputElement | HTMLSelectElement | null>(null),
   };
   const [addressQuery, setAddressQuery] = useState("");
@@ -371,12 +371,9 @@ export default function ClientsPage() {
   const [isAddressLoading, setIsAddressLoading] = useState(false);
   const [addressError, setAddressError] = useState<string | null>(null);
   const [searchFilters, setSearchFilters] = useState({
-    id: "",
-    civility: "",
     lastName: "",
     firstName: "",
     address: "",
-    complement: "",
     postalCode: "",
     city: "",
     country: "",
@@ -384,6 +381,9 @@ export default function ClientsPage() {
     phone2: "",
     email: "",
     partner: "",
+    childLastName: "",
+    childFirstName: "",
+    childBirthDate: "",
   });
   const [isSearchPanelOpen, setIsSearchPanelOpen] = useState(false);
 
@@ -616,12 +616,9 @@ export default function ClientsPage() {
     return orderedFamilies.filter((family) => {
       if (hasFilters) {
         const matches = [
-          !searchFilters.id || family.id.toLowerCase().includes(searchFilters.id.toLowerCase()),
-          !searchFilters.civility || (family.civility ?? "").toLowerCase().includes(searchFilters.civility.toLowerCase()),
           !searchFilters.lastName || family.lastName.toLowerCase().includes(searchFilters.lastName.toLowerCase()),
           !searchFilters.firstName || family.firstName.toLowerCase().includes(searchFilters.firstName.toLowerCase()),
           !searchFilters.address || (family.address ?? "").toLowerCase().includes(searchFilters.address.toLowerCase()),
-          !searchFilters.complement || (family.complement ?? "").toLowerCase().includes(searchFilters.complement.toLowerCase()),
           !searchFilters.postalCode || (family.postalCode ?? "").toLowerCase().includes(searchFilters.postalCode.toLowerCase()),
           !searchFilters.city || (family.city ?? "").toLowerCase().includes(searchFilters.city.toLowerCase()),
           !searchFilters.country || (family.country ?? "").toLowerCase().includes(searchFilters.country.toLowerCase()),
@@ -629,6 +626,20 @@ export default function ClientsPage() {
           !searchFilters.phone2 || (family.phone2 ?? "").toLowerCase().includes(searchFilters.phone2.toLowerCase()),
           !searchFilters.email || (family.email ?? "").toLowerCase().includes(searchFilters.email.toLowerCase()),
           !searchFilters.partner || (family.partner ?? "").toLowerCase().includes(searchFilters.partner.toLowerCase()),
+          !searchFilters.childLastName ||
+            family.children.some((child) =>
+              (child.lastName ?? "").toLowerCase().includes(searchFilters.childLastName.toLowerCase()),
+            ),
+          !searchFilters.childFirstName ||
+            family.children.some((child) =>
+              (child.firstName ?? "").toLowerCase().includes(searchFilters.childFirstName.toLowerCase()),
+            ),
+          !searchFilters.childBirthDate ||
+            family.children.some(
+              (child) =>
+                (child.birthDate ?? "").toLowerCase().startsWith(searchFilters.childBirthDate.toLowerCase()) ||
+                (child.birthDate ?? "").toLowerCase().includes(searchFilters.childBirthDate.toLowerCase()),
+            ),
         ];
 
         if (matches.some((value) => value === false)) {
@@ -1173,12 +1184,9 @@ export default function ClientsPage() {
 
   const handleResetSearch = () => {
     setSearchFilters({
-      id: "",
-      civility: "",
       lastName: "",
       firstName: "",
       address: "",
-      complement: "",
       postalCode: "",
       city: "",
       country: "",
@@ -1186,6 +1194,9 @@ export default function ClientsPage() {
       phone2: "",
       email: "",
       partner: "",
+      childLastName: "",
+      childFirstName: "",
+      childBirthDate: "",
     });
     setSearchTerm("");
     setIsSearchPanelOpen(false);
@@ -1202,7 +1213,7 @@ export default function ClientsPage() {
         event.preventDefault();
         setIsSearchPanelOpen((prev) => !prev);
         const target =
-          searchFilterRefs.lastUsed.current ?? searchFilterRefs.id.current;
+          searchFilterRefs.lastUsed.current ?? searchFilterRefs.primary.current;
         if (target) {
           target.focus();
           if ("select" in target) {
@@ -1253,12 +1264,9 @@ export default function ClientsPage() {
   return (
     <div className="min-h-screen bg-[#FDE2E4] py-12">
       <div className="flex w-full flex-col gap-10 px-6 text-[#2b2f36] md:px-10 xl:px-16">
-        <header className="mx-auto w-full max-w-6xl rounded-3xl border border-[#d4d7df] bg-red-200 shadow-xl">
+        <header className="mx-auto w-full max-w-6xl rounded-3xl border border-[#d4d7df] bg-white shadow-xl">
           <div className="flex flex-col gap-4 px-8 py-6 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#5c606b]">
-                Fiches familles
-              </p>
               <h1 className="text-3xl font-semibold tracking-tight text-[#1f2330]">
                 Dossiers clients
               </h1>
@@ -1270,7 +1278,7 @@ export default function ClientsPage() {
                 onClick={() => {
                   setIsSearchPanelOpen((prev) => !prev);
                   const target =
-                    searchFilterRefs.lastUsed.current ?? searchFilterRefs.id.current;
+                    searchFilterRefs.lastUsed.current ?? searchFilterRefs.primary.current;
                   if (target) {
                     target.focus();
                     if ("select" in target) {
@@ -1301,49 +1309,14 @@ export default function ClientsPage() {
                   ✕ Réinitialiser
                 </button>
               </div>
-              <div className="grid gap-3 md:grid-cols-4">
-                <label className="flex flex-col gap-1">
-                  <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[#5c606b]">
-                    ID client
-                  </span>
-                  <input
-                    ref={searchFilterRefs.id}
-                    className="rounded border border-[#ccd0d8] bg-white px-3 py-2 outline-none focus:border-[#7f8696]"
-                    value={searchFilters.id}
-                    onChange={handleSearchFilterChange("id")}
-                    onKeyDown={handleSearchFiltersKeyDown}
-                    onFocus={(event) => {
-                      searchFilterRefs.lastUsed.current = event.currentTarget;
-                    }}
-                  />
-                </label>
-                <label className="flex flex-col gap-1">
-                  <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[#5c606b]">
-                    Civilité
-                  </span>
-                  <select
-                    className="rounded border border-[#ccd0d8] bg-white px-3 py-2 outline-none focus:border-[#7f8696]"
-                    value={searchFilters.civility}
-                    onChange={handleSearchFilterChange("civility")}
-                    onKeyDown={handleSearchFiltersKeyDown}
-                    onFocus={(event) => {
-                      searchFilterRefs.lastUsed.current = event.currentTarget;
-                    }}
-                  >
-                    <option value="">Toutes</option>
-                    {CIVILITY_OPTIONS.map((option) => (
-                      <option key={option} value={option}>
-                        {option || "—"}
-                      </option>
-                    ))}
-                  </select>
-                </label>
+              <div className="grid gap-3 md:grid-cols-3">
                 <label className="flex flex-col gap-1">
                   <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[#5c606b]">
                     Nom
                   </span>
                   <input
                     className="rounded border border-[#ccd0d8] bg-white px-3 py-2 outline-none focus:border-[#7f8696]"
+                    ref={searchFilterRefs.primary}
                     value={searchFilters.lastName}
                     onChange={handleSearchFilterChange("lastName")}
                     onKeyDown={handleSearchFiltersKeyDown}
@@ -1366,9 +1339,6 @@ export default function ClientsPage() {
                     }}
                   />
                 </label>
-              </div>
-
-              <div className="grid gap-3 md:grid-cols-3">
                 <label className="flex flex-col gap-1">
                   <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[#5c606b]">
                     Adresse
@@ -1376,21 +1346,70 @@ export default function ClientsPage() {
                   <input
                     className="rounded border border-[#ccd0d8] bg-white px-3 py-2 outline-none focus:border-[#7f8696]"
                     value={searchFilters.address}
-                    onChange={handleSearchFilterChange("address")}
+                    onChange={handleAddressChange}
                     onKeyDown={handleSearchFiltersKeyDown}
                     onFocus={(event) => {
                       searchFilterRefs.lastUsed.current = event.currentTarget;
                     }}
                   />
+                  {addressError ? (
+                    <p className="mt-1 text-xs font-semibold text-red-600">
+                      {addressError}
+                    </p>
+                  ) : null}
+                  {isAddressLoading ? (
+                    <p className="mt-1 text-xs text-[#5c606b]">
+                      Recherche d&apos;adresses...
+                    </p>
+                  ) : null}
+                  {addressSuggestions.length > 0 ? (
+                    <div className="mt-2 rounded-lg border border-[#ccd0d8] bg-white shadow-lg">
+                      <ul className="divide-y divide-[#e7e9ef]">
+                        {addressSuggestions.map((suggestion, index) => (
+                          <li
+                            key={`${suggestion.label}-${index}`}
+                            className="cursor-pointer px-3 py-2 text-sm hover:bg-[#f7f8fb]"
+                            onClick={() => handleSelectAddressSuggestion(suggestion)}
+                          >
+                            <p className="font-semibold text-[#1f2330]">
+                              {suggestion.label}
+                            </p>
+                            <p className="text-xs text-[#5c606b]">
+                              {suggestion.postcode} {suggestion.city}
+                            </p>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : null}
                 </label>
+              </div>
+
+              <div className="grid gap-3 md:grid-cols-3">
                 <label className="flex flex-col gap-1">
                   <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[#5c606b]">
-                    Complément
+                    Code postal
                   </span>
                   <input
                     className="rounded border border-[#ccd0d8] bg-white px-3 py-2 outline-none focus:border-[#7f8696]"
-                    value={searchFilters.complement}
-                    onChange={handleSearchFilterChange("complement")}
+                    value={searchFilters.postalCode}
+                    onChange={handleSearchFilterChange("postalCode")}
+                    onKeyDown={handleSearchFiltersKeyDown}
+                    onFocus={(event) => {
+                      searchFilterRefs.lastUsed.current = event.currentTarget;
+                    }}
+                    inputMode="numeric"
+                    maxLength={10}
+                  />
+                </label>
+                <label className="flex flex-col gap-1">
+                  <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[#5c606b]">
+                    Ville
+                  </span>
+                  <input
+                    className="rounded border border-[#ccd0d8] bg-white px-3 py-2 outline-none focus:border-[#7f8696]"
+                    value={searchFilters.city}
+                    onChange={handleSearchFilterChange("city")}
                     onKeyDown={handleSearchFiltersKeyDown}
                     onFocus={(event) => {
                       searchFilterRefs.lastUsed.current = event.currentTarget;
@@ -1507,10 +1526,56 @@ export default function ClientsPage() {
                   />
                 </label>
               </div>
+
+              <div className="grid gap-3 md:grid-cols-3">
+                <label className="flex flex-col gap-1">
+                  <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[#5c606b]">
+                    Nom de l&apos;enfant
+                  </span>
+                  <input
+                    className="rounded border border-[#ccd0d8] bg-white px-3 py-2 outline-none focus:border-[#7f8696]"
+                    value={searchFilters.childLastName}
+                    onChange={handleSearchFilterChange("childLastName")}
+                    onKeyDown={handleSearchFiltersKeyDown}
+                    onFocus={(event) => {
+                      searchFilterRefs.lastUsed.current = event.currentTarget;
+                    }}
+                  />
+                </label>
+                <label className="flex flex-col gap-1">
+                  <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[#5c606b]">
+                    Prénom de l&apos;enfant
+                  </span>
+                  <input
+                    className="rounded border border-[#ccd0d8] bg-white px-3 py-2 outline-none focus:border-[#7f8696]"
+                    value={searchFilters.childFirstName}
+                    onChange={handleSearchFilterChange("childFirstName")}
+                    onKeyDown={handleSearchFiltersKeyDown}
+                    onFocus={(event) => {
+                      searchFilterRefs.lastUsed.current = event.currentTarget;
+                    }}
+                  />
+                </label>
+                <label className="flex flex-col gap-1">
+                  <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[#5c606b]">
+                    Date de naissance (enfant)
+                  </span>
+                  <input
+                    type="date"
+                    className="rounded border border-[#ccd0d8] bg-white px-3 py-2 outline-none focus:border-[#7f8696]"
+                    value={searchFilters.childBirthDate}
+                    onChange={handleSearchFilterChange("childBirthDate")}
+                    onKeyDown={handleSearchFiltersKeyDown}
+                    onFocus={(event) => {
+                      searchFilterRefs.lastUsed.current = event.currentTarget;
+                    }}
+                  />
+                </label>
+              </div>
             </div>
           ) : null}
-          <div className="mx-auto mb-6 w-full max-w-5xl overflow-hidden rounded-2xl border border-[#d4d7df] bg-white shadow-sm">
-            <table className="w-full border-collapse text-sm text-[#2b2f36]">
+          <div className="mx-auto mb-6 w-full max-w-5xl overflow-hidden rounded-2xl border border-red-200 bg-red-200 shadow-sm">
+            <table className="w-full border-collapse bg-white text-sm text-[#2b2f36]">
               <thead className="bg-[#1f2330] text-left text-xs font-semibold uppercase tracking-[0.18em] text-white">
                 <tr>
                   <th className="px-5 py-3">ID client</th>
