@@ -177,21 +177,18 @@ export default function Homepage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#f5f5f5] px-4 py-12 text-neutral-900">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-10">
-        <header className="space-y-4 text-center">
-          <p className="text-xs font-semibold uppercase tracking-[0.35em] text-neutral-500">
+    <div className="flex min-h-screen flex-col bg-[#f5f5f5] px-4 py-4 text-neutral-900">
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
+        <header className="space-y-2 text-center">
+          <h1 className="mt-8 text-4xl font-semibold leading-tight">
             {heading.title}
-          </p>
-          <h1 className="text-4xl font-semibold leading-tight">
-            Page d&apos;accueil
           </h1>
           <p className="text-base text-neutral-600">
             {heading.subtitle}
           </p>
         </header>
 
-        <section className="rounded-[32px] border border-neutral-200 bg-white/80 p-8 shadow-lg">
+        <section className="rounded-[32px] border border-neutral-200 bg-white/80 p-6 shadow-lg">
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
             {cards.map((card) => {
               const isOpen = openCardId === card.id;
@@ -201,7 +198,7 @@ export default function Homepage() {
               return (
                 <div
                   key={card.id}
-                  className="flex min-h-[220px] flex-col items-center justify-between rounded-3xl border border-neutral-200 bg-white px-5 py-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
+                  className="flex min-h-[220px] flex-col items-center justify-between rounded-3xl border border-neutral-200 bg-white px-5 py-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
                 >
                   <button
                     type="button"
@@ -227,7 +224,7 @@ export default function Homepage() {
             })}
           </div>
 
-          <div className="mt-6 rounded-3xl border border-neutral-200 bg-white/80 p-6 shadow-sm">
+          <div className="mt-4 rounded-3xl border border-neutral-200 bg-white/80 p-4 shadow-sm">
             {activeCard ? (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
