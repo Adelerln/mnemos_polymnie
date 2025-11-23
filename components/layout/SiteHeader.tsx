@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { LogOut, UserRound } from "lucide-react";
+import { LogOut, Settings, UserRound } from "lucide-react";
 
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/lib/supabase-client";
@@ -60,16 +60,25 @@ export const SiteHeader = () => {
                 item.href === "/"
                   ? pathname === item.href
                   : pathname.startsWith(item.href);
+              const isSettings = item.label === "Paramètres";
               return (
                 <Link
                   key={item.href}
                   href={item.href}
                   className={cn(
                     "relative flex-shrink-0 whitespace-nowrap pb-1.5 transition hover:text-neutral-900",
-                    isActive && "text-neutral-900"
+                    isActive && "text-neutral-900",
+                    isSettings && "flex items-center justify-center"
                   )}
                 >
-                  {item.label}
+                  {isSettings ? (
+                    <>
+                      <Settings className="size-5" aria-hidden />
+                      <span className="sr-only">{item.label}</span>
+                    </>
+                  ) : (
+                    item.label
+                  )}
                   {isActive ? (
                     <span className="absolute inset-x-0 -bottom-1 block h-0.5 bg-neutral-900" />
                   ) : null}
