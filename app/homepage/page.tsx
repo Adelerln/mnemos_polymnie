@@ -206,7 +206,7 @@ export default function Homepage() {
                     onClick={() => toggleCard(card.id, hasSubCards)}
                   >
                     <div className="flex size-16 items-center justify-center rounded-2xl bg-neutral-100 text-neutral-800">
-                      <Icon className="h-9 w-9" strokeWidth={1.6} />
+                      <Icon className="h-9 w-9 text-[#FFD9CC]" strokeWidth={1.6} />
                     </div>
                     <p className="text-base font-semibold text-neutral-900">
                       {card.title}
