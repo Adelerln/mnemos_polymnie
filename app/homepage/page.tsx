@@ -201,11 +201,11 @@ export default function Homepage() {
                 >
                   <button
                     type="button"
-                    className="flex h-full w-full flex-col items-center gap-4 text-center"
+                    className="flex h-full w-full flex-col items-center gap-4 text-center cursor-pointer"
                     onClick={() => toggleCard(card.id, hasSubCards)}
                   >
-                    <div className="flex size-14 items-center justify-center rounded-2xl bg-neutral-100 text-neutral-800">
-                      <Icon className="h-7 w-7" strokeWidth={1.6} />
+                    <div className="flex size-16 items-center justify-center rounded-2xl bg-neutral-100 text-neutral-800">
+                      <Icon className="h-9 w-9" strokeWidth={1.6} />
                     </div>
                     <p className="text-base font-semibold text-neutral-900">
                       {card.title}
@@ -242,7 +242,7 @@ export default function Homepage() {
                   </div>
                   <Link
                     href={activeCard.href}
-                    className="inline-flex items-center gap-2 rounded-full border border-neutral-200 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-neutral-700 transition hover:border-neutral-900 hover:text-neutral-900"
+                    className="inline-flex items-center gap-2 rounded-full border border-neutral-200 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-neutral-700 transition hover:border-neutral-900 hover:text-neutral-900 cursor-pointer"
                   >
                     Accès principal
                     <ArrowRight className="h-4 w-4" />
@@ -255,7 +255,7 @@ export default function Homepage() {
                       <Link
                         key={sub.label}
                         href={sub.href}
-                        className="flex items-center justify-between rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm font-medium text-neutral-800 transition hover:-translate-y-0.5 hover:border-neutral-900 hover:shadow-md"
+                        className="flex items-center justify-between rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm font-medium text-neutral-800 transition hover:-translate-y-0.5 hover:border-neutral-900 hover:shadow-md cursor-pointer"
                       >
                         <span className="flex items-center gap-2">
                           <sub.icon className="h-4 w-4 text-neutral-600" strokeWidth={1.6} />
