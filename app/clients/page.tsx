@@ -1314,6 +1314,7 @@ export default function ClientsPage() {
     const first = family.firstName ?? "";
     return `${civ}${first} ${last}`.trim();
   };
+  const fieldBg = isDirty ? "bg-white" : "bg-[#f5f5f5]";
 
   return (
     <div className="min-h-screen bg-[#FDE2E4] py-12">
@@ -1667,10 +1668,20 @@ export default function ClientsPage() {
         <section className="mx-auto w-full max-w-6xl rounded-3xl border border-[#d4d7df] bg-red-200 shadow-xl">
           <header className="rounded-t-3xl bg-[#97163a] px-8 py-5 text-white">
             <div className="flex items-center justify-between gap-4">
-              <div className="space-y-1">
+              <div className="flex items-center gap-4">
                 <h2 className="text-sm font-semibold uppercase tracking-[0.2em]">
                   Informations client
                 </h2>
+                {selectedFamilyId ? (
+                  <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em]">
+                    <span className="text-white/80">ID client</span>
+                    <input
+                      className="h-8 w-28 rounded-md border border-white/30 bg-white/10 px-3 text-sm text-white outline-none placeholder:text-white/60"
+                      value={familyForm.id}
+                      readOnly
+                    />
+                  </div>
+                ) : null}
               </div>
               <div className="flex flex-wrap items-center gap-2 text-xs uppercase tracking-[0.16em]">
                 <button
@@ -1701,6 +1712,7 @@ export default function ClientsPage() {
                   form="family-form"
                   className="group relative inline-flex size-9 items-center justify-center rounded-full border border-white/30 bg-white/10 text-white transition hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                   disabled={isSaving || isDeleting}
+                  title="Enregistrer"
                 >
                   <Save className="size-4" />
                   <span className="sr-only">Enregistrer</span>
@@ -1713,6 +1725,7 @@ export default function ClientsPage() {
                   className="group relative inline-flex size-9 items-center justify-center rounded-full border border-white/30 bg-white/10 text-white transition hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                   onClick={resetFamilyForms}
                   disabled={isSaving || isDeleting}
+                  title="Annuler"
                 >
                   <Undo2 className="size-4" />
                   <span className="sr-only">Annuler les modifications</span>
@@ -1735,17 +1748,9 @@ export default function ClientsPage() {
               <div className="rounded-xl bg-[#1f2330] p-5 text-white">
                 <div className="grid gap-3 text-xs font-semibold uppercase tracking-[0.18em] sm:grid-cols-2 lg:grid-cols-[repeat(4,minmax(0,1fr))]">
                   <label className="space-y-1">
-                    <span>ID client</span>
-                    <input
-                      className="w-full rounded-lg border border-[#4b5163] bg-[#eef1f5] px-3 py-2 text-base font-semibold uppercase text-[#1f2330] outline-none"
-                      value={familyForm.id}
-                      readOnly
-                    />
-                  </label>
-                  <label className="space-y-1">
                     <span>Civilité</span>
                     <select
-                      className="w-full rounded-lg border border-[#4b5163] bg-white/90 px-3 py-2 text-sm font-medium text-[#1f2330] outline-none"
+                      className={`w-full rounded-lg border border-[#4b5163] px-3 py-2 text-sm font-medium text-[#1f2330] outline-none ${fieldBg}`}
                       value={familyForm.civility}
                       onChange={handleFamilyFieldChange("civility")}
                     >
@@ -1759,7 +1764,7 @@ export default function ClientsPage() {
                   <label className="space-y-1">
                     <span>Nom de famille</span>
                     <input
-                      className="w-full rounded-lg border border-[#4b5163] bg-white/90 px-3 py-2 text-sm font-medium uppercase text-[#1f2330] outline-none"
+                      className={`w-full rounded-lg border border-[#4b5163] px-3 py-2 text-sm font-medium uppercase text-[#1f2330] outline-none ${fieldBg}`}
                       value={familyForm.lastName}
                       onChange={handleFamilyFieldChange("lastName")}
                       placeholder="Nom"
@@ -1768,7 +1773,7 @@ export default function ClientsPage() {
                   <label className="space-y-1">
                     <span>Prénom</span>
                     <input
-                      className="w-full rounded-lg border border-[#4b5163] bg-white/90 px-3 py-2 text-sm font-medium text-[#1f2330] outline-none"
+                      className={`w-full rounded-lg border border-[#4b5163] px-3 py-2 text-sm font-medium text-[#1f2330] outline-none ${fieldBg}`}
                       value={familyForm.firstName}
                       onChange={handleFamilyFieldChange("firstName")}
                       placeholder="Prénom"
@@ -1852,7 +1857,7 @@ export default function ClientsPage() {
                         Adresse
                       </span>
                       <input
-                        className="rounded border border-[#d4d7df] bg-white px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none"
+                    className={`rounded border border-[#d4d7df] px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none ${fieldBg}`}
                         value={familyForm.address}
                         onChange={handleAddressChange}
                         placeholder="N° et rue"
@@ -1893,7 +1898,7 @@ export default function ClientsPage() {
                         Téléphone 1
                       </span>
                       <input
-                        className="rounded border border-[#d4d7df] bg-white px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none"
+                        className={`rounded border border-[#d4d7df] px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none ${fieldBg}`}
                         value={familyForm.phone1}
                         onChange={handlePhoneChange("phone1")}
                         placeholder="07 71 07 26 55"
@@ -1909,7 +1914,7 @@ export default function ClientsPage() {
                         Complément
                       </span>
                       <input
-                        className="rounded border border-[#d4d7df] bg-white px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none"
+                        className={`rounded border border-[#d4d7df] px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none ${fieldBg}`}
                         value={familyForm.complement}
                         onChange={handleFamilyFieldChange("complement")}
                         placeholder="Bâtiment, étage..."
@@ -1937,7 +1942,7 @@ export default function ClientsPage() {
                       </span>
                       <div className="grid grid-cols-[120px_1fr] gap-3">
                         <input
-                          className="rounded border border-[#d4d7df] bg-white px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none"
+                          className={`rounded border border-[#d4d7df] px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none ${fieldBg}`}
                           value={familyForm.postalCode}
                           onChange={handlePostalCodeChange}
                           placeholder="75017"
@@ -1945,7 +1950,7 @@ export default function ClientsPage() {
                         />
                         {cityOptions.length > 1 ? (
                           <select
-                            className="rounded border border-[#d4d7df] bg-white px-3 py-2 text-sm text-[#2b2f36] focus:border-[#7f8696] focus:outline-none"
+                            className={`rounded border border-[#d4d7df] px-3 py-2 text-sm text-[#2b2f36] focus:border-[#7f8696] focus:outline-none ${fieldBg}`}
                             value={familyForm.city}
                             onChange={handleCityManualChange}
                           >
@@ -1957,7 +1962,7 @@ export default function ClientsPage() {
                           </select>
                         ) : (
                           <input
-                            className="rounded border border-[#d4d7df] bg-white px-3 py-2 text-sm text-[#2b2f36] focus:border-[#7f8696] focus:outline-none"
+                            className={`rounded border border-[#d4d7df] px-3 py-2 text-sm text-[#2b2f36] focus:border-[#7f8696] focus:outline-none ${fieldBg}`}
                             value={familyForm.city}
                             onChange={
                               cityOptions.length === 0
@@ -1985,7 +1990,7 @@ export default function ClientsPage() {
                         Mail
                       </span>
                       <input
-                        className="rounded border border-[#d4d7df] bg-white px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none"
+                        className={`rounded border border-[#d4d7df] px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none ${fieldBg}`}
                         value={familyForm.email}
                         onChange={handleFamilyFieldChange("email")}
                         placeholder="famille@example.com"
@@ -1999,23 +2004,23 @@ export default function ClientsPage() {
                         Pays
                       </span>
                       <input
-                        className="rounded border border-[#d4d7df] bg-white px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none"
-                        value={familyForm.country}
-                        onChange={handleFamilyFieldChange("country")}
-                        placeholder="France"
-                      />
-                    </label>
-                    <label className="flex flex-col gap-1">
-                      <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
-                        Partenaire principal
-                      </span>
-                      <input
-                        className="rounded border border-[#d4d7df] bg-white px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none"
-                        value={familyForm.partner}
-                        onChange={handleFamilyFieldChange("partner")}
-                        placeholder="Nom du partenaire"
-                      />
-                    </label>
+                    className={`rounded border border-[#d4d7df] px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none ${fieldBg}`}
+                    value={familyForm.country}
+                    onChange={handleFamilyFieldChange("country")}
+                    placeholder="France"
+                  />
+                </label>
+                <label className="flex flex-col gap-1">
+                  <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
+                    Partenaire principal
+                  </span>
+                  <input
+                    className={`rounded border border-[#d4d7df] px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none ${fieldBg}`}
+                    value={familyForm.partner}
+                    onChange={handleFamilyFieldChange("partner")}
+                    placeholder="Nom du partenaire"
+                  />
+                </label>
                   </div>
 
                 <div className="flex flex-wrap items-center justify-end gap-2 pt-2">
