@@ -496,18 +496,20 @@ export default function ClientsPage() {
         family.firstName,
         family.postalCode,
         family.city,
+        family.address,
+        family.complement,
+        family.phone1,
+        family.phone2,
+        family.email,
+        family.partner,
       ]
+        .filter(Boolean)
         .join(" ")
         .toLowerCase();
 
       return haystack.includes(term);
     });
   }, [orderedFamilies, searchTerm]);
-
-  const totalChildren = useMemo(
-    () => families.reduce((total, family) => total + family.children.length, 0),
-    [families],
-  );
 
   const activeHealthChild = useMemo(() => {
     if (!healthModalChildId) {
@@ -994,6 +996,13 @@ export default function ClientsPage() {
     setSearchTerm(event.target.value);
   };
 
+  const handleSearchKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      setSearchTerm(event.currentTarget.value);
+    }
+  };
+
   const handleRowKeyDown =
     (familyId: string) => (event: KeyboardEvent<HTMLTableRowElement>) => {
       if (event.key === "Enter" || event.key === " ") {
@@ -1005,7 +1014,7 @@ export default function ClientsPage() {
   return (
     <div className="min-h-screen bg-[#FDE2E4] py-12">
       <div className="flex w-full flex-col gap-10 px-6 text-[#2b2f36] md:px-10 xl:px-16">
-        <header className="rounded-2xl border border-[#d4d7df] bg-red-200 shadow-xl">
+        <header className="mx-auto w-full max-w-6xl rounded-2xl border border-[#d4d7df] bg-red-200 shadow-xl">
           <div className="flex flex-col gap-4 border-b border-[#e3e6ed] px-8 py-6 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#5c606b]">
@@ -1016,26 +1025,19 @@ export default function ClientsPage() {
               </h1>
             </div>
             <div className="flex flex-wrap items-center gap-3 text-sm text-[#2b2f36]">
-              <div className="flex items-center gap-2 rounded-full border border-[#d4d7df] bg-[#E5F2FF] px-5 py-2">
-                <span className="text-xs font-semibold uppercase tracking-[0.18em] text-[#5c606b]">
-                  Inscrits mineurs
-                </span>
-                <span className="text-base font-semibold text-[#b45b12]">
-                  {totalChildren}
-                </span>
-              </div>
-              <label className="flex items-center gap-2 rounded-md border border-[#ccd0d8] bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#2b2f36] focus-within:border-[#7f8696] focus-within:ring-1 focus-within:ring-[#b2b7c4]">
+              <label className="flex items-center gap-2 rounded-md border border-[#ccd0d8] bg-white px-4 py-2 text-sm font-medium text-[#2b2f36] focus-within:border-[#7f8696] focus-within:ring-1 focus-within:ring-[#b2b7c4]">
                 <Search className="size-4 text-[#7f8696]" />
                 <input
-                  className="min-w-[200px] border-none bg-transparent text-sm font-normal uppercase tracking-[0.12em] text-[#2b2f36] outline-none placeholder:text-[#868b97]"
-                  placeholder="Recherche famille"
+                  className="w-72 border-none bg-transparent text-sm text-[#2b2f36] outline-none placeholder:text-[#868b97]"
+                  placeholder="Rechercher (nom, ville, CP, téléphone…)"
                   value={searchTerm}
                   onChange={handleSearchChange}
+                  onKeyDown={handleSearchKeyDown}
                 />
               </label>
             </div>
           </div>
-          <div className="overflow-hidden">
+          <div className="mx-auto w-full max-w-5xl overflow-hidden">
             <table className="w-full border-collapse text-sm text-[#2b2f36]">
               <thead className="bg-[#1f2330] text-left text-xs font-semibold uppercase tracking-[0.18em] text-white">
                 <tr>

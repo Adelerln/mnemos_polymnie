@@ -62,6 +62,7 @@ const cards: HomeCard[] = [
     href: "/clients",
     icon: Users,
     subCards: [
+      { label: "Clients", href: "/clients", icon: UsersRound },
       { label: "Règlements", href: "/clients/reglements", icon: CreditCard },
       { label: "Factures", href: "/clients/factures", icon: FileText },
       { label: "Avoirs", href: "/clients/avoirs", icon: Receipt },
@@ -74,6 +75,7 @@ const cards: HomeCard[] = [
     href: "/sejours",
     icon: CalendarRange,
     subCards: [
+      { label: "Séjours", href: "/sejours", icon: CalendarRange },
       { label: "Centres", href: "/centres", icon: Building2 },
       { label: "Gestion Séjours", href: "/sejours", icon: ClipboardCheck },
       { label: "Repos Compensateurs", href: "/sejours/repos-compensateurs", icon: Bed },
@@ -97,6 +99,7 @@ const cards: HomeCard[] = [
     href: "/partenaires",
     icon: Handshake,
     subCards: [
+      { label: "Partenaires", href: "/partenaires", icon: Handshake },
       { label: "Tableau de bord financier", href: "/partenaires/finances", icon: LineChart },
       { label: "Factures et devis", href: "/partenaires/facturation", icon: FilePieChart },
       { label: "Prises en charge", href: "/partenaires/prises-en-charge", icon: HandCoins },
@@ -108,6 +111,7 @@ const cards: HomeCard[] = [
     href: "/transports",
     icon: Bus,
     subCards: [
+      { label: "Transports", href: "/transports", icon: Bus },
       { label: "Convocations (Aller / Retour)", href: "/transports/convocations", icon: Megaphone },
       { label: "Tronçons", href: "/transports/troncons", icon: Route },
       { label: "Planning", href: "/transports/planning", icon: CalendarClock },
@@ -237,13 +241,6 @@ export default function Homepage() {
                       </p>
                     </div>
                   </div>
-                  <Link
-                    href={activeCard.href}
-                    className="inline-flex items-center gap-2 rounded-full border border-neutral-200 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-neutral-700 transition hover:border-neutral-900 hover:text-neutral-900 cursor-pointer"
-                  >
-                    Accès principal
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
                 </div>
 
                 {activeCard.subCards.length > 0 ? (
@@ -263,9 +260,7 @@ export default function Homepage() {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-sm text-neutral-600">
-                    Aucun élément secondaire. Utilisez l&apos;accès principal ci-dessus.
-                  </p>
+                  <p className="text-sm text-neutral-600">Aucun élément secondaire pour cette carte.</p>
                 )}
               </div>
             ) : (
