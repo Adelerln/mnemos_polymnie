@@ -1166,7 +1166,9 @@ export default function ClientsPage() {
             </div>
           </div>
           <div className="px-8 pb-4 text-sm text-[#5c606b]">
-            Résultats : {filteredFamilies.length}
+            {filteredFamilies.length > 1
+              ? `Résultats : ${filteredFamilies.length}`
+              : `Résultat : ${filteredFamilies.length}`}
           </div>
           {isSearchPanelOpen ? (
             <div className="mx-auto mb-4 grid w-full max-w-5xl gap-3 rounded-2xl border border-[#d4d7df] bg-white p-4 text-sm text-[#2b2f36] shadow-sm">
@@ -1473,29 +1475,27 @@ export default function ClientsPage() {
                 <button
                   type="button"
                   title="Ajouter"
-                  className="inline-flex size-9 items-center justify-center rounded-full border border-white/30 bg-white/10 text-white transition hover:bg-white/20"
+                  className="inline-flex size-9 items-center justify-center rounded-full border border-white/30 bg-white/10 text-white transition hover:bg-white/20 cursor-pointer"
                   onClick={resetFamilyForms}
                 >
                   <Plus className="size-4" />
                   <span className="sr-only">Ajouter</span>
                 </button>
-                {canDeleteFamily ? (
-                  <button
-                    type="button"
-                    title="Supprimer"
-                    className="inline-flex size-9 items-center justify-center rounded-full border border-white/30 bg-white/10 text-white transition hover:bg-white/20 disabled:opacity-50"
-                    onClick={handleDeleteFamily}
-                    disabled={isDeleting || isSaving}
-                  >
-                    <Trash2 className="size-4" />
-                    <span className="sr-only">Supprimer</span>
-                  </button>
-                ) : null}
+                <button
+                  type="button"
+                  title="Supprimer"
+                  className="inline-flex size-9 items-center justify-center rounded-full border border-white/30 bg-white/10 text-white transition hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                  onClick={handleDeleteFamily}
+                  disabled={!canDeleteFamily || isDeleting || isSaving}
+                >
+                  <Trash2 className="size-4" />
+                  <span className="sr-only">Supprimer</span>
+                </button>
                 <button
                   type="submit"
                   form="family-form"
                   title="Enregistrer"
-                  className="inline-flex size-9 items-center justify-center rounded-full border border-white/30 bg-white/10 text-white transition hover:bg-white/20 disabled:opacity-50"
+                  className="inline-flex size-9 items-center justify-center rounded-full border border-white/30 bg-white/10 text-white transition hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                   disabled={isSaving || isDeleting}
                 >
                   <Save className="size-4" />
@@ -1503,8 +1503,8 @@ export default function ClientsPage() {
                 </button>
                 <button
                   type="button"
-                  title="Annuler"
-                  className="inline-flex size-9 items-center justify-center rounded-full border border-white/30 bg-white/10 text-white transition hover:bg-white/20 disabled:opacity-50"
+                  title="Annuler les modifications"
+                  className="inline-flex size-9 items-center justify-center rounded-full border border-white/30 bg-white/10 text-white transition hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                   onClick={resetFamilyForms}
                   disabled={isSaving || isDeleting}
                 >

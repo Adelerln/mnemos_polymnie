@@ -20,18 +20,16 @@ export const SiteHeader = () => {
     pathname?.startsWith("/login") || pathname?.startsWith("/signup");
   const isLandingPage = pathname === "/";
 
-  if (isAuthPage || isLandingPage) {
-    return null;
-  }
-
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    setIsMenuOpen(false);
-    router.replace("/login");
-    router.refresh();
-  };
-
   useEffect(() => {
+    // Ne pas ajouter l'event listener si on est sur une page d'authentification
+    const currentIsAuthPage =
+      pathname?.startsWith("/login") || pathname?.startsWith("/signup");
+    const currentIsLandingPage = pathname === "/";
+
+    if (currentIsAuthPage || currentIsLandingPage) {
+      return;
+    }
+
     const handleClickOutside = (event: MouseEvent) => {
       if (
         menuRef.current &&
@@ -42,7 +40,18 @@ export const SiteHeader = () => {
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  }, [pathname]);
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    setIsMenuOpen(false);
+    router.replace("/login");
+    router.refresh();
+  };
+
+  if (isAuthPage || isLandingPage) {
+    return null;
+  }
 
   return (
     <header className="sticky top-0 z-40 border-b border-neutral-200 bg-white/80 backdrop-blur">
@@ -59,7 +68,7 @@ export const SiteHeader = () => {
               const isActive =
                 item.href === "/"
                   ? pathname === item.href
-                  : pathname.startsWith(item.href);
+                  : pathname?.startsWith(item.href) ?? false;
               const isSettings = item.label === "Paramètres";
               return (
                 <Link
