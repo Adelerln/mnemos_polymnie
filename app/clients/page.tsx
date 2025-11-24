@@ -272,6 +272,22 @@ const formatFrenchPhoneNumber = (input: string) => {
   return groups.join(" ");
 };
 
+const createEmptySearchFilters = () => ({
+  lastName: "",
+  firstName: "",
+  address: "",
+  postalCode: "",
+  city: "",
+  country: "",
+  phone1: "",
+  phone2: "",
+  email: "",
+  partner: "",
+  childLastName: "",
+  childFirstName: "",
+  childBirthDate: "",
+});
+
 const normalizePostalCode = (input: string) =>
   input.replace(/\D/g, "").slice(0, 5);
 
@@ -378,21 +394,7 @@ export default function ClientsPage() {
   >([]);
   const [isAddressLoading, setIsAddressLoading] = useState(false);
   const [addressError, setAddressError] = useState<string | null>(null);
-  const [searchFilters, setSearchFilters] = useState({
-    lastName: "",
-    firstName: "",
-    address: "",
-    postalCode: "",
-    city: "",
-    country: "",
-    phone1: "",
-    phone2: "",
-    email: "",
-    partner: "",
-    childLastName: "",
-    childFirstName: "",
-    childBirthDate: "",
-  });
+  const [searchFilters, setSearchFilters] = useState(createEmptySearchFilters);
   const [isSearchPanelOpen, setIsSearchPanelOpen] = useState(false);
 
   // Charger les familles au montage du composant
@@ -1361,13 +1363,19 @@ export default function ClientsPage() {
                     alert("Enregistrez ou annulez les modifications avant de rechercher.");
                     return;
                   }
-                  setIsSearchPanelOpen((prev) => !prev);
-                  const target =
-                    searchFilterRefs.lastUsed.current ?? searchFilterRefs.primary.current;
-                  if (target) {
-                    target.focus();
-                    if ("select" in target) {
-                      target.select();
+                  if (isSearchPanelOpen) {
+                    setSearchFilters(createEmptySearchFilters());
+                    searchFilterRefs.lastUsed.current = null;
+                    setIsSearchPanelOpen(false);
+                  } else {
+                    setIsSearchPanelOpen(true);
+                    const target =
+                      searchFilterRefs.lastUsed.current ?? searchFilterRefs.primary.current;
+                    if (target) {
+                      target.focus();
+                      if ("select" in target) {
+                        target.select();
+                      }
                     }
                   }
                 }}
@@ -1424,42 +1432,12 @@ export default function ClientsPage() {
                   <input
                     className="rounded border border-[#ccd0d8] bg-white px-3 py-2 outline-none focus:border-[#7f8696]"
                     value={searchFilters.address}
-                    onChange={handleAddressChange}
+                    onChange={handleSearchFilterChange("address")}
                     onKeyDown={handleSearchFiltersKeyDown}
                     onFocus={(event) => {
                       searchFilterRefs.lastUsed.current = event.currentTarget;
                     }}
                   />
-                  {addressError ? (
-                    <p className="mt-1 text-xs font-semibold text-red-600">
-                      {addressError}
-                    </p>
-                  ) : null}
-                  {isAddressLoading ? (
-                    <p className="mt-1 text-xs text-[#5c606b]">
-                      Recherche d&apos;adresses...
-                    </p>
-                  ) : null}
-                  {addressSuggestions.length > 0 ? (
-                    <div className="mt-2 rounded-lg border border-[#ccd0d8] bg-white shadow-lg">
-                      <ul className="divide-y divide-[#e7e9ef]">
-                        {addressSuggestions.map((suggestion, index) => (
-                          <li
-                            key={`${suggestion.label}-${index}`}
-                            className="cursor-pointer px-3 py-2 text-sm hover:bg-[#f7f8fb]"
-                            onClick={() => handleSelectAddressSuggestion(suggestion)}
-                          >
-                            <p className="font-semibold text-[#1f2330]">
-                              {suggestion.label}
-                            </p>
-                            <p className="text-xs text-[#5c606b]">
-                              {suggestion.postcode} {suggestion.city}
-                            </p>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  ) : null}
                 </label>
               </div>
 
@@ -1623,71 +1601,73 @@ export default function ClientsPage() {
               </div>
             </div>
           ) : null}
-          <div className="mx-auto mb-6 w-full max-w-5xl overflow-hidden rounded-2xl border border-red-200 bg-red-200 shadow-sm">
-            <table className="w-full border-collapse bg-white text-sm text-[#2b2f36]">
-              <thead className="bg-[#1f2330] text-left text-xs font-semibold uppercase tracking-[0.18em] text-white">
-                <tr>
-                  <th className="px-5 py-3">ID client</th>
-                  <th className="px-5 py-3">Client</th>
-                  <th className="px-5 py-3">Code postal</th>
-                  <th className="px-5 py-3">Ville</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white">
-                {paddedFamilies.every((item) => item === null) ? (
+          <div className="mx-auto mb-6 w-full max-w-5xl overflow-hidden rounded-2xl border border-[#e6e9f0] bg-red-200 shadow-sm">
+            <div className="max-h-[420px] overflow-y-auto overscroll-y-contain touch-pan-y" style={{ WebkitOverflowScrolling: "touch" }}>
+              <table className="w-full border-collapse bg-white text-sm text-[#2b2f36]">
+                <thead className="bg-[#1f2330] text-left text-xs font-semibold uppercase tracking-[0.18em] text-white">
                   <tr>
-                    <td
-                      className="px-5 py-6 text-center text-sm text-[#7f8696]"
-                      colSpan={4}
-                    >
-                      Aucune famille enregistrée pour le moment.
-                    </td>
+                    <th className="px-5 py-3">ID client</th>
+                    <th className="px-5 py-3">Client</th>
+                    <th className="px-5 py-3">Code postal</th>
+                    <th className="px-5 py-3">Ville</th>
                   </tr>
-                ) : (
-                  paddedFamilies.map((item, index) => {
-                    if (!item) {
+                </thead>
+                <tbody className="bg-white">
+                  {paddedFamilies.every((item) => item === null) ? (
+                    <tr>
+                      <td
+                        className="px-5 py-6 text-center text-sm text-[#7f8696]"
+                        colSpan={4}
+                      >
+                        Aucune famille enregistrée pour le moment.
+                      </td>
+                    </tr>
+                  ) : (
+                    paddedFamilies.map((item, index) => {
+                      if (!item) {
+                        return (
+                          <tr
+                            key={`placeholder-${index}`}
+                            className="border-t border-[#e3e6ed] bg-white/60 text-[#9aa0ad]"
+                          >
+                            <td className="px-5 py-3">—</td>
+                            <td className="px-5 py-3">—</td>
+                            <td className="px-5 py-3">—</td>
+                            <td className="px-5 py-3">—</td>
+                          </tr>
+                        );
+                      }
+
+                      const isSelected = selectedFamilyId === item.id;
                       return (
                         <tr
-                          key={`placeholder-${index}`}
-                          className="border-t border-[#e3e6ed] bg-white/60 text-[#9aa0ad]"
+                          key={item.id}
+                        className={`cursor-pointer border-t border-[#e3e6ed] transition hover:bg-[#f7f8fb] focus:bg-[#f0f3f8] ${isSelected ? "bg-[#f0f3f8]" : ""}`}
+                          onClick={() => handleSelectFamily(item.id)}
+                          onKeyDown={handleRowKeyDown(item.id)}
+                          tabIndex={0}
+                          role="button"
+                          aria-pressed={isSelected}
                         >
-                          <td className="px-5 py-3">—</td>
-                          <td className="px-5 py-3">—</td>
-                          <td className="px-5 py-3">—</td>
-                          <td className="px-5 py-3">—</td>
+                          <td className="px-5 py-3 font-semibold text-[#1f2330]">
+                            {item.id}
+                          </td>
+                          <td className="px-5 py-3 text-[#2b2f36]">
+                            {formatClientName(item)}
+                          </td>
+                          <td className="px-5 py-3 text-[#4d525d]">
+                            {item.postalCode}
+                          </td>
+                          <td className="px-5 py-3 text-[#2b2f36]">
+                            {item.city}
+                          </td>
                         </tr>
                       );
-                    }
-
-                    const isSelected = selectedFamilyId === item.id;
-                    return (
-                      <tr
-                        key={item.id}
-                        className={`border-t border-[#e3e6ed] transition hover:bg-[#f7f8fb] focus:bg-[#f0f3f8] ${isSelected ? "bg-[#f0f3f8]" : ""}`}
-                        onClick={() => handleSelectFamily(item.id)}
-                        onKeyDown={handleRowKeyDown(item.id)}
-                        tabIndex={0}
-                        role="button"
-                        aria-pressed={isSelected}
-                      >
-                        <td className="px-5 py-3 font-semibold text-[#1f2330]">
-                          {item.id}
-                        </td>
-                        <td className="px-5 py-3 text-[#2b2f36]">
-                          {formatClientName(item)}
-                        </td>
-                        <td className="px-5 py-3 text-[#4d525d]">
-                          {item.postalCode}
-                        </td>
-                        <td className="px-5 py-3 text-[#2b2f36]">
-                          {item.city}
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </header>
 
