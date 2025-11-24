@@ -1666,7 +1666,7 @@ export default function ClientsPage() {
                   <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em]">
                     <span className="text-[#A56A57]">ID client</span>
                     <input
-                      className="h-8 w-28 rounded-md border border-white/30 bg-white/10 px-3 text-sm text-white outline-none placeholder:text-white/60"
+                      className="h-8 w-28 rounded-md border border-[#A56A57] bg-[#F4E3DD] px-3 text-sm text-[#A56A57] outline-none placeholder:text-[#A56A57]/70"
                       value={familyForm.id}
                       readOnly
                     />
@@ -1676,7 +1676,7 @@ export default function ClientsPage() {
               <div className="flex flex-wrap items-center gap-2 text-xs uppercase tracking-[0.16em]">
                 <button
                   type="button"
-                  className="group relative inline-flex size-9 items-center justify-center rounded-full border border-white/30 bg-white/10 text-white transition hover:bg-white/20 cursor-pointer"
+                  className="group relative inline-flex size-9 items-center justify-center rounded-full border border-white/30 bg-white/10 text-[#A56A57] transition hover:bg-white/20 cursor-pointer"
                   onClick={handleCreateNewFamily}
                 >
                   <Plus className="size-4" />
@@ -1687,7 +1687,7 @@ export default function ClientsPage() {
                 </button>
                 <button
                   type="button"
-                  className="group relative inline-flex size-9 items-center justify-center rounded-full border border-white/30 bg-white/10 text-white transition hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                  className="group relative inline-flex size-9 items-center justify-center rounded-full border border-white/30 bg-white/10 text-[#A56A57] transition hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                   onClick={handleDeleteFamily}
                   disabled={!canDeleteFamily || isDeleting || isSaving}
                 >
@@ -1700,7 +1700,7 @@ export default function ClientsPage() {
                 <button
                   type="submit"
                   form="family-form"
-                  className="group relative inline-flex size-9 items-center justify-center rounded-full border border-white/30 bg-white/10 text-white transition hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                  className="group relative inline-flex size-9 items-center justify-center rounded-full border border-white/30 bg-white/10 text-[#A56A57] transition hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                   disabled={isSaving || isDeleting}
                   title="Enregistrer"
                 >
@@ -1712,7 +1712,7 @@ export default function ClientsPage() {
                 </button>
                 <button
                   type="button"
-                  className="group relative inline-flex size-9 items-center justify-center rounded-full border border-white/30 bg-white/10 text-white transition hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                  className="group relative inline-flex size-9 items-center justify-center rounded-full border border-white/30 bg-white/10 text-[#A56A57] transition hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                   onClick={resetFamilyForms}
                   disabled={isSaving || isDeleting}
                   title="Annuler"
