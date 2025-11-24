@@ -1656,15 +1656,15 @@ export default function ClientsPage() {
         </header>
 
         <section className="mx-auto w-full max-w-6xl rounded-3xl border border-[#d4d7df] bg-[#FDEFE8] shadow-xl">
-          <header className="rounded-t-3xl bg-[#97163a] px-8 py-5 text-white">
+          <header className="rounded-t-3xl bg-[#F4E3DD] px-8 py-5 text-white">
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-4">
-                <h2 className="text-2xl font-semibold tracking-tight">
+                <h2 className="text-2xl font-semibold tracking-tight text-[#A56A57]">
                   Informations Client
                 </h2>
                 {selectedFamilyId ? (
                   <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em]">
-                    <span className="text-white/80">ID client</span>
+                    <span className="text-[#A56A57]">ID client</span>
                     <input
                       className="h-8 w-28 rounded-md border border-white/30 bg-white/10 px-3 text-sm text-white outline-none placeholder:text-white/60"
                       value={familyForm.id}
