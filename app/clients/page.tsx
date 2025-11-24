@@ -9,7 +9,6 @@ import {
   FileText,
   LineChart,
   NotebookPen,
-  PenLine,
   Plus,
   Search,
   Save,
@@ -413,7 +412,7 @@ export default function ClientsPage() {
     };
 
     loadFamilies();
-  }, [searchFilterRefs.id, searchFilterRefs.lastUsed]);
+  }, []);
 
   useEffect(() => {
     if (!selectedFamilyId) {
@@ -1226,26 +1225,6 @@ export default function ClientsPage() {
     }
   };
 
-  const handleResetSearch = () => {
-    setSearchFilters({
-      lastName: "",
-      firstName: "",
-      address: "",
-      postalCode: "",
-      city: "",
-      country: "",
-      phone1: "",
-      phone2: "",
-      email: "",
-      partner: "",
-      childLastName: "",
-      childFirstName: "",
-      childBirthDate: "",
-    });
-    setSearchTerm("");
-    setIsSearchPanelOpen(false);
-  };
-
   useEffect(() => {
     const handleGlobalShortcut = (event: globalThis.KeyboardEvent) => {
       const isCmdK =
@@ -1278,7 +1257,7 @@ export default function ClientsPage() {
 
     window.addEventListener("keydown", handleGlobalShortcut);
     return () => window.removeEventListener("keydown", handleGlobalShortcut);
-  }, [searchFilterRefs.id, searchFilterRefs.lastUsed]);
+  }, [isDirty, searchFilterRefs.primary, searchFilterRefs.lastUsed]);
 
   useEffect(() => {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
