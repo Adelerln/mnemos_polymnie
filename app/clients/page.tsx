@@ -1328,7 +1328,7 @@ export default function ClientsPage() {
   return (
     <div className="min-h-screen bg-neutral-50 py-12">
       <div className="flex w-full flex-col gap-10 px-6 text-[#2b2f36] md:px-10 xl:px-16">
-        <header className="mx-auto w-full max-w-6xl rounded-3xl border border-[#d4d7df] bg-white shadow-xl">
+        <header className="mx-auto w-full max-w-6xl rounded-3xl border border-[#d4d7df] bg-[#FFF8F6] shadow-xl">
           <div className="flex flex-col gap-4 px-8 py-6 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <h1 className="text-2xl font-semibold tracking-tight text-[#1f2330]">
