@@ -413,7 +413,7 @@ export default function ClientsPage() {
     };
 
     loadFamilies();
-  }, []);
+  }, [searchFilterRefs.id, searchFilterRefs.lastUsed]);
 
   useEffect(() => {
     if (!selectedFamilyId) {
@@ -688,7 +688,7 @@ export default function ClientsPage() {
   );
 
   const paddedFamilies = useMemo(() => {
-    const rows = [...displayedFamilies];
+    const rows: (FamilyRecord | null)[] = [...displayedFamilies];
     while (rows.length < 5) {
       rows.push(null);
     }
@@ -1278,7 +1278,7 @@ export default function ClientsPage() {
 
     window.addEventListener("keydown", handleGlobalShortcut);
     return () => window.removeEventListener("keydown", handleGlobalShortcut);
-  }, [isDirty]);
+  }, [searchFilterRefs.id, searchFilterRefs.lastUsed]);
 
   useEffect(() => {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {

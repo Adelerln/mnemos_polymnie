@@ -1,5 +1,11 @@
 import { supabase } from "@/lib/supabase-client";
 
+// Activer/désactiver la feature via env pour éviter les erreurs tant que la table n'existe pas.
+const DISABLE_INSCRIPTIONS =
+  process.env.NEXT_PUBLIC_DISABLE_INSCRIPTIONS === "1";
+const inscriptionsDisabledMessage =
+  "Les inscriptions sont désactivées tant que la table 'inscriptions' n'est pas créée.";
+
 export type InscriptionRecord = {
   id?: number;
   idClient: string;
@@ -96,6 +102,11 @@ const mapRecordToRow = (
 export const fetchInscriptionById = async (
   inscriptionId: number,
 ): Promise<InscriptionRecord | null> => {
+  if (DISABLE_INSCRIPTIONS) {
+    console.warn("[Inscriptions] fetchInscriptionById ignoré (feature désactivée)");
+    return null;
+  }
+
   const { data, error } = await supabase
     .from("inscriptions")
     .select("*")
@@ -115,6 +126,10 @@ export const fetchInscriptionById = async (
 export const saveInscription = async (
   inscription: InscriptionRecord,
 ): Promise<InscriptionRecord> => {
+  if (DISABLE_INSCRIPTIONS) {
+    throw new Error(inscriptionsDisabledMessage);
+  }
+
   const payload = mapRecordToRow(inscription);
   const timestamp = new Date().toISOString();
 
@@ -166,6 +181,11 @@ type InscriptionFilters = {
 export const fetchInscriptions = async (
   filters: InscriptionFilters = {},
 ): Promise<InscriptionRecord[]> => {
+  if (DISABLE_INSCRIPTIONS) {
+    console.warn("[Inscriptions] fetchInscriptions ignoré (feature désactivée)");
+    return [];
+  }
+
   let query = supabase
     .from("inscriptions")
     .select("*")

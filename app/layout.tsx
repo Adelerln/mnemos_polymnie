@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "@/styles/globals.css";
 import { AuthProvider } from "@/components/AuthProvider";
-import { SiteHeader } from "@/components/layout";
+import { Footer, SiteHeader } from "@/components/layout";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 
 const geistSans = Geist({
@@ -37,8 +37,11 @@ export default async function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-neutral-100 text-neutral-900`}
       >
         <AuthProvider initialSession={session}>
-          <SiteHeader />
-          <main className="min-h-[calc(100vh-4rem)]">{children}</main>
+          <div className="flex min-h-screen flex-col">
+            <SiteHeader />
+            <main className="flex-1">{children}</main>
+            <Footer />
+          </div>
         </AuthProvider>
       </body>
     </html>

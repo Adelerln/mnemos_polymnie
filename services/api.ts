@@ -1,6 +1,7 @@
 import { supabase } from "@/lib/supabase-client";
 
 const FAMILY_TABLE = "clients";
+const CHILDREN_TABLE = "children";
 
 // Types partagés avec le front (camelCase)
 export type SecondaryContact = {
@@ -30,6 +31,24 @@ export type Child = {
   health: HealthFormState;
 };
 
+type ChildRow = {
+  id: string;
+  client_id: string;
+  last_name: string | null;
+  first_name: string | null;
+  birth_date: string | null;
+  gender: string | null;
+  allergies: string | null;
+  diet: string | null;
+  health_issues: string | null;
+  instructions: string | null;
+  transport_notes: string | null;
+  friend: string | null;
+  vacaf: string | null;
+  created_at?: string;
+  updated_at?: string;
+};
+
 type FamilyRow = {
   id?: number;
   id_client: string;
@@ -48,16 +67,14 @@ type FamilyRow = {
   prestashop_p1: string | null;
   prestashop_p2: string | null;
   secondary_contact: SecondaryContact | null;
-  children: Child[] | null;
+  children?: ChildRow[];
   created_at?: string;
   updated_at?: string;
 };
+type FamilyRowPayload = Omit<FamilyRow, "id" | "created_at" | "updated_at" | "children">;
 
-type FamilyRowPayload = Omit<FamilyRow, "id" | "created_at" | "updated_at">;
-
-// Payload pour la sauvegarde (exclut children et secondary_contact car ces colonnes JSONB
-// peuvent ne pas exister dans toutes les installations de la table clients)
-type FamilyRowPayloadForSave = Omit<FamilyRowPayload, "children" | "secondary_contact">;
+// Payload pour la sauvegarde (children gérés dans la table dédiée)
+type FamilyRowPayloadForSave = FamilyRowPayload;
 
 export type FamilyRecord = {
   /** Identifiant fonctionnel (alias de id_client) */
@@ -84,6 +101,33 @@ export type FamilyRecord = {
   updatedAt?: string;
 };
 
+const defaultHealthState: HealthFormState = {
+  allergies: "",
+  diet: "",
+  healthIssues: "",
+  instructions: "",
+  friend: "",
+  vacaf: "",
+  transportNotes: "",
+};
+
+const mapChildRowToChild = (row: ChildRow): Child => ({
+  id: row.id,
+  lastName: row.last_name ?? "",
+  firstName: row.first_name ?? "",
+  birthDate: row.birth_date ?? "",
+  gender: row.gender === "F" || row.gender === "M" ? row.gender : "",
+  health: {
+    allergies: row.allergies ?? "",
+    diet: row.diet ?? "",
+    healthIssues: row.health_issues ?? "",
+    instructions: row.instructions ?? "",
+    transportNotes: row.transport_notes ?? "",
+    friend: row.friend ?? "",
+    vacaf: row.vacaf ?? "",
+  },
+});
+
 const mapRowToFamilyRecord = (row: FamilyRow): FamilyRecord => ({
   id: row.id_client,
   rowId: row.id,
@@ -102,7 +146,7 @@ const mapRowToFamilyRecord = (row: FamilyRow): FamilyRecord => ({
   prestashopP1: row.prestashop_p1 ?? "",
   prestashopP2: row.prestashop_p2 ?? "",
   secondaryContact: row.secondary_contact,
-  children: row.children ?? [],
+  children: (row.children ?? []).map(mapChildRowToChild),
   createdAt: row.created_at ?? undefined,
   updatedAt: row.updated_at ?? undefined,
 });
@@ -123,17 +167,69 @@ const mapFamilyRecordToRow = (family: FamilyRecord): FamilyRowPayloadForSave => 
   partner: family.partner,
   prestashop_p1: family.prestashopP1,
   prestashop_p2: family.prestashopP2,
-  // Note: children et secondary_contact sont exclus car ces colonnes JSONB
-  // peuvent ne pas exister dans toutes les installations de la table clients.
-  // Pour les activer, ajoutez ces colonnes JSONB à votre table Supabase et
-  // modifiez ce type pour les inclure.
+  secondary_contact: family.secondaryContact,
 });
+
+const generateChildId = () => {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+    return crypto.randomUUID();
+  }
+
+  return Math.random().toString(36).slice(2, 10);
+};
+
+const mapChildToRow = (clientId: string) => (child: Child): ChildRow => ({
+  id: child.id || generateChildId(),
+  client_id: clientId,
+  last_name: child.lastName,
+  first_name: child.firstName,
+  birth_date: child.birthDate,
+  gender: child.gender,
+  allergies: child.health?.allergies ?? "",
+  diet: child.health?.diet ?? "",
+  health_issues: child.health?.healthIssues ?? "",
+  instructions: child.health?.instructions ?? "",
+  transport_notes: child.health?.transportNotes ?? "",
+  friend: child.health?.friend ?? "",
+  vacaf: child.health?.vacaf ?? "",
+});
+
+const syncChildren = async (
+  clientId: string,
+  children: Child[],
+): Promise<ChildRow[]> => {
+  const childRows = children.map(mapChildToRow(clientId));
+
+  const { error: deleteError } = await supabase
+    .from(CHILDREN_TABLE)
+    .delete()
+    .eq("client_id", clientId);
+
+  if (deleteError) {
+    throw new Error(`Erreur Supabase (sync children - delete): ${deleteError.message}`);
+  }
+
+  if (childRows.length === 0) {
+    return [] as ChildRow[];
+  }
+
+  const { data, error: insertError } = await supabase
+    .from(CHILDREN_TABLE)
+    .insert(childRows)
+    .select();
+
+  if (insertError) {
+    throw new Error(`Erreur Supabase (sync children - insert): ${insertError.message}`);
+  }
+
+  return data as ChildRow[];
+};
 
 // Services pour les familles
 export const fetchFamilies = async (): Promise<FamilyRecord[]> => {
   const { data, error } = await supabase
     .from(FAMILY_TABLE)
-    .select("*")
+    .select("*, children:children(*)")
     .order("id_client", { ascending: true });
 
   console.log("[Supabase] fetchFamilies data:", data);
@@ -150,6 +246,10 @@ export const saveFamily = async (family: FamilyRecord): Promise<FamilyRecord> =>
   const idClient = family.id.trim();
   const timestamp = new Date().toISOString();
   const basePayload = mapFamilyRecordToRow({ ...family, id: idClient });
+  const children = (family.children ?? []).map((child) => ({
+    ...child,
+    id: child.id || generateChildId(),
+  }));
 
   // Vérifier si la famille existe déjà
   const { data: existingFamily, error: checkError } = await supabase
@@ -200,7 +300,9 @@ export const saveFamily = async (family: FamilyRecord): Promise<FamilyRecord> =>
     throw new Error(`Erreur Supabase (save family): ${error.message}`);
   }
 
-  return mapRowToFamilyRecord(data as FamilyRow);
+  const syncedChildren = await syncChildren(idClient, children);
+
+  return mapRowToFamilyRecord({ ...(data as FamilyRow), children: syncedChildren });
 };
 
 export const deleteFamily = async (familyId: string): Promise<void> => {
