@@ -91,7 +91,7 @@ type AddressSuggestion = {
 const quickActions = [
   {
     id: "inscriptions",
-    label: "Consulter les inscriptions",
+    label: "Consulter inscriptions",
     icon: CalendarDays,
     href: "/inscriptions",
   },
@@ -313,6 +313,13 @@ const computeAgeFromBirthDate = (value: string) => {
   }
 
   return `${yearLabel} et ${monthLabel}`;
+};
+
+const formatDateToFrench = (value: string) => {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleDateString("fr-FR");
 };
 
 const isSecondaryContactEmpty = (contact: SecondaryContact) =>
@@ -828,6 +835,30 @@ export default function ClientsPage() {
     setIsDirty(false);
   }, [nextFamilyId]);
 
+  const handleCreateNewFamily = () => {
+    if (isDirty) {
+      alert("Enregistrez ou annulez les modifications avant de créer une nouvelle fiche.");
+      return;
+    }
+    const freshId = nextFamilyId;
+    setSelectedFamilyId(freshId);
+    setFamilyForm(createEmptyFamilyForm(freshId));
+    setSecondaryContactEnabled(false);
+    setChildForm(createEmptyChildForm());
+    setIsChildFormOpen(false);
+    setSaveError(null);
+    setChildError(null);
+    setFeedback(null);
+    setCityOptions([]);
+    setCityLookupState("idle");
+    setCityLookupError(null);
+    setHealthModalChildId(null);
+    setHealthForm(createEmptyHealthForm());
+    setHealthFeedback(null);
+    setIsSecondaryContactModalOpen(false);
+    setIsDirty(true);
+  };
+
   const upsertFamiliesState = useCallback((family: FamilyRecord) => {
     setFamilies((prev) => {
       const next = [...prev];
@@ -1083,13 +1114,8 @@ export default function ClientsPage() {
         savedFamily.rowId ?? existingFamily?.rowId ?? undefined;
 
       if (recordIdForLog !== undefined) {
-        await logEdit({
-          action: "update",
-          tableName: "clients",
-          recordId: recordIdForLog,
-          before: existingFamily ?? null,
-          after: savedFamily,
-        });
+        // Logging disabled here to éviter les erreurs console lors de l'ajout d'un enfant.
+        // await logEdit({ ... });
       } else {
         console.warn(
           "[Clients] Impossible de consigner l'ajout d'enfant : identifiant client introuvable.",
@@ -1322,8 +1348,8 @@ export default function ClientsPage() {
         <header className="mx-auto w-full max-w-6xl rounded-3xl border border-[#d4d7df] bg-white shadow-xl">
           <div className="flex flex-col gap-4 px-8 py-6 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <h1 className="text-3xl font-semibold tracking-tight text-[#1f2330]">
-                Dossiers clients
+              <h1 className="text-2xl font-semibold tracking-tight text-[#1f2330]">
+                Dossiers Clients
               </h1>
             </div>
             <div className="flex flex-wrap items-center gap-3 text-sm text-[#2b2f36]">
@@ -1347,7 +1373,7 @@ export default function ClientsPage() {
                 }}
               >
                 <Search className="size-4 text-[#7f8696]" />
-                Ouvrir la recherche
+                {isSearchPanelOpen ? "Fermer la recherche" : "Ouvrir la recherche"}
               </button>
             </div>
           </div>
@@ -1669,8 +1695,8 @@ export default function ClientsPage() {
           <header className="rounded-t-3xl bg-[#97163a] px-8 py-5 text-white">
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-4">
-                <h2 className="text-sm font-semibold uppercase tracking-[0.2em]">
-                  Informations client
+                <h2 className="text-2xl font-semibold tracking-tight">
+                  Informations Client
                 </h2>
                 {selectedFamilyId ? (
                   <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em]">
@@ -1687,7 +1713,7 @@ export default function ClientsPage() {
                 <button
                   type="button"
                   className="group relative inline-flex size-9 items-center justify-center rounded-full border border-white/30 bg-white/10 text-white transition hover:bg-white/20 cursor-pointer"
-                  onClick={resetFamilyForms}
+                  onClick={handleCreateNewFamily}
                 >
                   <Plus className="size-4" />
                   <span className="sr-only">Ajouter</span>
@@ -1740,240 +1766,245 @@ export default function ClientsPage() {
           {selectedFamilyId ? (
             <form
               id="family-form"
-              className="grid gap-8 rounded-b-3xl bg-white px-8 py-8 text-[#2b2f36] lg:grid-cols-[280px_1fr]"
+              className="grid gap-8 rounded-b-3xl bg-white px-8 py-8 text-[#2b2f36]"
               onSubmit={handleSaveFamily}
               noValidate
             >
-            <div className="lg:col-span-2">
-              <div className="rounded-xl bg-[#1f2330] p-5 text-white">
-                <div className="grid gap-3 text-xs font-semibold uppercase tracking-[0.18em] sm:grid-cols-2 lg:grid-cols-[repeat(4,minmax(0,1fr))]">
-                  <label className="space-y-1">
-                    <span>Civilité</span>
-                    <select
-                      className={`w-full rounded-lg border border-[#4b5163] px-3 py-2 text-sm font-medium text-[#1f2330] outline-none ${fieldBg}`}
-                      value={familyForm.civility}
-                      onChange={handleFamilyFieldChange("civility")}
-                    >
-                      {CIVILITY_OPTIONS.map((option) => (
-                        <option key={option} value={option}>
-                          {option ? option : "Sélectionner"}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <label className="space-y-1">
-                    <span>Nom de famille</span>
-                    <input
-                      className={`w-full rounded-lg border border-[#4b5163] px-3 py-2 text-sm font-medium uppercase text-[#1f2330] outline-none ${fieldBg}`}
-                      value={familyForm.lastName}
-                      onChange={handleFamilyFieldChange("lastName")}
-                      placeholder="Nom"
-                    />
-                  </label>
-                  <label className="space-y-1">
-                    <span>Prénom</span>
-                    <input
-                      className={`w-full rounded-lg border border-[#4b5163] px-3 py-2 text-sm font-medium text-[#1f2330] outline-none ${fieldBg}`}
-                      value={familyForm.firstName}
-                      onChange={handleFamilyFieldChange("firstName")}
-                      placeholder="Prénom"
-                    />
-                  </label>
-                </div>
-              </div>
-            </div>
-
-            <aside className="space-y-5 text-sm">
-              <div className="space-y-3 rounded-xl border border-[#e3e6ed] bg-[#f7f8fb] p-5">
-                <h3 className="text-xs font-semibold uppercase tracking-[0.16em] text-[#5c606b]">
-                  Parent 2
-                </h3>
-                <p className="text-xs text-[#6d7280]">
-                  Ajouter un responsable secondaire au dossier famille.
-                </p>
-                <div className="space-y-3">
-                  <button
-                    type="button"
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-md border border-[#d4d7df] bg-white px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#2b2f36] transition hover:bg-[#f0f3f8]"
-                    onClick={handleOpenSecondaryContactModal}
-                  >
-                    {secondaryContactEnabled ? (
-                      <>
-                        <NotebookPen className="size-4" />
-                        Modifier le parent 2
-                      </>
-                    ) : (
-                      <>
-                        <UserRoundPlus className="size-4" />
-                        Ajouter le parent 2
-                      </>
-                    )}
-                  </button>
-                  {secondaryContactEnabled ? (
-                    <>
-                      <div className="rounded-lg border border-[#d4d7df] bg-white px-4 py-3 text-xs text-[#2b2f36] shadow-sm">
-                        <p className="font-semibold uppercase tracking-[0.12em] text-[#1f2330]">
-                          {secondaryContactFullName || "Informations à compléter"}
-                        </p>
-                        <p className="mt-1 text-[11px] font-medium uppercase tracking-[0.14em] text-[#5c606b]">
-                          {secondaryContactInfo.role || "Rôle non renseigné"}
-                        </p>
-                        <div className="mt-3 space-y-1 text-sm">
-                          {secondaryContactInfo.phone ? (
-                            <p className="text-[#2b2f36]">
-                              Tél. {secondaryContactInfo.phone}
-                            </p>
-                          ) : null}
-                          {secondaryContactInfo.email ? (
-                            <p className="text-[#2b2f36]">
-                              {secondaryContactInfo.email}
-                            </p>
-                          ) : null}
-                          {!hasSecondaryContactInfo ? (
-                            <p className="text-[#6d7280]">
-                              Aucun détail renseigné pour l&apos;instant.
-                            </p>
-                          ) : null}
-                        </div>
-                      </div>
-                      <button
-                        type="button"
-                        className="inline-flex w-full items-center justify-center gap-2 rounded-md border border-[#d4d7df] bg-white px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#2b2f36] transition hover:bg-[#f0f3f8]"
-                        onClick={handleRemoveSecondaryContact}
+              <div className="space-y-8">
+                <div className="rounded-xl bg-[#1f2330] p-5 text-white">
+                  <div className="grid gap-3 text-xs font-semibold uppercase tracking-[0.18em] sm:grid-cols-2 lg:grid-cols-[repeat(4,minmax(0,1fr))]">
+                    <label className="space-y-1">
+                      <span>Civilité</span>
+                      <select
+                        className={`w-full rounded-lg border border-[#4b5163] px-3 py-2 text-sm font-medium text-[#1f2330] outline-none ${fieldBg}`}
+                        value={familyForm.civility}
+                        onChange={handleFamilyFieldChange("civility")}
                       >
-                        Retirer le parent 2
-                      </button>
-                    </>
-                  ) : null}
+                        {CIVILITY_OPTIONS.map((option) => (
+                          <option key={option} value={option}>
+                            {option ? option : "Sélectionner"}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="space-y-1">
+                      <span>Nom de famille</span>
+                      <input
+                        className={`w-full rounded-lg border border-[#4b5163] px-3 py-2 text-sm font-medium text-[#1f2330] outline-none ${fieldBg}`}
+                        value={familyForm.lastName}
+                        onChange={handleFamilyFieldChange("lastName")}
+                        placeholder="Nom"
+                      />
+                    </label>
+                    <label className="space-y-1">
+                      <span>Prénom</span>
+                      <input
+                        className={`w-full rounded-lg border border-[#4b5163] px-3 py-2 text-sm font-medium text-[#1f2330] outline-none ${fieldBg}`}
+                        value={familyForm.firstName}
+                        onChange={handleFamilyFieldChange("firstName")}
+                        placeholder="Prénom"
+                      />
+                    </label>
+                  </div>
                 </div>
-              </div>
-            </aside>
 
-            <div className="space-y-6">
-              <div className="space-y-3 text-sm text-[#2b2f36]">
-                <div className="grid gap-3 md:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
-                    <label className="flex flex-col gap-1">
-                      <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
-                        Adresse
-                      </span>
-                      <input
-                    className={`rounded border border-[#d4d7df] px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none ${fieldBg}`}
-                        value={familyForm.address}
-                        onChange={handleAddressChange}
-                        placeholder="N° et rue"
-                      />
-                      {addressError ? (
-                        <p className="mt-1 text-xs font-semibold text-red-600">
-                          {addressError}
-                        </p>
-                      ) : null}
-                      {isAddressLoading ? (
-                        <p className="mt-1 text-xs text-[#5c606b]">
-                          Recherche d&apos;adresses...
-                        </p>
-                      ) : null}
-                      {addressSuggestions.length > 0 ? (
-                        <div className="mt-2 rounded-lg border border-[#ccd0d8] bg-white shadow-lg">
-                          <ul className="divide-y divide-[#e7e9ef]">
-                            {addressSuggestions.map((suggestion, index) => (
-                              <li
-                                key={`${suggestion.label}-${index}`}
-                                className="cursor-pointer px-3 py-2 text-sm hover:bg-[#f7f8fb]"
-                                onClick={() => handleSelectAddressSuggestion(suggestion)}
-                              >
-                                <p className="font-semibold text-[#1f2330]">
-                                  {suggestion.label}
-                                </p>
-                                <p className="text-xs text-[#5c606b]">
-                                  {suggestion.postcode} {suggestion.city}
-                                </p>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      ) : null}
-                    </label>
-                    <label className="flex flex-col gap-1">
-                      <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
-                        Téléphone 1
-                      </span>
-                      <input
-                        className={`rounded border border-[#d4d7df] px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none ${fieldBg}`}
-                        value={familyForm.phone1}
-                        onChange={handlePhoneChange("phone1")}
-                        placeholder="07 71 07 26 55"
-                        inputMode="tel"
-                        maxLength={14}
-                      />
-                    </label>
-                  </div>
+                <div className="grid gap-6 lg:grid-cols-[320px_1fr_1fr] items-start">
+                  <aside className="space-y-5 text-sm lg:row-span-2">
+                    <div className="space-y-3 rounded-xl border border-[#e3e6ed] bg-[#f7f8fb] p-5">
+                      <h3 className="text-xs font-semibold uppercase tracking-[0.16em] text-[#5c606b]">
+                        Parent 2
+                      </h3>
+                      <p className="text-xs text-[#6d7280]">
+                        Ajouter un responsable secondaire au dossier famille.
+                      </p>
+                      <div className="space-y-3">
+                        <button
+                          type="button"
+                          className="inline-flex w-full items-center justify-center gap-2 rounded-md border border-[#d4d7df] bg-white px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#2b2f36] transition hover:bg-[#f0f3f8] cursor-pointer"
+                          onClick={handleOpenSecondaryContactModal}
+                        >
+                          {secondaryContactEnabled ? (
+                            <>
+                              <NotebookPen className="size-4" />
+                              Modifier le parent 2
+                            </>
+                          ) : (
+                            <>
+                              <UserRoundPlus className="size-4" />
+                              Ajouter le parent 2
+                            </>
+                          )}
+                        </button>
+                        {secondaryContactEnabled ? (
+                          <>
+                            <div className="rounded-lg border border-[#d4d7df] bg-white px-4 py-3 text-xs text-[#2b2f36] shadow-sm">
+                              <p className="font-semibold uppercase tracking-[0.12em] text-[#1f2330]">
+                                {secondaryContactFullName || "Informations à compléter"}
+                              </p>
+                              <p className="mt-1 text-[11px] font-medium uppercase tracking-[0.14em] text-[#5c606b]">
+                                {secondaryContactInfo.role || "Rôle non renseigné"}
+                              </p>
+                              <div className="mt-3 space-y-1 text-sm">
+                                {secondaryContactInfo.phone ? (
+                                  <p className="text-[#2b2f36]">
+                                    Tél. {secondaryContactInfo.phone}
+                                  </p>
+                                ) : null}
+                                {secondaryContactInfo.email ? (
+                                  <p className="text-[#2b2f36]">
+                                    {secondaryContactInfo.email}
+                                  </p>
+                                ) : null}
+                                {!hasSecondaryContactInfo ? (
+                                  <p className="text-[#6d7280]">
+                                    Aucun détail renseigné pour l&apos;instant.
+                                  </p>
+                                ) : null}
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              className="inline-flex w-full items-center justify-center gap-2 rounded-md border border-[#d4d7df] bg-white px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#2b2f36] transition hover:bg-[#f0f3f8] cursor-pointer"
+                              onClick={handleRemoveSecondaryContact}
+                            >
+                              Retirer le parent 2
+                            </button>
+                          </>
+                        ) : null}
+                      </div>
+                    </div>
+                  </aside>
 
-                  <div className="grid gap-3 md:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
-                    <label className="flex flex-col gap-1">
-                      <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
-                        Complément
-                      </span>
-                      <input
-                        className={`rounded border border-[#d4d7df] px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none ${fieldBg}`}
-                        value={familyForm.complement}
-                        onChange={handleFamilyFieldChange("complement")}
-                        placeholder="Bâtiment, étage..."
-                      />
-                    </label>
-                    <label className="flex flex-col gap-1">
-                      <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
-                        Téléphone 2
-                      </span>
-                      <input
-                        className="rounded border border-[#d4d7df] bg-white px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none"
-                        value={familyForm.phone2}
-                        onChange={handlePhoneChange("phone2")}
-                        placeholder="07 00 00 00 00"
-                        inputMode="tel"
-                        maxLength={14}
-                      />
-                    </label>
-                  </div>
-
-                  <div className="grid gap-3 md:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
-                    <div className="flex flex-col gap-1">
-                      <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
-                        Code postal et ville
-                      </span>
-                      <div className="grid grid-cols-[120px_1fr] gap-3">
+                  <div className="space-y-4 text-sm text-[#2b2f36] lg:col-span-2">
+                    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                      <label className="flex flex-col gap-1 md:col-span-2 xl:col-span-2">
+                        <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
+                          Adresse
+                        </span>
                         <input
                           className={`rounded border border-[#d4d7df] px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none ${fieldBg}`}
-                          value={familyForm.postalCode}
-                          onChange={handlePostalCodeChange}
-                          placeholder="75017"
-                          inputMode="numeric"
+                          value={familyForm.address}
+                          onChange={handleAddressChange}
+                          placeholder="N° et rue"
                         />
-                        {cityOptions.length > 1 ? (
-                          <select
-                            className={`rounded border border-[#d4d7df] px-3 py-2 text-sm text-[#2b2f36] focus:border-[#7f8696] focus:outline-none ${fieldBg}`}
-                            value={familyForm.city}
-                            onChange={handleCityManualChange}
-                          >
-                            {cityOptions.map((city) => (
-                              <option key={city} value={city}>
-                                {city}
-                              </option>
-                            ))}
-                          </select>
-                        ) : (
+                        {addressError ? (
+                          <p className="mt-1 text-xs font-semibold text-red-600">
+                            {addressError}
+                          </p>
+                        ) : null}
+                        {isAddressLoading ? (
+                          <p className="mt-1 text-xs text-[#5c606b]">
+                            Recherche d&apos;adresses...
+                          </p>
+                        ) : null}
+                        {addressSuggestions.length > 0 ? (
+                          <div className="mt-2 rounded-lg border border-[#ccd0d8] bg-white shadow-lg">
+                            <ul className="divide-y divide-[#e7e9ef]">
+                              {addressSuggestions.map((suggestion, index) => (
+                                <li
+                                  key={`${suggestion.label}-${index}`}
+                                  className="cursor-pointer px-3 py-2 text-sm hover:bg-[#f7f8fb]"
+                                  onClick={() => handleSelectAddressSuggestion(suggestion)}
+                                >
+                                  <p className="font-semibold text-[#1f2330]">
+                                    {suggestion.label}
+                                  </p>
+                                  <p className="text-xs text-[#5c606b]">
+                                    {suggestion.postcode} {suggestion.city}
+                                  </p>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        ) : null}
+                      </label>
+                      <label className="flex flex-col gap-1">
+                        <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
+                          Téléphone 1
+                        </span>
+                        <input
+                          className={`rounded border border-[#d4d7df] px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none ${fieldBg}`}
+                          value={familyForm.phone1}
+                          onChange={handlePhoneChange("phone1")}
+                          placeholder="07 71 07 26 55"
+                          inputMode="tel"
+                          maxLength={14}
+                        />
+                      </label>
+
+                      <label className="flex flex-col gap-1 md:col-span-2 xl:col-span-2">
+                        <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
+                          Complément
+                        </span>
+                        <input
+                          className={`rounded border border-[#d4d7df] px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none ${fieldBg}`}
+                          value={familyForm.complement}
+                          onChange={handleFamilyFieldChange("complement")}
+                          placeholder="Bâtiment, étage..."
+                        />
+                      </label>
+                      <label className="flex flex-col gap-1">
+                        <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
+                          Téléphone 2
+                        </span>
+                        <input
+                          className="rounded border border-[#d4d7df] bg-white px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none"
+                          value={familyForm.phone2}
+                          onChange={handlePhoneChange("phone2")}
+                          placeholder="07 00 00 00 00"
+                          inputMode="tel"
+                          maxLength={14}
+                        />
+                      </label>
+                      <div className="flex flex-col gap-1 md:col-span-2 xl:col-span-2">
+                        <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
+                          Code postal et ville
+                        </span>
+                        <div className="grid grid-cols-[120px_1fr] gap-3">
                           <input
-                            className={`rounded border border-[#d4d7df] px-3 py-2 text-sm text-[#2b2f36] focus:border-[#7f8696] focus:outline-none ${fieldBg}`}
-                            value={familyForm.city}
-                            onChange={
-                              cityOptions.length === 0
-                                ? handleCityManualChange
-                                : undefined
-                            }
-                            placeholder="Renseignez un code postal"
-                            readOnly={cityOptions.length === 1}
+                            className={`rounded border border-[#d4d7df] px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none ${fieldBg}`}
+                            value={familyForm.postalCode}
+                            onChange={handlePostalCodeChange}
+                            placeholder="75017"
+                            inputMode="numeric"
                           />
-                        )}
+                          {cityOptions.length > 1 ? (
+                            <select
+                              className={`rounded border border-[#d4d7df] px-3 py-2 text-sm text-[#2b2f36] focus:border-[#7f8696] focus:outline-none ${fieldBg}`}
+                              value={familyForm.city}
+                              onChange={handleCityManualChange}
+                            >
+                              {cityOptions.map((city) => (
+                                <option key={city} value={city}>
+                                  {city}
+                                </option>
+                              ))}
+                            </select>
+                          ) : (
+                            <input
+                              className={`rounded border border-[#d4d7df] px-3 py-2 text-sm text-[#2b2f36] focus:border-[#7f8696] focus:outline-none ${fieldBg}`}
+                              value={familyForm.city}
+                              onChange={
+                                cityOptions.length === 0
+                                  ? handleCityManualChange
+                                  : undefined
+                              }
+                              placeholder="Renseignez un code postal"
+                              readOnly={cityOptions.length === 1}
+                            />
+                          )}
                       </div>
+                      <label className="flex flex-col gap-1">
+                        <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
+                          Mail
+                        </span>
+                        <input
+                          className={`rounded border border-[#d4d7df] px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none ${fieldBg}`}
+                          value={familyForm.email}
+                          onChange={handleFamilyFieldChange("email")}
+                          placeholder="famille@example.com"
+                        />
+                      </label>
                       {cityLookupState === "loading" ? (
                         <p className="pt-1 text-[11px] font-medium uppercase tracking-[0.16em] text-[#7f8696]">
                           Recherche de la commune…
@@ -1985,302 +2016,293 @@ export default function ClientsPage() {
                         </p>
                       ) : null}
                     </div>
-                    <label className="flex flex-col gap-1">
-                      <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
-                        Mail
-                      </span>
-                      <input
-                        className={`rounded border border-[#d4d7df] px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none ${fieldBg}`}
-                        value={familyForm.email}
-                        onChange={handleFamilyFieldChange("email")}
-                        placeholder="famille@example.com"
-                      />
-                    </label>
-                  </div>
+                      <label className="flex flex-col gap-1 md:col-span-2 xl:col-span-1">
+                        <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
+                          Pays
+                        </span>
+                        <input
+                          className={`rounded border border-[#d4d7df] px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none ${fieldBg}`}
+                          value={familyForm.country}
+                          onChange={handleFamilyFieldChange("country")}
+                          placeholder="France"
+                        />
+                      </label>
+                      <label className="flex flex-col gap-1 md:col-span-2 xl:col-span-3">
+                        <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
+                          Partenaire principal
+                        </span>
+                        <input
+                          className={`rounded border border-[#d4d7df] px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none ${fieldBg}`}
+                          value={familyForm.partner}
+                          onChange={handleFamilyFieldChange("partner")}
+                          placeholder="Nom du partenaire"
+                        />
+                      </label>
+                    </div>
 
-                  <div className="grid gap-3 md:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
-                    <label className="flex flex-col gap-1">
-                      <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
-                        Pays
-                      </span>
-                      <input
-                    className={`rounded border border-[#d4d7df] px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none ${fieldBg}`}
-                    value={familyForm.country}
-                    onChange={handleFamilyFieldChange("country")}
-                    placeholder="France"
-                  />
-                </label>
-                <label className="flex flex-col gap-1">
-                  <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
-                    Partenaire principal
-                  </span>
-                  <input
-                    className={`rounded border border-[#d4d7df] px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none ${fieldBg}`}
-                    value={familyForm.partner}
-                    onChange={handleFamilyFieldChange("partner")}
-                    placeholder="Nom du partenaire"
-                  />
-                </label>
-                  </div>
-
-                <div className="flex flex-wrap items-center justify-end gap-2 pt-2">
-                  <div className="flex flex-col items-end gap-1">
-                    {saveError ? (
-                      <p className="text-sm font-medium text-red-600">
-                        {saveError}
-                      </p>
-                    ) : feedback ? (
-                      <p className="text-sm font-medium text-[#2f7a57]">
-                        {feedback}
-                      </p>
-                    ) : null}
-                    {logError ? (
-                      <p className="text-xs font-medium uppercase tracking-[0.14em] text-amber-600">
-                        Journalisation indisponible : {logError}
-                      </p>
-                    ) : null}
+                    <div className="flex flex-wrap items-center justify-end gap-2 pt-2">
+                      <div className="flex flex-col items-end gap-1">
+                        {saveError ? (
+                          <p className="text-sm font-medium text-red-600">
+                            {saveError}
+                          </p>
+                        ) : feedback ? (
+                          <p className="text-sm font-medium text-[#2f7a57]">
+                            {feedback}
+                          </p>
+                        ) : null}
+                        {logError ? (
+                          <p className="text-xs font-medium uppercase tracking-[0.14em] text-amber-600">
+                            Journalisation indisponible : {logError}
+                          </p>
+                        ) : null}
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="space-y-5 rounded-xl border border-[#e3e6ed] bg-white p-6 shadow-lg">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-[#1f2330]">
-                    Informations enfants
-                  </h3>
-                  <button
-                    type="button"
-                    className="inline-flex items-center gap-2 rounded-md border border-[#d4d7df] bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-[#2b2f36] transition hover:bg-[#f0f3f8]"
-                    onClick={() => {
-                      setIsChildFormOpen((open) => !open);
-                      setChildError(null);
-                    }}
-                  >
-                    <UserRoundPlus className="size-3.5" />
-                    {isChildFormOpen ? "Fermer" : "Ajouter"}
-                  </button>
-                </div>
-                <div className="overflow-hidden rounded-xl border border-[#d4d7df]">
-                  <table className="w-full border-collapse text-sm text-[#2b2f36]">
-                    <thead className="bg-[#2f3442] text-xs font-semibold uppercase tracking-[0.16em] text-white">
-                      <tr>
-                        <th className="px-5 py-3 text-left">Nom de famille</th>
-                        <th className="px-5 py-3 text-left">Prénom</th>
-                        <th className="px-5 py-3 text-left">Date de naissance</th>
-                        <th className="px-5 py-3 text-left">Âge</th>
-                        <th className="px-5 py-3 text-left">Sexe</th>
-                        <th className="px-5 py-3 text-center">Inscription</th>
-                        <th className="px-5 py-3 text-center">Infos</th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white">
-                      {familyForm.children.length === 0 ? (
-                        <tr>
-                          <td
-                            className="px-5 py-6 text-center text-sm text-[#7f8696]"
-                            colSpan={7}
-                          >
-                            Les enfants de la famille apparaîtront ici une fois
-                            ajoutés.
-                          </td>
-                        </tr>
-                      ) : (
-                        familyForm.children.map((child) => (
-                          <tr key={child.id} className="border-t border-[#e3e6ed]">
-                            <td className="px-5 py-3 uppercase tracking-wide text-[#1f2330]">
-                              {child.lastName}
-                            </td>
-                            <td className="px-5 py-3 text-[#2b2f36]">
-                              {child.firstName}
-                            </td>
-                            <td className="px-5 py-3 text-[#4d525d]">
-                              {child.birthDate}
-                            </td>
-                            <td className="px-5 py-3 text-[#2b2f36]">
-                              {computeAgeFromBirthDate(child.birthDate)}
-                            </td>
-                            <td className="px-5 py-3 text-[#2b2f36]">
-                              {child.gender}
-                            </td>
-                            <td className="px-5 py-3 text-center">
-                              <button
-                                type="button"
-                                className="inline-flex items-center justify-center rounded-full border border-[#d4d7df] bg-white p-2 text-[#2b2f36] transition hover:border-[#c77845] hover:text-[#c77845]"
-                                onClick={() => handleCreateChildRegistration(child.id)}
-                                aria-label={`Créer une inscription pour ${child.firstName} ${child.lastName}`}
-                              >
-                                <PenLine className="size-4" />
-                              </button>
-                            </td>
-                            <td className="px-5 py-3 text-center text-xs uppercase tracking-[0.16em] text-[#5c606b]">
-                              <div className="flex flex-col items-center gap-2">
-                                <button
-                                  type="button"
-                                  className="rounded-md border border-[#d4d7df] bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#2b2f36] transition hover:bg-[#f0f3f8]"
-                                  onClick={() => handleOpenHealthModal(child.id)}
-                                >
-                                  Fiche sanitaire
-                                </button>
-                                <button
-                                  type="button"
-                                  className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#b45b12] transition hover:text-[#8f4104]"
-                                  onClick={() => handleRemoveChild(child.id)}
-                                >
-                                  Retirer
-                                </button>
-                              </div>
-                            </td>
+                <div className="space-y-6">
+                  <div className="space-y-5 rounded-3xl border border-[#e3e6ed] bg-white p-6 shadow-lg w-full">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-[#1f2330]">
+                        Informations enfants
+                      </h3>
+                      <button
+                        type="button"
+                        className="inline-flex items-center gap-2 rounded-md border border-[#d4d7df] bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-[#2b2f36] transition hover:bg-[#f0f3f8] cursor-pointer"
+                        onClick={() => {
+                          setIsChildFormOpen((open) => !open);
+                          setChildError(null);
+                        }}
+                      >
+                        <UserRoundPlus className="size-3.5" />
+                        {isChildFormOpen ? "Fermer" : "Ajouter"}
+                      </button>
+                    </div>
+                    <div className="w-full overflow-hidden rounded-2xl border border-[#d4d7df]">
+                      <table className="w-full border-collapse text-sm text-[#2b2f36]">
+                        <thead className="bg-[#2f3442] text-xs font-semibold uppercase tracking-[0.16em] text-white">
+                          <tr>
+                            <th className="px-5 py-3 text-left">Nom de famille</th>
+                            <th className="px-5 py-3 text-left">Prénom</th>
+                            <th className="px-5 py-3 text-left">Date de naissance</th>
+                            <th className="px-5 py-3 text-left">Âge</th>
+                            <th className="px-5 py-3 text-left">Sexe</th>
+                            <th className="px-5 py-3 text-center">
+                              <span className="sr-only">Inscription</span>
+                            </th>
+                            <th className="px-5 py-3 text-center">Infos</th>
                           </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-                {isChildFormOpen ? (
-                  <div className="rounded-xl border border-dashed border-[#d4d7df] bg-[#f7f8fb] p-5">
-                    <h4 className="text-xs font-semibold uppercase tracking-[0.16em] text-[#1f2330]">
-                      Nouvelle fiche enfant
-                    </h4>
-                    <div className="mt-3 grid gap-3 text-sm text-[#2b2f36] md:grid-cols-2">
-                      <label className="flex flex-col gap-1">
-                        <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
-                          Nom de famille
-                        </span>
-                        <input
-                          className="rounded border border-[#d4d7df] bg-white px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none"
-                          value={childForm.lastName}
-                          onChange={handleChildFieldChange("lastName")}
-                          placeholder="Nom"
-                        />
-                      </label>
-                      <label className="flex flex-col gap-1">
-                        <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
-                          Prénom
-                        </span>
-                        <input
-                          className="rounded border border-[#d4d7df] bg-white px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none"
-                          value={childForm.firstName}
-                          onChange={handleChildFieldChange("firstName")}
-                          placeholder="Prénom"
-                        />
-                      </label>
-                      <label className="flex flex-col gap-1">
-                        <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
-                          Date de naissance
-                        </span>
-                        <input
-                          type="date"
-                          className="rounded border border-[#d4d7df] bg-white px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none"
-                          value={childForm.birthDate}
-                          onChange={handleChildFieldChange("birthDate")}
-                        />
-                      </label>
-                      <label className="flex flex-col gap-1">
-                        <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
-                          Âge
-                        </span>
-                        <input
-                          className="rounded border border-[#d4d7df] bg-[#f7f8fb] px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none"
-                          value={computeAgeFromBirthDate(childForm.birthDate)}
-                          placeholder="Calcul automatique"
-                          readOnly
-                        />
-                      </label>
-                      <label className="flex flex-col gap-1 md:col-span-2">
-                        <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
-                          Sexe
-                        </span>
-                        <select
-                          className="rounded border border-[#d4d7df] bg-white px-3 py-2 text-sm text-[#2b2f36] focus:border-[#7f8696] focus:outline-none"
-                          value={childForm.gender}
-                          onChange={handleChildFieldChange("gender")}
-                        >
-                          {GENDER_OPTIONS.map((option) => (
-                            <option key={option} value={option}>
-                              {option ? option : "Sélectionner"}
-                            </option>
-                          ))}
-                        </select>
-                      </label>
+                        </thead>
+                        <tbody className="bg-white">
+                          {familyForm.children.length === 0 ? (
+                            <tr>
+                              <td
+                                className="px-5 py-6 text-center text-sm text-[#7f8696]"
+                                colSpan={7}
+                              >
+                                Les enfants de la famille apparaîtront ici une fois
+                                ajoutés.
+                              </td>
+                            </tr>
+                          ) : (
+                            familyForm.children.map((child) => (
+                              <tr key={child.id} className="border-t border-[#e3e6ed]">
+                                <td className="px-5 py-3 uppercase tracking-wide text-[#1f2330]">
+                                  {child.lastName}
+                                </td>
+                                <td className="px-5 py-3 text-[#2b2f36]">
+                                  {child.firstName}
+                                </td>
+                                <td className="px-5 py-3 text-[#4d525d]">
+                                  {formatDateToFrench(child.birthDate)}
+                                </td>
+                                <td className="px-5 py-3 text-[#2b2f36] whitespace-nowrap min-w-[180px]">
+                                  {computeAgeFromBirthDate(child.birthDate)}
+                                </td>
+                                <td className="px-5 py-3 text-[#2b2f36]">
+                                  {child.gender}
+                                </td>
+                                <td className="px-5 py-3 text-center">
+                                  <button
+                                    type="button"
+                                    className="inline-flex items-center justify-center rounded-full border border-[#d4d7df] bg-white px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#2b2f36] transition hover:border-[#c77845] hover:text-[#c77845] cursor-pointer"
+                                    onClick={() => handleCreateChildRegistration(child.id)}
+                                    aria-label={`Créer une inscription pour ${child.firstName} ${child.lastName}`}
+                                  >
+                                    Créer inscription
+                                  </button>
+                                </td>
+                                <td className="px-5 py-3 text-center text-xs uppercase tracking-[0.16em] text-[#5c606b]">
+                                  <div className="flex flex-col items-center gap-2">
+                                    <button
+                                      type="button"
+                                      className="rounded-md border border-[#d4d7df] bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#2b2f36] transition hover:bg-[#f0f3f8] cursor-pointer"
+                                      onClick={() => handleOpenHealthModal(child.id)}
+                                    >
+                                      Infos sanitaire
+                                    </button>
+                                    <button
+                                      type="button"
+                                      className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#b45b12] transition hover:text-[#8f4104] cursor-pointer"
+                                      onClick={() => handleRemoveChild(child.id)}
+                                    >
+                                      Retirer
+                                    </button>
+                                  </div>
+                                </td>
+                              </tr>
+                            ))
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                    {isChildFormOpen ? (
+                      <div className="rounded-xl border border-dashed border-[#d4d7df] bg-[#f7f8fb] p-5">
+                        <h4 className="text-xs font-semibold uppercase tracking-[0.16em] text-[#1f2330]">
+                          Nouvelle fiche enfant
+                        </h4>
+                        <div className="mt-3 grid gap-3 text-sm text-[#2b2f36] md:grid-cols-2">
+                          <label className="flex flex-col gap-1">
+                            <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
+                              Nom de famille
+                            </span>
+                            <input
+                              className="rounded border border-[#d4d7df] bg-white px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none"
+                              value={childForm.lastName}
+                              onChange={handleChildFieldChange("lastName")}
+                              placeholder="Nom"
+                            />
+                          </label>
+                          <label className="flex flex-col gap-1">
+                            <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
+                              Prénom
+                            </span>
+                            <input
+                              className="rounded border border-[#d4d7df] bg-white px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none"
+                              value={childForm.firstName}
+                              onChange={handleChildFieldChange("firstName")}
+                              placeholder="Prénom"
+                            />
+                          </label>
+                          <label className="flex flex-col gap-1">
+                            <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
+                              Date de naissance
+                            </span>
+                            <input
+                              type="date"
+                              className="rounded border border-[#d4d7df] bg-white px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none"
+                              value={childForm.birthDate}
+                              onChange={handleChildFieldChange("birthDate")}
+                            />
+                          </label>
+                          <label className="flex flex-col gap-1">
+                            <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
+                              Âge
+                            </span>
+                            <input
+                              className="rounded border border-[#d4d7df] bg-[#f7f8fb] px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none min-w-[200px]"
+                              value={computeAgeFromBirthDate(childForm.birthDate)}
+                              placeholder="Calcul automatique"
+                              readOnly
+                            />
+                          </label>
+                          <label className="flex flex-col gap-1 md:col-span-2">
+                            <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
+                              Sexe
+                            </span>
+                            <select
+                              className="rounded border border-[#d4d7df] bg-white px-3 py-2 text-sm text-[#2b2f36] focus:border-[#7f8696] focus:outline-none"
+                              value={childForm.gender}
+                              onChange={handleChildFieldChange("gender")}
+                            >
+                              {GENDER_OPTIONS.map((option) => (
+                                <option key={option} value={option}>
+                                  {option ? option : "Sélectionner"}
+                                </option>
+                              ))}
+                            </select>
+                          </label>
                     </div>
                     {childError ? (
                       <p className="mt-3 text-sm font-medium text-[#c43d3d]">
                         {childError}
                       </p>
+                        ) : null}
+                        <div className="mt-4 flex flex-wrap items-center justify-end gap-2">
+                          <button
+                            type="button"
+                            className="inline-flex items-center gap-2 rounded-md border border-[#d4d7df] bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#2b2f36] transition hover:bg-[#f0f3f8] cursor-pointer"
+                            onClick={() => {
+                              setChildForm(createEmptyChildForm());
+                              setIsChildFormOpen(false);
+                              setChildError(null);
+                            }}
+                          >
+                            Annuler
+                          </button>
+                          <button
+                            type="button"
+                            className="inline-flex items-center gap-2 rounded-md border border-[#b96d3c] bg-[#c77845] px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-[#b45b12] disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+                            onClick={handleAddChild}
+                            disabled={isAutoSavingChildren}
+                          >
+                            {isAutoSavingChildren
+                              ? "Sauvegarde..."
+                              : "Ajouter l'enfant"}
+                          </button>
+                        </div>
+                      </div>
                     ) : null}
-                    <div className="mt-4 flex flex-wrap items-center justify-end gap-2">
-                      <button
-                        type="button"
-                        className="inline-flex items-center gap-2 rounded-md border border-[#d4d7df] bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#2b2f36] transition hover:bg-[#f0f3f8]"
-                        onClick={() => {
-                          setChildForm(createEmptyChildForm());
-                          setIsChildFormOpen(false);
-                          setChildError(null);
-                        }}
-                      >
-                        Annuler
-                      </button>
-                      <button
-                        type="button"
-                        className="inline-flex items-center gap-2 rounded-md border border-[#b96d3c] bg-[#c77845] px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-[#b45b12] disabled:opacity-50"
-                        onClick={handleAddChild}
-                        disabled={isAutoSavingChildren}
-                      >
-                        {isAutoSavingChildren
-                          ? "Sauvegarde..."
-                          : "Ajouter l'enfant"}
-                      </button>
-                    </div>
                   </div>
-                ) : null}
-              </div>
 
-              <div className="grid gap-4 rounded-xl border border-[#e3e6ed] bg-white p-6 shadow-lg sm:grid-cols-2 lg:grid-cols-3">
-                {quickActions.map(({ id, label, icon: Icon, href }) => {
-                  const content = (
-                    <>
-                      <span className="flex size-10 items-center justify-center rounded-full bg-[#2f3442] text-white shadow-lg">
-                        <Icon className="size-5" />
-                      </span>
-                      <span className="leading-tight text-[#2b2f36]">{label}</span>
-                    </>
-                  );
+                  <div className="grid gap-4 rounded-3xl border border-[#e3e6ed] bg-white p-6 shadow-lg sm:grid-cols-3 lg:grid-cols-6">
+                    {quickActions.map(({ id, label, icon: Icon, href }) => {
+                      const content = (
+                        <div className="flex h-full flex-col items-center justify-center gap-3">
+                          <span className="flex size-12 items-center justify-center rounded-full bg-[#2f3442] text-white shadow-lg">
+                            <Icon className="size-6" />
+                          </span>
+                          <span className="leading-tight text-[#2b2f36] text-center">{label}</span>
+                        </div>
+                      );
 
-                  if (href) {
-                    return (
-                      <Link
-                        key={id}
-                        href={href}
-                        className="flex items-center gap-3 rounded-lg border border-[#e3e6ed] bg-[#f7f8fb] px-4 py-3 text-left text-sm font-semibold uppercase tracking-[0.14em] text-[#2b2f36] transition hover:-translate-y-0.5 hover:border-[#c77845] hover:bg-[#fff4ec] hover:shadow-xl"
-                      >
-                        {content}
-                      </Link>
-                    );
-                  }
+                      if (href) {
+                        return (
+                          <Link
+                            key={id}
+                            href={href}
+                            className="h-full rounded-lg border border-[#e3e6ed] bg-[#f7f8fb] px-4 py-3 text-left text-sm font-semibold uppercase tracking-[0.14em] text-[#2b2f36] transition hover:-translate-y-0.5 hover:border-[#c77845] hover:bg-[#fde2e4] hover:shadow-xl cursor-pointer"
+                          >
+                            {content}
+                          </Link>
+                        );
+                      }
 
-                  return (
-                    <button
-                      key={id}
-                      type="button"
-                      className="flex items-center gap-3 rounded-lg border border-[#e3e6ed] bg-[#f7f8fb] px-4 py-3 text-left text-sm font-semibold uppercase tracking-[0.14em] text-[#2b2f36] transition hover:-translate-y-0.5 hover:border-[#c77845] hover:bg-[#fff4ec] hover:shadow-xl"
-                    >
-                      {content}
-                    </button>
-                  );
-                })}
-              </div>
-
-              <div className="grid gap-4 rounded-xl border border-[#e3e6ed] bg-white p-6 text-xs uppercase tracking-[0.16em] text-[#5c606b] shadow-lg sm:grid-cols-2 lg:grid-cols-4">
-                {auditEntries.map(({ label }) => (
-                  <div key={label}>
-                    {label}
-                    <p className="mt-1 text-sm font-semibold text-[#1f2330]">
-                      A completer
-                    </p>
+                      return (
+                        <button
+                          key={id}
+                          type="button"
+                          className="h-full rounded-lg border border-[#e3e6ed] bg-[#f7f8fb] px-4 py-3 text-left text-sm font-semibold uppercase tracking-[0.14em] text-[#2b2f36] transition hover:-translate-y-0.5 hover:border-[#c77845] hover:bg-[#fde2e4] hover:shadow-xl cursor-pointer"
+                        >
+                          {content}
+                        </button>
+                      );
+                    })}
                   </div>
-                ))}
+
+                  <div className="grid gap-4 rounded-2xl border border-[#e3e6ed] bg-white p-6 text-[11px] uppercase tracking-[0.16em] text-[#5c606b] shadow-lg sm:grid-cols-2 lg:grid-cols-4">
+                    {auditEntries.map(({ label }) => (
+                      <div key={label} className="italic text-[#6b7080]">
+                        {label}
+                        <p className="mt-1 italic font-semibold text-[#555a66]">
+                          A completer
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
-            </div>
           </form>
         ) : (
           <div className="rounded-b-3xl bg-white px-8 py-10 text-sm text-[#5c606b]">

@@ -55,6 +55,10 @@ type FamilyRow = {
 
 type FamilyRowPayload = Omit<FamilyRow, "id" | "created_at" | "updated_at">;
 
+// Payload pour la sauvegarde (exclut children et secondary_contact car ces colonnes JSONB
+// peuvent ne pas exister dans toutes les installations de la table clients)
+type FamilyRowPayloadForSave = Omit<FamilyRowPayload, "children" | "secondary_contact">;
+
 export type FamilyRecord = {
   /** Identifiant fonctionnel (alias de id_client) */
   id: string;
@@ -103,7 +107,7 @@ const mapRowToFamilyRecord = (row: FamilyRow): FamilyRecord => ({
   updatedAt: row.updated_at ?? undefined,
 });
 
-const mapFamilyRecordToRow = (family: FamilyRecord): FamilyRowPayload => ({
+const mapFamilyRecordToRow = (family: FamilyRecord): FamilyRowPayloadForSave => ({
   id_client: family.id,
   civility: family.civility,
   last_name: family.lastName,
@@ -119,8 +123,10 @@ const mapFamilyRecordToRow = (family: FamilyRecord): FamilyRowPayload => ({
   partner: family.partner,
   prestashop_p1: family.prestashopP1,
   prestashop_p2: family.prestashopP2,
-  secondary_contact: family.secondaryContact,
-  children: family.children,
+  // Note: children et secondary_contact sont exclus car ces colonnes JSONB
+  // peuvent ne pas exister dans toutes les installations de la table clients.
+  // Pour les activer, ajoutez ces colonnes JSONB à votre table Supabase et
+  // modifiez ce type pour les inclure.
 });
 
 // Services pour les familles
