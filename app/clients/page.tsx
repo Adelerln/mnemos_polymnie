@@ -1588,7 +1588,7 @@ export default function ClientsPage() {
               style={{ WebkitOverflowScrolling: "touch" }}
             >
               <table className="w-full border-collapse bg-white text-sm text-[#2b2f36]">
-                <thead className="sticky top-0 z-10 bg-[#1f2330] text-left text-xs font-semibold uppercase tracking-[0.18em] text-white shadow">
+                <thead className="sticky top-0 z-10 bg-[#A56A57] text-left text-xs font-semibold uppercase tracking-[0.18em] text-white shadow">
                   <tr>
                     <th className="px-5 py-3">ID client</th>
                     <th className="px-5 py-3">Client</th>
