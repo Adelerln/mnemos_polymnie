@@ -682,7 +682,7 @@ export default function ClientsPage() {
   }, [orderedFamilies, searchFilters, searchTerm]);
 
   const displayedFamilies = useMemo(
-    () => filteredFamilies.slice(0, 5),
+    () => filteredFamilies,
     [filteredFamilies],
   );
 
@@ -1310,8 +1310,10 @@ export default function ClientsPage() {
       postalCode: suggestion.postcode || prev.postalCode,
       country: prev.country || "France",
     }));
-    setAddressQuery(suggestion.address || suggestion.label);
+    setAddressQuery("");
     setAddressSuggestions([]);
+    setIsAddressLoading(false);
+    setAddressError(null);
     setIsDirty(true);
   };
 
@@ -1581,9 +1583,12 @@ export default function ClientsPage() {
             </div>
           ) : null}
           <div className="mx-auto mb-6 w-full max-w-5xl overflow-hidden rounded-2xl border border-[#e6e9f0] bg-red-200 shadow-sm">
-            <div className="max-h-[420px] overflow-y-auto overscroll-y-contain touch-pan-y" style={{ WebkitOverflowScrolling: "touch" }}>
+            <div
+              className="max-h-[300px] overflow-y-auto overscroll-y-contain touch-pan-y sm:max-h-[320px]"
+              style={{ WebkitOverflowScrolling: "touch" }}
+            >
               <table className="w-full border-collapse bg-white text-sm text-[#2b2f36]">
-                <thead className="bg-[#1f2330] text-left text-xs font-semibold uppercase tracking-[0.18em] text-white">
+                <thead className="sticky top-0 z-10 bg-[#1f2330] text-left text-xs font-semibold uppercase tracking-[0.18em] text-white shadow">
                   <tr>
                     <th className="px-5 py-3">ID client</th>
                     <th className="px-5 py-3">Client</th>
