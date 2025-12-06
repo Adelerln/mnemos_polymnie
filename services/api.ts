@@ -1,6 +1,6 @@
 import { supabase } from "@/lib/supabase-client";
 
-const FAMILY_TABLE = "clients";
+const FAMILY_TABLE = "families";
 const CHILDREN_TABLE = "children";
 
 // Types partagés avec le front (camelCase)
@@ -33,7 +33,7 @@ export type Child = {
 
 type ChildRow = {
   id: string;
-  client_id: string;
+  family_id: string;
   last_name: string | null;
   first_name: string | null;
   birth_date: string | null;
@@ -44,7 +44,6 @@ type ChildRow = {
   instructions: string | null;
   transport_notes: string | null;
   friend: string | null;
-  vacaf: string | null;
   created_at?: string;
   updated_at?: string;
 };
@@ -52,26 +51,32 @@ type ChildRow = {
 type FamilyRow = {
   id?: number;
   id_client: string;
-  civility: string | null;
-  last_name: string | null;
-  first_name: string | null;
-  address: string | null;
-  complement: string | null;
-  postal_code: string | null;
-  city: string | null;
-  country: string | null;
-  phone_1: string | null;
-  phone_2: string | null;
-  email: string | null;
-  partner: string | null;
-  prestashop_p1: string | null;
-  prestashop_p2: string | null;
-  secondary_contact: SecondaryContact | null;
+  label: string | null;
+  notes: string | null;
+  family_adults?: Array<{
+    is_primary: boolean;
+    role?: string | null;
+    can_be_contacted?: boolean | null;
+    adult: {
+      civility: string | null;
+      first_name: string | null;
+      last_name: string | null;
+      address: string | null;
+      complement: string | null;
+      postal_code: string | null;
+      city: string | null;
+      country: string | null;
+      phone_1: string | null;
+      phone_2: string | null;
+      email: string | null;
+      partner: { name: string | null } | null;
+    } | null;
+  }>;
   children?: ChildRow[];
   created_at?: string;
   updated_at?: string;
 };
-type FamilyRowPayload = Omit<FamilyRow, "id" | "created_at" | "updated_at" | "children">;
+type FamilyRowPayload = Pick<FamilyRow, "id_client" | "label" | "notes">;
 
 // Payload pour la sauvegarde (children gérés dans la table dédiée)
 type FamilyRowPayloadForSave = FamilyRowPayload;
@@ -81,6 +86,7 @@ export type FamilyRecord = {
   id: string;
   /** Identifiant technique de la ligne */
   rowId?: number;
+  label: string;
   civility: string;
   lastName: string;
   firstName: string;
@@ -111,6 +117,11 @@ const defaultHealthState: HealthFormState = {
   transportNotes: "",
 };
 
+const pickPrimaryAdult = (row: FamilyRow) =>
+  (row.family_adults ?? []).find((link) => link?.is_primary)?.adult ?? null;
+const pickSecondaryAdult = (row: FamilyRow) =>
+  (row.family_adults ?? []).find((link) => !link?.is_primary) ?? null;
+
 const mapChildRowToChild = (row: ChildRow): Child => ({
   id: row.id,
   lastName: row.last_name ?? "",
@@ -119,55 +130,59 @@ const mapChildRowToChild = (row: ChildRow): Child => ({
   gender: row.gender === "F" || row.gender === "M" ? row.gender : "",
   health: {
     allergies: row.allergies ?? "",
-    diet: row.diet ?? "",
-    healthIssues: row.health_issues ?? "",
-    instructions: row.instructions ?? "",
-    transportNotes: row.transport_notes ?? "",
-    friend: row.friend ?? "",
-    vacaf: row.vacaf ?? "",
+  diet: row.diet ?? "",
+  healthIssues: row.health_issues ?? "",
+  instructions: row.instructions ?? "",
+  transportNotes: row.transport_notes ?? "",
+  friend: row.friend ?? "",
+  vacaf: "",
   },
 });
 
-const mapRowToFamilyRecord = (row: FamilyRow): FamilyRecord => ({
-  id: row.id_client,
-  rowId: row.id,
-  civility: row.civility ?? "",
-  lastName: row.last_name ?? "",
-  firstName: row.first_name ?? "",
-  address: row.address ?? "",
-  complement: row.complement ?? "",
-  postalCode: row.postal_code ?? "",
-  city: row.city ?? "",
-  country: row.country ?? "",
-  phone1: row.phone_1 ?? "",
-  phone2: row.phone_2 ?? "",
-  email: row.email ?? "",
-  partner: row.partner ?? "",
-  prestashopP1: row.prestashop_p1 ?? "",
-  prestashopP2: row.prestashop_p2 ?? "",
-  secondaryContact: row.secondary_contact,
-  children: (row.children ?? []).map(mapChildRowToChild),
-  createdAt: row.created_at ?? undefined,
-  updatedAt: row.updated_at ?? undefined,
-});
+const mapRowToFamilyRecord = (row: FamilyRow): FamilyRecord => {
+  const primaryAdult = pickPrimaryAdult(row);
+  const secondaryAdult = pickSecondaryAdult(row);
+
+  return {
+    id: row.id_client,
+    rowId: row.id,
+    label: row.label ?? row.id_client,
+    civility: primaryAdult?.civility ?? "",
+    lastName: primaryAdult?.last_name ?? "",
+    firstName: primaryAdult?.first_name ?? "",
+    address: primaryAdult?.address ?? "",
+    complement: primaryAdult?.complement ?? "",
+    postalCode: primaryAdult?.postal_code ?? "",
+    city: primaryAdult?.city ?? "",
+    country: primaryAdult?.country ?? "",
+    phone1: primaryAdult?.phone_1 ?? "",
+    phone2: primaryAdult?.phone_2 ?? "",
+    email: primaryAdult?.email ?? "",
+    partner: primaryAdult?.partner?.name ?? "",
+    prestashopP1: "",
+    prestashopP2: "",
+    secondaryContact: secondaryAdult?.adult
+      ? {
+          lastName: secondaryAdult.adult.last_name ?? "",
+          firstName: secondaryAdult.adult.first_name ?? "",
+          role: secondaryAdult.role ?? "",
+          phone: secondaryAdult.adult.phone_1 ?? "",
+          email: secondaryAdult.adult.email ?? "",
+        }
+      : null,
+    children: (row.children ?? []).map(mapChildRowToChild),
+    createdAt: row.created_at ?? undefined,
+    updatedAt: row.updated_at ?? undefined,
+  };
+};
 
 const mapFamilyRecordToRow = (family: FamilyRecord): FamilyRowPayloadForSave => ({
   id_client: family.id,
-  civility: family.civility,
-  last_name: family.lastName,
-  first_name: family.firstName,
-  address: family.address,
-  complement: family.complement,
-  postal_code: family.postalCode,
-  city: family.city,
-  country: family.country,
-  phone_1: family.phone1,
-  phone_2: family.phone2,
-  email: family.email,
-  partner: family.partner,
-  prestashop_p1: family.prestashopP1,
-  prestashop_p2: family.prestashopP2,
-  secondary_contact: family.secondaryContact,
+  label:
+    family.lastName || family.firstName
+      ? `${family.firstName} ${family.lastName}`.trim()
+      : family.id,
+  notes: family.secondaryContact ? JSON.stringify(family.secondaryContact) : null,
 });
 
 const generateChildId = () => {
@@ -178,9 +193,9 @@ const generateChildId = () => {
   return Math.random().toString(36).slice(2, 10);
 };
 
-const mapChildToRow = (clientId: string) => (child: Child): ChildRow => ({
+const mapChildToRow = (familyId: string) => (child: Child): ChildRow => ({
   id: child.id || generateChildId(),
-  client_id: clientId,
+  family_id: familyId,
   last_name: child.lastName,
   first_name: child.firstName,
   birth_date: child.birthDate,
@@ -191,35 +206,45 @@ const mapChildToRow = (clientId: string) => (child: Child): ChildRow => ({
   instructions: child.health?.instructions ?? "",
   transport_notes: child.health?.transportNotes ?? "",
   friend: child.health?.friend ?? "",
-  vacaf: child.health?.vacaf ?? "",
 });
 
 const syncChildren = async (
-  clientId: string,
+  familyId: string | number,
   children: Child[],
 ): Promise<ChildRow[]> => {
-  const childRows = children.map(mapChildToRow(clientId));
+  const familyKey = String(familyId);
+  const childRows = children.map(mapChildToRow(familyKey));
+  const ids = childRows.map((child) => child.id);
 
-  const { error: deleteError } = await supabase
-    .from(CHILDREN_TABLE)
-    .delete()
-    .eq("client_id", clientId);
-
-  if (deleteError) {
-    throw new Error(`Erreur Supabase (sync children - delete): ${deleteError.message}`);
-  }
-
-  if (childRows.length === 0) {
+  if (ids.length === 0) {
+    const { error: deleteAllError } = await supabase
+      .from(CHILDREN_TABLE)
+      .delete()
+      .eq("family_id", familyKey);
+    if (deleteAllError) {
+      throw new Error(`Erreur Supabase (sync children - delete all): ${deleteAllError.message}`);
+    }
     return [] as ChildRow[];
   }
 
-  const { data, error: insertError } = await supabase
+  // Supprimer les enfants retirés du formulaire pour cette famille
+  const { error: deleteMissingError } = await supabase
     .from(CHILDREN_TABLE)
-    .insert(childRows)
+    .delete()
+    .eq("family_id", familyKey)
+    .not("id", "in", `(${ids.map((id) => `'${id}'`).join(",")})`);
+
+  if (deleteMissingError) {
+    throw new Error(`Erreur Supabase (sync children - cleanup): ${deleteMissingError.message}`);
+  }
+
+  const { data, error: upsertError } = await supabase
+    .from(CHILDREN_TABLE)
+    .upsert(childRows, { onConflict: "id" })
     .select();
 
-  if (insertError) {
-    throw new Error(`Erreur Supabase (sync children - insert): ${insertError.message}`);
+  if (upsertError) {
+    throw new Error(`Erreur Supabase (sync children - upsert): ${upsertError.message}`);
   }
 
   return data as ChildRow[];
@@ -229,7 +254,47 @@ const syncChildren = async (
 export const fetchFamilies = async (): Promise<FamilyRecord[]> => {
   const { data, error } = await supabase
     .from(FAMILY_TABLE)
-    .select("*, children:children(*)")
+    .select(
+      `
+        id,
+        id_client,
+        label,
+        notes,
+        family_adults:family_adults(
+          is_primary,
+          role,
+          can_be_contacted,
+          adult:adults(
+            civility,
+            first_name,
+            last_name,
+            address,
+            complement,
+            postal_code,
+            city,
+            country,
+            phone_1,
+            phone_2,
+            email,
+            partner:partners(name)
+          )
+        ),
+        children:children(
+          id,
+          family_id,
+          last_name,
+          first_name,
+          birth_date,
+          gender,
+          allergies,
+          diet,
+          health_issues,
+          instructions,
+          transport_notes,
+          friend
+        )
+      `,
+    )
     .order("id_client", { ascending: true });
 
   console.log("[Supabase] fetchFamilies data:", data);
@@ -300,7 +365,13 @@ export const saveFamily = async (family: FamilyRecord): Promise<FamilyRecord> =>
     throw new Error(`Erreur Supabase (save family): ${error.message}`);
   }
 
-  const syncedChildren = await syncChildren(idClient, children);
+  const familyRowId = existingFamily?.id ?? (data as FamilyRow | null)?.id;
+
+  if (familyRowId === undefined || familyRowId === null) {
+    throw new Error("Erreur Supabase (save family): identifiant famille manquant pour les enfants.");
+  }
+
+  const syncedChildren = await syncChildren(familyRowId, children);
 
   return mapRowToFamilyRecord({ ...(data as FamilyRow), children: syncedChildren });
 };

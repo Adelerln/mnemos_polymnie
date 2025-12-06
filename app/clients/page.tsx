@@ -47,6 +47,7 @@ type ChildFormState = {
 type FamilyFormState = {
   id: string;
   rowId?: number;
+  label: string;
   civility: string;
   lastName: string;
   firstName: string;
@@ -152,6 +153,7 @@ const createEmptyHealthForm = (): HealthFormState => ({
 const createEmptyFamilyForm = (id = ""): FamilyFormState => ({
   id,
   rowId: undefined,
+  label: "",
   civility: "",
   lastName: "",
   firstName: "",
@@ -191,6 +193,7 @@ const mapChildrenForForm = (children: Child[]): Child[] =>
 const mapFamilyRecordToFormState = (record: FamilyRecord): FamilyFormState => ({
   id: record.id,
   rowId: record.rowId,
+  label: record.label,
   civility: record.civility,
   lastName: record.lastName,
   firstName: record.firstName,
@@ -219,6 +222,7 @@ const mapFormStateToFamilyRecord = (
 ): FamilyRecord => ({
   id: form.id.trim(),
   rowId: form.rowId,
+  label: form.label || form.id.trim(),
   civility: form.civility,
   lastName: form.lastName,
   firstName: form.firstName,
@@ -914,17 +918,17 @@ export default function ClientsPage() {
       // Sauvegarder en base de données
       const savedFamily = await saveFamily(record);
 
-      const recordIdForLog =
-        savedFamily.rowId ?? existingFamily?.rowId ?? undefined;
+          const recordIdForLog =
+            savedFamily.rowId ?? existingFamily?.rowId ?? undefined;
 
-      if (recordIdForLog !== undefined) {
-        await logEdit({
-          action: actionType,
-          tableName: "clients",
-          recordId: recordIdForLog,
-          before: existingFamily ?? null,
-          after: savedFamily,
-        });
+          if (recordIdForLog !== undefined) {
+            await logEdit({
+              action: actionType,
+              tableName: "families",
+              recordId: recordIdForLog,
+              before: existingFamily ?? null,
+              after: savedFamily,
+            });
       } else {
         console.warn(
           "[Clients] Impossible d'enregistrer le log : identifiant de fiche introuvable.",
@@ -1013,7 +1017,7 @@ export default function ClientsPage() {
       if (recordIdForLog !== undefined) {
         await logEdit({
           action: "delete",
-          tableName: "clients",
+          tableName: "families",
           recordId: recordIdForLog,
           before: familyToDelete ?? null,
           after: null,
@@ -1318,6 +1322,9 @@ export default function ClientsPage() {
   };
 
   const formatClientName = (family: FamilyRecord) => {
+    if (family.label) {
+      return family.label;
+    }
     const civ = family.civility ? `${family.civility} ` : "";
     const last = family.lastName ? family.lastName.toUpperCase() : "";
     const first = family.firstName ?? "";
