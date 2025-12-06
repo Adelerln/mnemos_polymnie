@@ -103,6 +103,7 @@ type UpsertPrimaryAdultInput = {
   civility: string;
   lastName: string;
   firstName: string;
+  role?: string | null;
   address: string;
   complement: string;
   postalCode: string;
@@ -172,6 +173,7 @@ const upsertPrimaryAdult = async ({
   civility,
   lastName,
   firstName,
+  role,
   address,
   complement,
   postalCode,
@@ -251,7 +253,7 @@ const upsertPrimaryAdult = async ({
         family_id: familyRowId,
         adult_id: resultingAdultId,
         is_primary: true,
-        role: "AUTRE",
+        role: role ?? null,
         position: 1,
         can_be_contacted: true,
       },
@@ -348,7 +350,7 @@ export const upsertSecondaryAdult = async ({
         family_id: familyRowId,
         adult_id: resultingAdultId,
         is_primary: false,
-        role: role ?? "AUTRE",
+        role: role ?? null,
         position: position ?? 1,
         can_be_contacted: canBeContacted ?? true,
       },
@@ -371,6 +373,7 @@ export type FamilyRecord = {
   civility: string;
   lastName: string;
   firstName: string;
+  primaryRole?: string | null;
   address: string;
   complement: string;
   postalCode: string;
@@ -442,6 +445,7 @@ const mapRowToFamilyRecord = (row: FamilyRow): FamilyRecord => {
     id: row.id_client,
     rowId: row.id,
     primaryAdultId: primaryAdultLink?.adult_id ?? null,
+    primaryRole: primaryAdultLink?.role ?? "",
     label:
       row.label ??
       [primaryAdult?.first_name, primaryAdult?.last_name].filter(Boolean).join(" ").trim() ||
@@ -701,6 +705,7 @@ export const saveFamily = async (family: FamilyRecord): Promise<FamilyRecord> =>
     familyRowId,
     familyIdClient: idClient,
     adultId: family.primaryAdultId ?? undefined,
+    role: family.primaryRole ?? null,
     civility: family.civility,
     lastName: family.lastName,
     firstName: family.firstName,

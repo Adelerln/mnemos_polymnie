@@ -50,6 +50,7 @@ type FamilyFormState = {
   rowId?: number;
   label: string;
   primaryAdultId?: string | null;
+  primaryRole?: string | null;
   secondaryAdults: SecondaryContact[];
   civility: string;
   lastName: string;
@@ -134,7 +135,7 @@ const auditEntries = [
   { label: "Mise à jour" },
 ];
 
-const CIVILITY_OPTIONS = ["", "M", "Mme", "M et Mme", "Famille"] as const;
+const CIVILITY_OPTIONS = ["", "M", "Mme", "M et Mme"] as const;
 const GENDER_OPTIONS = ["", "F", "M"] as const;
 
 const createEmptySecondaryContact = (): SecondaryContact => ({
@@ -168,6 +169,7 @@ const createEmptyFamilyForm = (id = ""): FamilyFormState => ({
   rowId: undefined,
   label: "",
   primaryAdultId: null,
+  primaryRole: "",
   secondaryAdults: [],
   civility: "",
   lastName: "",
@@ -212,6 +214,7 @@ const mapFamilyRecordToFormState = (record: FamilyRecord): FamilyFormState => ({
   rowId: record.rowId,
   label: record.label,
   primaryAdultId: record.primaryAdultId ?? null,
+  primaryRole: record.primaryRole ?? "",
   secondaryAdults: record.secondaryAdults ?? [],
   civility: record.civility,
   lastName: record.lastName,
@@ -245,6 +248,7 @@ const mapFormStateToFamilyRecord = (
   rowId: form.rowId,
   label: form.label || form.id.trim(),
   primaryAdultId: form.primaryAdultId ?? null,
+  primaryRole: form.primaryRole ?? "",
   secondaryAdults: form.secondaryAdults ?? [],
   civility: form.civility,
   lastName: form.lastName,
@@ -1121,13 +1125,22 @@ export default function ClientsPage() {
   };
 
   const handleSaveSecondaryAdult = async () => {
-    if (!selectedFamilyId || !familyForm.rowId) {
+    if (!selectedFamilyId) {
       setAdultError("Famille introuvable pour enregistrer l'adulte.");
+      console.error("[Adult] Aucun selectedFamilyId pour l'enregistrement.");
+      return;
+    }
+
+    const familyRowId = familyForm.rowId ?? families.find((f) => f.id === selectedFamilyId)?.rowId;
+    if (!familyRowId) {
+      setAdultError("Identifiant technique de la famille manquant pour lier l'adulte.");
+      console.error("[Adult] familyRowId manquant pour l'enregistrement (pivot family_adults).");
       return;
     }
 
     if (!adultForm.lastName.trim() || !adultForm.firstName.trim()) {
       setAdultError("Nom et prénom sont requis pour ajouter un adulte.");
+      console.error("[Adult] Nom/prénom manquants pour l'adulte secondaire.");
       return;
     }
 
@@ -1139,8 +1152,8 @@ export default function ClientsPage() {
           ? familyForm.secondaryAdults[editingAdultIndex]?.position ??
             editingAdultIndex + 1
           : (familyForm.secondaryAdults?.length ?? 0) + 1;
-      const newAdultId = await upsertSecondaryAdult({
-        familyRowId: familyForm.rowId,
+      const payloadForSave = {
+        familyRowId,
         familyIdClient: familyForm.id,
         adultId: editingAdultIndex !== null ? familyForm.secondaryAdults[editingAdultIndex]?.adultId ?? undefined : undefined,
         civility: adultForm.civility ?? "",
@@ -1155,10 +1168,15 @@ export default function ClientsPage() {
         phone2: adultForm.phone2 ?? "",
         email: adultForm.email ?? "",
         partnerName: adultForm.partner ?? "",
-        role: adultForm.role ?? "AUTRE",
+        role: adultForm.role,
         position,
         canBeContacted: true,
-      });
+      };
+
+      console.log("[Adult] Sauvegarde adulte secondaire payload:", payloadForSave);
+
+      const newAdultId = await upsertSecondaryAdult(payloadForSave);
+      console.log("[Adult] Adulte secondaire enregistré avec id:", newAdultId);
 
       setFamilyForm((prev) => {
         const nextAdults = [...(prev.secondaryAdults ?? [])];
@@ -1180,18 +1198,22 @@ export default function ClientsPage() {
 
       await refreshFamiliesAfterAdultChange(selectedFamilyId);
       setAdultFeedback("Adulte secondaire enregistré.");
-      setIsSecondaryContactModalOpen(false);
-      setAdultForm(createEmptySecondaryContact());
-      setEditingAdultIndex(null);
-      setSecondaryAddressQuery("");
-      setSecondaryAddressSuggestions([]);
     } catch (error) {
+      console.error("[Adult] Erreur lors de l'enregistrement de l'adulte secondaire:", error);
       setAdultError(
         error instanceof Error
           ? error.message
           : "Impossible d'enregistrer l'adulte secondaire.",
       );
+      return;
     }
+
+    setIsSecondaryContactModalOpen(false);
+    setAdultForm(createEmptySecondaryContact());
+    setEditingAdultIndex(null);
+    setSecondaryAddressQuery("");
+    setSecondaryAddressSuggestions([]);
+    setSecondaryAddressError(null);
   };
 
   const handleDeleteFamily = async () => {
@@ -1980,11 +2002,11 @@ export default function ClientsPage() {
             >
               <div className="space-y-8">
                 <div className="rounded-2xl bg-[#1f2330] p-4 text-white shadow-md md:rounded-3xl md:p-5">
-                  <div className="grid gap-3 text-xs font-semibold uppercase tracking-[0.18em] sm:grid-cols-2 lg:grid-cols-[repeat(4,minmax(0,1fr))]">
+                  <div className="grid gap-3 text-xs font-semibold uppercase tracking-[0.08em] leading-[1.4] sm:grid-cols-2 lg:grid-cols-[140px_1fr_1fr_1fr]">
                     <label className="space-y-1">
-                      <span>Civilité</span>
+                      <span className="text-[11px] tracking-[0.08em]">Civilité</span>
                       <select
-                        className={`w-full rounded-lg border border-[#4b5163] px-3 py-2 text-sm font-medium text-[#1f2330] outline-none ${fieldBg}`}
+                        className={`w-full max-w-[140px] rounded-lg border border-[#4b5163] px-3 py-2 text-sm font-medium text-[#1f2330] outline-none ${fieldBg}`}
                         value={familyForm.civility}
                         onChange={handleFamilyFieldChange("civility")}
                       >
@@ -1996,7 +2018,7 @@ export default function ClientsPage() {
                       </select>
                     </label>
                     <label className="space-y-1">
-                      <span>Nom de famille</span>
+                      <span className="text-[11px] tracking-[0.08em]">Nom de famille</span>
                       <input
                         className={`w-full rounded-lg border border-[#4b5163] px-3 py-2 text-sm font-medium text-[#1f2330] outline-none ${fieldBg}`}
                         value={familyForm.lastName}
@@ -2005,7 +2027,7 @@ export default function ClientsPage() {
                       />
                     </label>
                     <label className="space-y-1">
-                      <span>Prénom</span>
+                      <span className="text-[11px] tracking-[0.08em]">Prénom</span>
                       <input
                         className={`w-full rounded-lg border border-[#4b5163] px-3 py-2 text-sm font-medium text-[#1f2330] outline-none ${fieldBg}`}
                         value={familyForm.firstName}
@@ -2013,8 +2035,22 @@ export default function ClientsPage() {
                         placeholder="Prénom"
                       />
                     </label>
+                    <label className="space-y-1">
+                      <span className="text-[11px] tracking-[0.08em]">Rôle</span>
+                      <input
+                        className={`w-full rounded-lg border border-[#4b5163] px-3 py-2 text-sm font-medium text-[#1f2330] outline-none ${fieldBg}`}
+                        value={familyForm.primaryRole ?? ""}
+                        onChange={(event) =>
+                          setFamilyForm((prev) => ({
+                            ...prev,
+                            primaryRole: event.target.value,
+                          }))
+                        }
+                        placeholder="Ex : Mère, Père, Tuteur légal..."
+                      />
+                    </label>
                   </div>
-                  <p className="mt-4 text-[10px] font-medium uppercase tracking-[0.18em] text-[#cfd1d8]">
+                  <p className="mt-4 text-[10px] font-medium uppercase tracking-[0.14em] text-[#cfd1d8]">
                     Adulte principal du dossier famille
                   </p>
                 </div>
@@ -2058,46 +2094,46 @@ export default function ClientsPage() {
                     ) : null}
                     {secondaryAdultEntries.length > 0 ? (
                       <>
-                            <div className="space-y-3">
-                        {secondaryAdultEntries.map((adult, index) => {
-                          const fullName = [adult.firstName, adult.lastName]
-                            .filter(Boolean)
-                            .join(" ")
-                            .trim();
-                                const hasInfo =
-                                  adult.phone ||
-                                  adult.phone2 ||
-                                  adult.email ||
-                                  adult.address ||
-                                  adult.city;
-                          return (
-                            <div
-                              key={`${adult.adultId ?? adult.email ?? "adult"}-${index}`}
-                              className="rounded-2xl border border-[#e5d5c5] bg-white/90 px-4 py-4 text-xs text-[#2b2f36] shadow-md"
-                            >
-                              <div className="flex items-start justify-between gap-3">
-                                <div className="space-y-1">
-                                  <p className="text-base font-semibold text-[#1f2330]">
-                                    {fullName || "Informations à compléter"}
-                                  </p>
-                                  <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#b45b12]">
-                                    {adult.role || "Rôle non renseigné"}
-                                  </p>
-                                  {adult.partner ? (
-                                    <p className="text-[11px] text-[#6d7280]">
-                                      Partenaire : {adult.partner}
+                        <div className="space-y-3">
+                          {secondaryAdultEntries.filter(Boolean).map((adult, index) => {
+                            const fullName = [adult.firstName, adult.lastName]
+                              .filter(Boolean)
+                              .join(" ")
+                              .trim();
+                            const hasInfo =
+                              adult.phone ||
+                              adult.phone2 ||
+                              adult.email ||
+                              adult.address ||
+                              adult.city;
+                            return (
+                              <div
+                                key={`${adult.adultId ?? adult.email ?? "adult"}-${index}`}
+                                className="rounded-2xl border border-[#e5d5c5] bg-white/90 px-4 py-4 text-xs text-[#2b2f36] shadow-md"
+                              >
+                                <div className="flex items-start justify-between gap-3">
+                                  <div className="space-y-1">
+                                    <p className="text-base font-semibold text-[#1f2330]">
+                                      {fullName || "Informations à compléter"}
                                     </p>
-                                  ) : null}
+                                    <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#b45b12]">
+                                      {adult.role || "Rôle non renseigné"}
+                                    </p>
+                                    {adult.partner ? (
+                                      <p className="text-[11px] text-[#6d7280]">
+                                        Partenaire : {adult.partner}
+                                      </p>
+                                    ) : null}
+                                  </div>
+                                  <button
+                                    type="button"
+                                    className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#b45b12] transition hover:text-[#8f4104]"
+                                    onClick={() => handleOpenSecondaryContactModal(index)}
+                                  >
+                                    Modifier
+                                  </button>
                                 </div>
-                                <button
-                                  type="button"
-                                  className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#b45b12] transition hover:text-[#8f4104]"
-                                  onClick={() => handleOpenSecondaryContactModal(index)}
-                                >
-                                  Modifier
-                                </button>
-                              </div>
-                              <div className="mt-2 space-y-1 text-sm">
+                                <div className="mt-2 space-y-1 text-sm">
                                   {adult.phone ? (
                                     <p className="text-[#2b2f36]">
                                       Téléphone : {adult.phone}
@@ -2106,41 +2142,41 @@ export default function ClientsPage() {
                                   {adult.phone2 ? (
                                     <p className="text-[#2b2f36]">
                                       Téléphone 2 : {adult.phone2}
-                                        </p>
-                                      ) : null}
-                                      {adult.email ? (
-                                        <p className="text-[#2b2f36]">Email : {adult.email}</p>
-                                      ) : null}
-                                      {adult.address || adult.city ? (
-                                        <p className="text-[#4b4f5a]">
-                                          {[adult.address, adult.complement].filter(Boolean).join(" ")}
-                                          <br />
-                                          {[adult.postalCode, adult.city, adult.country]
-                                            .filter(Boolean)
-                                            .join(" ")}
-                                        </p>
-                                      ) : null}
-                                      {!hasInfo ? (
-                                        <p className="text-[#6d7280]">
-                                          Aucun détail renseigné pour l&apos;instant.
-                                        </p>
-                                      ) : null}
-                                    </div>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                            <button
-                              type="button"
-                              className="inline-flex w-full items-center justify-center gap-2 rounded-md border border-[#d4d7df] bg-white px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#2b2f36] transition hover:bg-[#f0f3f8] cursor-pointer"
-                              onClick={handleRemoveSecondaryContact}
-                            >
-                              Retirer
-                            </button>
-                          </>
-                        ) : null}
-                      </div>
-                    </div>
+                                    </p>
+                                  ) : null}
+                                  {adult.email ? (
+                                    <p className="text-[#2b2f36]">Email : {adult.email}</p>
+                                  ) : null}
+                                  {adult.address || adult.city ? (
+                                    <p className="text-[#4b4f5a]">
+                                      {[adult.address, adult.complement].filter(Boolean).join(" ")}
+                                      <br />
+                                      {[adult.postalCode, adult.city, adult.country]
+                                        .filter(Boolean)
+                                        .join(" ")}
+                                    </p>
+                                  ) : null}
+                                  {!hasInfo ? (
+                                    <p className="text-[#6d7280]">
+                                      Aucun détail renseigné pour l&apos;instant.
+                                    </p>
+                                  ) : null}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                        <button
+                          type="button"
+                          className="inline-flex w-full items-center justify-center gap-2 rounded-md border border-[#d4d7df] bg-white px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#2b2f36] transition hover:bg-[#f0f3f8] cursor-pointer"
+                          onClick={handleRemoveSecondaryContact}
+                        >
+                          Retirer
+                        </button>
+                      </>
+                    ) : null}
+                  </div>
+                </div>
                   </aside>
 
                   <div className="space-y-4 text-sm text-[#2b2f36]">
@@ -2150,8 +2186,9 @@ export default function ClientsPage() {
                           Coordonnées de l&apos;adulte principal
                         </h3>
                       </div>
-                      <div className="grid gap-4 lg:grid-cols-2">
-                        <div className="space-y-4">
+                      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                        {/* Ligne 1 */}
+                        <div className="space-y-2">
                           <label className="flex flex-col gap-1">
                             <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
                               Adresse
@@ -2193,69 +2230,8 @@ export default function ClientsPage() {
                               </div>
                             ) : null}
                           </label>
-                          <label className="flex flex-col gap-1">
-                            <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
-                              Complément
-                            </span>
-                            <input
-                              className={`rounded border border-[#d4d7df] px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none ${fieldBg}`}
-                              value={familyForm.complement}
-                              onChange={handleFamilyFieldChange("complement")}
-                              placeholder="Bâtiment, étage..."
-                            />
-                          </label>
-                          <div className="flex flex-col gap-1">
-                            <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
-                              Code postal et ville
-                            </span>
-                            <div className="grid grid-cols-[140px_1fr] gap-3">
-                              <input
-                                className={`rounded border border-[#d4d7df] px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none ${fieldBg}`}
-                                value={familyForm.postalCode}
-                                onChange={handlePostalCodeChange}
-                                placeholder="75017"
-                                inputMode="numeric"
-                              />
-                              {cityOptions.length > 1 ? (
-                                <select
-                                  className={`rounded border border-[#d4d7df] px-3 py-2 text-sm text-[#2b2f36] focus:border-[#7f8696] focus:outline-none ${fieldBg}`}
-                                  value={familyForm.city}
-                                  onChange={handleCityManualChange}
-                                >
-                                  {cityOptions.map((city) => (
-                                    <option key={city} value={city}>
-                                      {city}
-                                    </option>
-                                  ))}
-                                </select>
-                              ) : (
-                                <input
-                                  className={`rounded border border-[#d4d7df] px-3 py-2 text-sm text-[#2b2f36] focus:border-[#7f8696] focus:outline-none ${fieldBg}`}
-                                  value={familyForm.city}
-                                  onChange={
-                                    cityOptions.length === 0
-                                      ? handleCityManualChange
-                                      : undefined
-                                  }
-                                  placeholder="Renseignez un code postal"
-                                  readOnly={cityOptions.length === 1}
-                                />
-                              )}
-                            </div>
-                          </div>
-                          <label className="flex flex-col gap-1">
-                            <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
-                              Pays
-                            </span>
-                            <input
-                              className={`rounded border border-[#d4d7df] px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none ${fieldBg}`}
-                              value={familyForm.country}
-                              onChange={handleFamilyFieldChange("country")}
-                              placeholder="France"
-                            />
-                          </label>
                         </div>
-                        <div className="space-y-4">
+                        <div className="space-y-2">
                           <label className="flex flex-col gap-1">
                             <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
                               Téléphone 1
@@ -2269,6 +2245,23 @@ export default function ClientsPage() {
                               maxLength={14}
                             />
                           </label>
+                        </div>
+
+                        {/* Ligne 2 */}
+                        <div className="space-y-2">
+                          <label className="flex flex-col gap-1">
+                            <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
+                              Complément
+                            </span>
+                            <input
+                              className={`rounded border border-[#d4d7df] px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none ${fieldBg}`}
+                              value={familyForm.complement}
+                              onChange={handleFamilyFieldChange("complement")}
+                              placeholder="Bâtiment, étage..."
+                            />
+                          </label>
+                        </div>
+                        <div className="space-y-2">
                           <label className="flex flex-col gap-1">
                             <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
                               Téléphone 2
@@ -2282,6 +2275,44 @@ export default function ClientsPage() {
                               maxLength={14}
                             />
                           </label>
+                        </div>
+
+                        {/* Ligne 3 */}
+                        <div className="space-y-2">
+                          <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
+                            Code postal et ville
+                          </span>
+                          <div className="grid grid-cols-[140px_1fr] gap-3">
+                            <input
+                              className={`rounded border border-[#d4d7df] px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none ${fieldBg}`}
+                              value={familyForm.postalCode}
+                              onChange={handlePostalCodeChange}
+                              placeholder="75017"
+                              inputMode="numeric"
+                            />
+                            {cityOptions.length > 1 ? (
+                              <select
+                                className={`rounded border border-[#d4d7df] px-3 py-2 text-sm text-[#2b2f36] focus:border-[#7f8696] focus:outline-none ${fieldBg}`}
+                                value={familyForm.city}
+                                onChange={handleCityManualChange}
+                              >
+                                {cityOptions.map((city) => (
+                                  <option key={city} value={city}>
+                                    {city}
+                                  </option>
+                                ))}
+                              </select>
+                            ) : (
+                              <input
+                                className={`rounded border border-[#d4d7df] px-3 py-2 text-sm text-[#2b2f36] focus:border-[#7f8696] focus:outline-none ${fieldBg}`}
+                                value={familyForm.city}
+                                onChange={handleCityManualChange}
+                                placeholder="Ville"
+                              />
+                            )}
+                          </div>
+                        </div>
+                        <div className="space-y-2">
                           <label className="flex flex-col gap-1">
                             <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
                               Mail
@@ -2293,28 +2324,46 @@ export default function ClientsPage() {
                               placeholder="famille@example.com"
                             />
                           </label>
+                        </div>
+
+                        {/* Ligne 4 */}
+                        <div className="space-y-2">
+                          <label className="flex flex-col gap-1">
+                            <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
+                              Pays
+                            </span>
+                            <input
+                              className={`rounded border border-[#d4d7df] px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none ${fieldBg}`}
+                              value={familyForm.country}
+                              onChange={handleFamilyFieldChange("country")}
+                              placeholder="France"
+                            />
+                          </label>
+                        </div>
+                        <div className="space-y-2">
                           <label className="flex flex-col gap-1">
                             <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
                               Partenaire principal
                             </span>
-                            <input
+                          <input
                               className={`rounded border border-[#d4d7df] px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none ${fieldBg}`}
                               value={familyForm.partner}
                               onChange={handleFamilyFieldChange("partner")}
                               placeholder="Nom du partenaire"
                             />
                           </label>
-                          {cityLookupState === "loading" ? (
-                            <p className="pt-1 text-[11px] font-medium uppercase tracking-[0.16em] text-[#7f8696]">
-                              Recherche de la commune…
-                            </p>
-                          ) : null}
-                          {cityLookupState === "error" && cityLookupError ? (
-                            <p className="pt-1 text-[11px] font-medium uppercase tracking-[0.16em] text-red-600">
-                              {cityLookupError}
-                            </p>
-                          ) : null}
                         </div>
+
+                        {cityLookupState === "loading" ? (
+                          <p className="pt-1 text-[11px] font-medium uppercase tracking-[0.16em] text-[#7f8696]">
+                            Recherche de la commune…
+                          </p>
+                        ) : null}
+                        {cityLookupState === "error" && cityLookupError ? (
+                          <p className="pt-1 text-[11px] font-medium uppercase tracking-[0.16em] text-red-600">
+                            {cityLookupError}
+                          </p>
+                        ) : null}
                       </div>
                     </div>
 
@@ -2608,13 +2657,23 @@ export default function ClientsPage() {
                 Renseignez les informations du responsable secondaire.
               </p>
             </header>
+            {adultError ? (
+              <p className="mb-3 rounded-md border border-rose-300 bg-rose-100/80 px-3 py-2 text-sm font-semibold text-rose-800">
+                {adultError}
+              </p>
+            ) : null}
+            {adultFeedback ? (
+              <p className="mb-3 rounded-md border border-emerald-300 bg-emerald-100/80 px-3 py-2 text-sm font-semibold text-emerald-800">
+                {adultFeedback}
+              </p>
+            ) : null}
             <div className="grid gap-4 text-sm text-[#e5e8f0] md:grid-cols-2">
               <label className="flex flex-col gap-1">
                 <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#f0f1f5]">
                   Civilité
                 </span>
                 <select
-                  className="rounded border border-white/20 bg-white/90 px-3 py-2 text-[#1f2330] focus:border-[#c77845] focus:outline-none"
+                  className="max-w-[140px] rounded border border-white/20 bg-white/90 px-3 py-2 text-[#1f2330] focus:border-[#c77845] focus:outline-none"
                   value={adultForm.civility ?? ""}
                   onChange={handleSecondaryContactChange("civility")}
                 >
@@ -2655,8 +2714,18 @@ export default function ClientsPage() {
                   className="rounded border border-white/20 bg-white/90 px-3 py-2 text-[#1f2330] focus:border-[#c77845] focus:outline-none"
                   value={adultForm.role}
                   onChange={handleSecondaryContactChange("role")}
-                  placeholder="Responsable légal, grand-parent..."
+                  list="secondary-role-suggestions"
+                  placeholder="Mère, Père, Tuteur légal..."
                 />
+                <datalist id="secondary-role-suggestions">
+                  <option value="Mère" />
+                  <option value="Père" />
+                  <option value="Famille d'accueil" />
+                  <option value="Éducateur" />
+                  <option value="Assistante sociale" />
+                  <option value="Tuteur légal" />
+                  <option value="Autre" />
+                </datalist>
               </label>
               <label className="flex flex-col gap-1 md:col-span-2">
                 <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#f0f1f5]">
