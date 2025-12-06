@@ -30,6 +30,7 @@ import {
   deleteFamily,
   fetchFamilies,
   saveFamily,
+  upsertSecondaryAdult,
   type FamilyRecord,
   type SecondaryContact,
   type Child,
@@ -48,6 +49,8 @@ type FamilyFormState = {
   id: string;
   rowId?: number;
   label: string;
+  primaryAdultId?: string | null;
+  secondaryAdults: SecondaryContact[];
   civility: string;
   lastName: string;
   firstName: string;
@@ -60,6 +63,8 @@ type FamilyFormState = {
   phone2: string;
   email: string;
   partner: string;
+  familyEmail?: string | null;
+  notes?: string | null;
   prestashopP1: string;
   prestashopP2: string;
   secondaryContact: SecondaryContact;
@@ -133,11 +138,19 @@ const CIVILITY_OPTIONS = ["", "M", "Mme", "M et Mme", "Famille"] as const;
 const GENDER_OPTIONS = ["", "F", "M"] as const;
 
 const createEmptySecondaryContact = (): SecondaryContact => ({
+  civility: "",
   lastName: "",
   firstName: "",
   role: "",
   phone: "",
+  phone2: "",
+  address: "",
+  complement: "",
+  postalCode: "",
+  city: "",
+  country: "",
   email: "",
+  partner: "",
 });
 
 const createEmptyHealthForm = (): HealthFormState => ({
@@ -154,6 +167,8 @@ const createEmptyFamilyForm = (id = ""): FamilyFormState => ({
   id,
   rowId: undefined,
   label: "",
+  primaryAdultId: null,
+  secondaryAdults: [],
   civility: "",
   lastName: "",
   firstName: "",
@@ -166,6 +181,8 @@ const createEmptyFamilyForm = (id = ""): FamilyFormState => ({
   phone2: "",
   email: "",
   partner: "",
+  familyEmail: null,
+  notes: null,
   prestashopP1: "",
   prestashopP2: "",
   secondaryContact: createEmptySecondaryContact(),
@@ -194,6 +211,8 @@ const mapFamilyRecordToFormState = (record: FamilyRecord): FamilyFormState => ({
   id: record.id,
   rowId: record.rowId,
   label: record.label,
+  primaryAdultId: record.primaryAdultId ?? null,
+  secondaryAdults: record.secondaryAdults ?? [],
   civility: record.civility,
   lastName: record.lastName,
   firstName: record.firstName,
@@ -206,10 +225,12 @@ const mapFamilyRecordToFormState = (record: FamilyRecord): FamilyFormState => ({
   phone2: record.phone2,
   email: record.email,
   partner: record.partner,
+  familyEmail: record.familyEmail ?? null,
+  notes: record.notes ?? null,
   prestashopP1: record.prestashopP1,
   prestashopP2: record.prestashopP2,
   secondaryContact: record.secondaryContact
-    ? { ...record.secondaryContact }
+    ? { ...createEmptySecondaryContact(), ...record.secondaryContact }
     : createEmptySecondaryContact(),
   children: mapChildrenForForm(record.children),
   createdAt: record.createdAt,
@@ -223,6 +244,8 @@ const mapFormStateToFamilyRecord = (
   id: form.id.trim(),
   rowId: form.rowId,
   label: form.label || form.id.trim(),
+  primaryAdultId: form.primaryAdultId ?? null,
+  secondaryAdults: form.secondaryAdults ?? [],
   civility: form.civility,
   lastName: form.lastName,
   firstName: form.firstName,
@@ -235,6 +258,8 @@ const mapFormStateToFamilyRecord = (
   phone2: form.phone2,
   email: form.email,
   partner: form.partner,
+  familyEmail: form.familyEmail ?? null,
+  notes: form.notes ?? null,
   prestashopP1: form.prestashopP1,
   prestashopP2: form.prestashopP2,
   secondaryContact: includeSecondaryContact
@@ -274,6 +299,7 @@ const formatFrenchPhoneNumber = (input: string) => {
   const groups = digits.match(/.{1,2}/g) ?? [];
   return groups.join(" ");
 };
+const formatPhoneFR = (value: string) => formatFrenchPhoneNumber(value);
 
 const createEmptySearchFilters = () => ({
   lastName: "",
@@ -397,6 +423,16 @@ export default function ClientsPage() {
   >([]);
   const [isAddressLoading, setIsAddressLoading] = useState(false);
   const [addressError, setAddressError] = useState<string | null>(null);
+  const [secondaryAddressQuery, setSecondaryAddressQuery] = useState("");
+  const [secondaryAddressSuggestions, setSecondaryAddressSuggestions] = useState<
+    AddressSuggestion[]
+  >([]);
+  const [isSecondaryAddressLoading, setIsSecondaryAddressLoading] = useState(false);
+  const [secondaryAddressError, setSecondaryAddressError] = useState<string | null>(
+    null,
+  );
+  const [adultError, setAdultError] = useState<string | null>(null);
+  const [adultFeedback, setAdultFeedback] = useState<string | null>(null);
   const [searchFilters, setSearchFilters] = useState(createEmptySearchFilters);
   const [isSearchPanelOpen, setIsSearchPanelOpen] = useState(false);
 
@@ -595,6 +631,59 @@ export default function ClientsPage() {
   }, [addressQuery]);
 
   useEffect(() => {
+    const query = secondaryAddressQuery.trim();
+    if (query.length < 3) {
+      setSecondaryAddressSuggestions([]);
+      setSecondaryAddressError(null);
+      return;
+    }
+
+    const controller = new AbortController();
+    setIsSecondaryAddressLoading(true);
+    setSecondaryAddressError(null);
+
+    const timer = setTimeout(async () => {
+      try {
+        const response = await fetch(
+          `https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(query)}&limit=5`,
+          { signal: controller.signal },
+        );
+        if (!response.ok) {
+          throw new Error("Adresse API indisponible");
+        }
+        const data = (await response.json()) as {
+          features: Array<{ properties: { label: string; name: string; city: string; postcode: string } }>;
+        };
+        const options =
+          data.features?.map((item) => ({
+            label: item.properties.label,
+            address: item.properties.name,
+            city: item.properties.city,
+            postcode: item.properties.postcode,
+          })) ?? [];
+        if (!controller.signal.aborted) {
+          setSecondaryAddressSuggestions(options);
+        }
+      } catch (error) {
+        if (controller.signal.aborted) return;
+        const message =
+          error instanceof Error ? error.message : "Erreur lors de la récupération des adresses.";
+        setSecondaryAddressError(message);
+        setSecondaryAddressSuggestions([]);
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsSecondaryAddressLoading(false);
+        }
+      }
+    }, 300);
+
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [secondaryAddressQuery]);
+
+  useEffect(() => {
     const hasCountry = (familyForm.country ?? "").trim() !== "";
     const hasPostalOrCity =
       (familyForm.postalCode ?? "").trim() !== "" ||
@@ -719,6 +808,7 @@ export default function ClientsPage() {
   ]
     .filter(Boolean)
     .join(" ");
+  const secondaryAdultEntries = familyForm.secondaryAdults ?? [];
   const canDeleteFamily = Boolean(selectedFamilyId || familyForm.rowId);
 
   const handleFamilyFieldChange =
@@ -732,18 +822,25 @@ export default function ClientsPage() {
       setIsDirty(true);
     };
 
+  const [isAdultModalOpen, setIsAdultModalOpen] = useState(false);
+  const [editingAdultIndex, setEditingAdultIndex] = useState<number | null>(null);
+  const [adultForm, setAdultForm] = useState<SecondaryContact>(() =>
+    createEmptySecondaryContact(),
+  );
   const handleSecondaryContactChange =
     (field: keyof SecondaryContact) =>
-    (event: ChangeEvent<HTMLInputElement>) => {
-      const value = event.target.value;
-      setFamilyForm((prev) => ({
+    (event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+      let value = event.target.value;
+      if (field === "phone" || field === "phone2") {
+        value = formatPhoneFR(value);
+      }
+      if (field === "postalCode") {
+        value = normalizePostalCode(value);
+      }
+      setAdultForm((prev) => ({
         ...prev,
-        secondaryContact: {
-          ...prev.secondaryContact,
-          [field]: value,
-        },
+        [field]: value,
       }));
-      setIsDirty(true);
     };
 
   const handleChildFieldChange =
@@ -784,7 +881,7 @@ export default function ClientsPage() {
   const handlePhoneChange =
     (field: "phone1" | "phone2") =>
     (event: ChangeEvent<HTMLInputElement>) => {
-      const formatted = formatFrenchPhoneNumber(event.target.value);
+      const formatted = formatPhoneFR(event.target.value);
     setFamilyForm((prev) => ({
       ...prev,
       [field]: formatted,
@@ -805,7 +902,9 @@ export default function ClientsPage() {
 
     setSelectedFamilyId(record.id);
     setFamilyForm(mapFamilyRecordToFormState(record));
-    setSecondaryContactEnabled(Boolean(record.secondaryContact));
+    setSecondaryContactEnabled(
+      Boolean(record.secondaryContact) || (record.secondaryAdults ?? []).length > 0,
+    );
     setCityOptions(record.city ? [record.city] : []);
     setCityLookupState("idle");
     setCityLookupError(null);
@@ -818,6 +917,8 @@ export default function ClientsPage() {
     setHealthForm(createEmptyHealthForm());
     setHealthFeedback(null);
     setIsSecondaryContactModalOpen(false);
+    setAdultForm(createEmptySecondaryContact());
+    setEditingAdultIndex(null);
     setIsDirty(false);
   };
 
@@ -958,31 +1059,139 @@ export default function ClientsPage() {
     }
   };
 
-  const handleOpenSecondaryContactModal = () => {
-    if (!secondaryContactEnabled) {
-      setSecondaryContactEnabled(true);
+  const refreshFamiliesAfterAdultChange = async (familyId: string) => {
+    const familiesData = await fetchFamilies();
+    setFamilies(familiesData);
+    const refreshed = familiesData.find((f) => f.id === familyId);
+    if (refreshed) {
+      setFamilyForm(mapFamilyRecordToFormState(refreshed));
+      setSelectedFamilyId(refreshed.id);
+      setSecondaryContactEnabled(
+        Boolean(refreshed.secondaryContact) ||
+          (refreshed.secondaryAdults ?? []).length > 0,
+      );
+    }
+  };
+
+  const handleOpenSecondaryContactModal = (index: number | null = null) => {
+    setAdultError(null);
+    setAdultFeedback(null);
+    if (index !== null) {
+      const target = familyForm.secondaryAdults[index];
+      if (target) {
+        setAdultForm({
+          ...createEmptySecondaryContact(),
+          ...target,
+          phone: target.phone ?? "",
+          phone2: target.phone2 ?? "",
+          postalCode: target.postalCode ?? "",
+        });
+        setEditingAdultIndex(index);
+        setSecondaryAddressQuery(target.address ?? "");
+      }
+    } else {
+      setAdultForm(createEmptySecondaryContact());
+      setEditingAdultIndex(null);
+      setSecondaryAddressQuery("");
     }
     setIsSecondaryContactModalOpen(true);
   };
 
   const handleCloseSecondaryContactModal = () => {
-    if (isSecondaryContactEmpty(familyForm.secondaryContact)) {
-      setSecondaryContactEnabled(false);
-      setFamilyForm((current) => ({
-        ...current,
-        secondaryContact: createEmptySecondaryContact(),
-      }));
-    }
     setIsSecondaryContactModalOpen(false);
+    setAdultForm(createEmptySecondaryContact());
+    setEditingAdultIndex(null);
+    setSecondaryAddressQuery("");
+    setSecondaryAddressSuggestions([]);
+    setSecondaryAddressError(null);
+    setAdultError(null);
+    setAdultFeedback(null);
   };
 
   const handleRemoveSecondaryContact = () => {
     setSecondaryContactEnabled(false);
     setFamilyForm((current) => ({
       ...current,
+      secondaryAdults: [],
       secondaryContact: createEmptySecondaryContact(),
     }));
     setIsSecondaryContactModalOpen(false);
+    setAdultForm(createEmptySecondaryContact());
+    setEditingAdultIndex(null);
+  };
+
+  const handleSaveSecondaryAdult = async () => {
+    if (!selectedFamilyId || !familyForm.rowId) {
+      setAdultError("Famille introuvable pour enregistrer l'adulte.");
+      return;
+    }
+
+    if (!adultForm.lastName.trim() || !adultForm.firstName.trim()) {
+      setAdultError("Nom et prénom sont requis pour ajouter un adulte.");
+      return;
+    }
+
+    try {
+      setAdultError(null);
+      setAdultFeedback(null);
+      const position =
+        editingAdultIndex !== null
+          ? familyForm.secondaryAdults[editingAdultIndex]?.position ??
+            editingAdultIndex + 1
+          : (familyForm.secondaryAdults?.length ?? 0) + 1;
+      const newAdultId = await upsertSecondaryAdult({
+        familyRowId: familyForm.rowId,
+        familyIdClient: familyForm.id,
+        adultId: editingAdultIndex !== null ? familyForm.secondaryAdults[editingAdultIndex]?.adultId ?? undefined : undefined,
+        civility: adultForm.civility ?? "",
+        lastName: adultForm.lastName,
+        firstName: adultForm.firstName,
+        address: adultForm.address ?? "",
+        complement: adultForm.complement ?? "",
+        postalCode: adultForm.postalCode ?? "",
+        city: adultForm.city ?? "",
+        country: adultForm.country ?? "",
+        phone1: adultForm.phone ?? "",
+        phone2: adultForm.phone2 ?? "",
+        email: adultForm.email ?? "",
+        partnerName: adultForm.partner ?? "",
+        role: adultForm.role ?? "AUTRE",
+        position,
+        canBeContacted: true,
+      });
+
+      setFamilyForm((prev) => {
+        const nextAdults = [...(prev.secondaryAdults ?? [])];
+        const payload: SecondaryContact = {
+          ...createEmptySecondaryContact(),
+          ...adultForm,
+          adultId: newAdultId,
+          position,
+          canBeContacted: true,
+          partner: adultForm.partner ?? "",
+        };
+        if (editingAdultIndex !== null && nextAdults[editingAdultIndex]) {
+          nextAdults[editingAdultIndex] = { ...nextAdults[editingAdultIndex], ...payload };
+        } else {
+          nextAdults.push(payload);
+        }
+        return { ...prev, secondaryAdults: nextAdults };
+      });
+
+      await refreshFamiliesAfterAdultChange(selectedFamilyId);
+      setAdultFeedback("Adulte secondaire enregistré.");
+      setIsSecondaryContactModalOpen(false);
+      setAdultForm(createEmptySecondaryContact());
+      setEditingAdultIndex(null);
+      setSecondaryAddressQuery("");
+      setSecondaryAddressSuggestions([]);
+    } catch (error) {
+      setAdultError(
+        error instanceof Error
+          ? error.message
+          : "Impossible d'enregistrer l'adulte secondaire.",
+      );
+    }
   };
 
   const handleDeleteFamily = async () => {
@@ -1306,6 +1515,15 @@ export default function ClientsPage() {
     setIsDirty(true);
   };
 
+  const handleSecondaryAddressChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value;
+    setAdultForm((prev) => ({
+      ...prev,
+      address: value,
+    }));
+    setSecondaryAddressQuery(value);
+  };
+
   const handleSelectAddressSuggestion = (suggestion: AddressSuggestion) => {
     setFamilyForm((prev) => ({
       ...prev,
@@ -1321,9 +1539,26 @@ export default function ClientsPage() {
     setIsDirty(true);
   };
 
-  const formatClientName = (family: FamilyRecord) => {
-    if (family.label) {
-      return family.label;
+  const handleSelectSecondaryAddressSuggestion = (suggestion: AddressSuggestion) => {
+    setAdultForm((prev) => ({
+      ...prev,
+      address: suggestion.address || suggestion.label,
+      city: suggestion.city || prev.city,
+      postalCode: suggestion.postcode || prev.postalCode,
+      country: prev.country || "France",
+    }));
+    setSecondaryAddressQuery("");
+    setSecondaryAddressSuggestions([]);
+    setIsSecondaryAddressLoading(false);
+    setSecondaryAddressError(null);
+  };
+
+  const formatPrimaryAdultName = (family: FamilyRecord) => {
+    if (family.civility || family.firstName || family.lastName) {
+      const civ = family.civility ? `${family.civility} ` : "";
+      const last = family.lastName ? family.lastName.toUpperCase() : "";
+      const first = family.firstName ?? "";
+      return `${civ}${first} ${last}`.trim();
     }
     const civ = family.civility ? `${family.civility} ` : "";
     const last = family.lastName ? family.lastName.toUpperCase() : "";
@@ -1598,7 +1833,7 @@ export default function ClientsPage() {
                 <thead className="sticky top-0 z-10 text-left text-xs font-semibold uppercase tracking-[0.18em] text-[#A56A57] shadow">
                   <tr className="bg-[#F4E3DD]">
                     <th className="px-5 py-3">ID client</th>
-                    <th className="px-5 py-3">Client</th>
+                    <th className="px-5 py-3">Nom du client</th>
                     <th className="px-5 py-3">Code postal</th>
                     <th className="px-5 py-3">Ville</th>
                   </tr>
@@ -1644,7 +1879,7 @@ export default function ClientsPage() {
                             {item.id}
                           </td>
                           <td className="px-5 py-3 text-[#2b2f36]">
-                            {formatClientName(item)}
+                            {formatPrimaryAdultName(item)}
                           </td>
                           <td className="px-5 py-3 text-[#4d525d]">
                             {item.postalCode}
@@ -1685,6 +1920,7 @@ export default function ClientsPage() {
                   type="button"
                   className="group relative inline-flex size-9 items-center justify-center rounded-full border border-[#A56A57] bg-transparent text-[#A56A57] transition hover:bg-transparent cursor-pointer"
                   onClick={handleCreateNewFamily}
+                  title="Nouvelle famille"
                 >
                   <Plus className="size-4" />
                   <span className="sr-only">Ajouter</span>
@@ -1697,6 +1933,7 @@ export default function ClientsPage() {
                   className="group relative inline-flex size-9 items-center justify-center rounded-full border border-[#A56A57] bg-transparent text-[#A56A57] transition hover:bg-transparent disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                   onClick={handleDeleteFamily}
                   disabled={!canDeleteFamily || isDeleting || isSaving}
+                  title="Supprimer la famille"
                 >
                   <Trash2 className="size-4" />
                   <span className="sr-only">Supprimer</span>
@@ -1742,7 +1979,7 @@ export default function ClientsPage() {
               noValidate
             >
               <div className="space-y-8">
-                <div className="rounded-xl bg-[#1f2330] p-5 text-white">
+                <div className="rounded-2xl bg-[#1f2330] p-4 text-white shadow-md md:rounded-3xl md:p-5">
                   <div className="grid gap-3 text-xs font-semibold uppercase tracking-[0.18em] sm:grid-cols-2 lg:grid-cols-[repeat(4,minmax(0,1fr))]">
                     <label className="space-y-1">
                       <span>Civilité</span>
@@ -1777,68 +2014,128 @@ export default function ClientsPage() {
                       />
                     </label>
                   </div>
+                  <p className="mt-4 text-[10px] font-medium uppercase tracking-[0.18em] text-[#cfd1d8]">
+                    Adulte principal du dossier famille
+                  </p>
                 </div>
 
-                <div className="grid gap-6 lg:grid-cols-[320px_1fr_1fr] items-start">
+                <div className="grid gap-6 lg:grid-cols-[360px_1fr] items-start">
                   <aside className="space-y-5 text-sm lg:row-span-2">
-                    <div className="space-y-3 rounded-xl border border-[#e3e6ed] bg-[#f7f8fb] p-5">
+                    <div className="space-y-4 rounded-3xl border border-[#e8dcd1] bg-[#fdf8f4] p-6 shadow-lg">
                       <h3 className="text-xs font-semibold uppercase tracking-[0.16em] text-[#5c606b]">
-                        Parent 2
+                        Autres adultes du dossier
                       </h3>
-                      <p className="text-xs text-[#6d7280]">
+                      <p className="text-[11px] text-[#7a7f8c]">
                         Ajouter un responsable secondaire au dossier famille.
                       </p>
                       <div className="space-y-3">
                         <button
                           type="button"
-                          className="inline-flex w-full items-center justify-center gap-2 rounded-md border border-[#d4d7df] bg-white px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#2b2f36] transition hover:bg-[#f0f3f8] cursor-pointer"
+                          className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-[#c77845] bg-[#c77845] px-4 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-white transition hover:shadow-md hover:-translate-y-[1px]"
                           onClick={handleOpenSecondaryContactModal}
                         >
                           {secondaryContactEnabled ? (
                             <>
-                              <NotebookPen className="size-4" />
-                              Modifier le parent 2
+                              <NotebookPen className="size-5" />
+                              Modifier un adulte
                             </>
                           ) : (
                             <>
-                              <UserRoundPlus className="size-4" />
-                              Ajouter le parent 2
-                            </>
-                          )}
-                        </button>
-                        {secondaryContactEnabled ? (
-                          <>
-                            <div className="rounded-lg border border-[#d4d7df] bg-white px-4 py-3 text-xs text-[#2b2f36] shadow-sm">
-                              <p className="font-semibold uppercase tracking-[0.12em] text-[#1f2330]">
-                                {secondaryContactFullName || "Informations à compléter"}
-                              </p>
-                              <p className="mt-1 text-[11px] font-medium uppercase tracking-[0.14em] text-[#5c606b]">
-                                {secondaryContactInfo.role || "Rôle non renseigné"}
-                              </p>
-                              <div className="mt-3 space-y-1 text-sm">
-                                {secondaryContactInfo.phone ? (
-                                  <p className="text-[#2b2f36]">
-                                    Tél. {secondaryContactInfo.phone}
+                              <UserRoundPlus className="size-5" />
+                          Ajouter un adulte
+                        </>
+                      )}
+                    </button>
+                    {adultError ? (
+                      <p className="text-sm font-medium text-red-600">
+                        {adultError}
+                      </p>
+                    ) : null}
+                    {adultFeedback ? (
+                      <p className="text-sm font-medium text-[#2f7a57]">
+                        {adultFeedback}
+                      </p>
+                    ) : null}
+                    {secondaryAdultEntries.length > 0 ? (
+                      <>
+                            <div className="space-y-3">
+                        {secondaryAdultEntries.map((adult, index) => {
+                          const fullName = [adult.firstName, adult.lastName]
+                            .filter(Boolean)
+                            .join(" ")
+                            .trim();
+                                const hasInfo =
+                                  adult.phone ||
+                                  adult.phone2 ||
+                                  adult.email ||
+                                  adult.address ||
+                                  adult.city;
+                          return (
+                            <div
+                              key={`${adult.adultId ?? adult.email ?? "adult"}-${index}`}
+                              className="rounded-2xl border border-[#e5d5c5] bg-white/90 px-4 py-4 text-xs text-[#2b2f36] shadow-md"
+                            >
+                              <div className="flex items-start justify-between gap-3">
+                                <div className="space-y-1">
+                                  <p className="text-base font-semibold text-[#1f2330]">
+                                    {fullName || "Informations à compléter"}
                                   </p>
-                                ) : null}
-                                {secondaryContactInfo.email ? (
-                                  <p className="text-[#2b2f36]">
-                                    {secondaryContactInfo.email}
+                                  <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#b45b12]">
+                                    {adult.role || "Rôle non renseigné"}
                                   </p>
-                                ) : null}
-                                {!hasSecondaryContactInfo ? (
-                                  <p className="text-[#6d7280]">
-                                    Aucun détail renseigné pour l&apos;instant.
-                                  </p>
-                                ) : null}
+                                  {adult.partner ? (
+                                    <p className="text-[11px] text-[#6d7280]">
+                                      Partenaire : {adult.partner}
+                                    </p>
+                                  ) : null}
+                                </div>
+                                <button
+                                  type="button"
+                                  className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#b45b12] transition hover:text-[#8f4104]"
+                                  onClick={() => handleOpenSecondaryContactModal(index)}
+                                >
+                                  Modifier
+                                </button>
                               </div>
+                              <div className="mt-2 space-y-1 text-sm">
+                                  {adult.phone ? (
+                                    <p className="text-[#2b2f36]">
+                                      Téléphone : {adult.phone}
+                                    </p>
+                                  ) : null}
+                                  {adult.phone2 ? (
+                                    <p className="text-[#2b2f36]">
+                                      Téléphone 2 : {adult.phone2}
+                                        </p>
+                                      ) : null}
+                                      {adult.email ? (
+                                        <p className="text-[#2b2f36]">Email : {adult.email}</p>
+                                      ) : null}
+                                      {adult.address || adult.city ? (
+                                        <p className="text-[#4b4f5a]">
+                                          {[adult.address, adult.complement].filter(Boolean).join(" ")}
+                                          <br />
+                                          {[adult.postalCode, adult.city, adult.country]
+                                            .filter(Boolean)
+                                            .join(" ")}
+                                        </p>
+                                      ) : null}
+                                      {!hasInfo ? (
+                                        <p className="text-[#6d7280]">
+                                          Aucun détail renseigné pour l&apos;instant.
+                                        </p>
+                                      ) : null}
+                                    </div>
+                                  </div>
+                                );
+                              })}
                             </div>
                             <button
                               type="button"
                               className="inline-flex w-full items-center justify-center gap-2 rounded-md border border-[#d4d7df] bg-white px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#2b2f36] transition hover:bg-[#f0f3f8] cursor-pointer"
                               onClick={handleRemoveSecondaryContact}
                             >
-                              Retirer le parent 2
+                              Retirer
                             </button>
                           </>
                         ) : null}
@@ -1846,169 +2143,179 @@ export default function ClientsPage() {
                     </div>
                   </aside>
 
-                  <div className="space-y-4 text-sm text-[#2b2f36] lg:col-span-2">
-                    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                      <label className="flex flex-col gap-1 md:col-span-2 xl:col-span-2">
-                        <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
-                          Adresse
-                        </span>
-                        <input
-                          className={`rounded border border-[#d4d7df] px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none ${fieldBg}`}
-                          value={familyForm.address}
-                          onChange={handleAddressChange}
-                          placeholder="N° et rue"
-                        />
-                        {addressError ? (
-                          <p className="mt-1 text-xs font-semibold text-red-600">
-                            {addressError}
-                          </p>
-                        ) : null}
-                        {isAddressLoading ? (
-                          <p className="mt-1 text-xs text-[#5c606b]">
-                            Recherche d&apos;adresses...
-                          </p>
-                        ) : null}
-                        {addressSuggestions.length > 0 ? (
-                          <div className="mt-2 rounded-lg border border-[#ccd0d8] bg-white shadow-lg">
-                            <ul className="divide-y divide-[#e7e9ef]">
-                              {addressSuggestions.map((suggestion, index) => (
-                                <li
-                                  key={`${suggestion.label}-${index}`}
-                                  className="cursor-pointer px-3 py-2 text-sm hover:bg-[#f7f8fb]"
-                                  onClick={() => handleSelectAddressSuggestion(suggestion)}
-                                >
-                                  <p className="font-semibold text-[#1f2330]">
-                                    {suggestion.label}
-                                  </p>
-                                  <p className="text-xs text-[#5c606b]">
-                                    {suggestion.postcode} {suggestion.city}
-                                  </p>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        ) : null}
-                      </label>
-                      <label className="flex flex-col gap-1">
-                        <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
-                          Téléphone 1
-                        </span>
-                        <input
-                          className={`rounded border border-[#d4d7df] px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none ${fieldBg}`}
-                          value={familyForm.phone1}
-                          onChange={handlePhoneChange("phone1")}
-                          placeholder="07 71 07 26 55"
-                          inputMode="tel"
-                          maxLength={14}
-                        />
-                      </label>
-
-                      <label className="flex flex-col gap-1 md:col-span-2 xl:col-span-2">
-                        <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
-                          Complément
-                        </span>
-                        <input
-                          className={`rounded border border-[#d4d7df] px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none ${fieldBg}`}
-                          value={familyForm.complement}
-                          onChange={handleFamilyFieldChange("complement")}
-                          placeholder="Bâtiment, étage..."
-                        />
-                      </label>
-                      <label className="flex flex-col gap-1">
-                        <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
-                          Téléphone 2
-                        </span>
-                        <input
-                          className="rounded border border-[#d4d7df] bg-white px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none"
-                          value={familyForm.phone2}
-                          onChange={handlePhoneChange("phone2")}
-                          placeholder="07 00 00 00 00"
-                          inputMode="tel"
-                          maxLength={14}
-                        />
-                      </label>
-                      <div className="flex flex-col gap-1 md:col-span-2 xl:col-span-2">
-                        <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
-                          Code postal et ville
-                        </span>
-                        <div className="grid grid-cols-[120px_1fr] gap-3">
-                          <input
-                            className={`rounded border border-[#d4d7df] px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none ${fieldBg}`}
-                            value={familyForm.postalCode}
-                            onChange={handlePostalCodeChange}
-                            placeholder="75017"
-                            inputMode="numeric"
-                          />
-                          {cityOptions.length > 1 ? (
-                            <select
-                              className={`rounded border border-[#d4d7df] px-3 py-2 text-sm text-[#2b2f36] focus:border-[#7f8696] focus:outline-none ${fieldBg}`}
-                              value={familyForm.city}
-                              onChange={handleCityManualChange}
-                            >
-                              {cityOptions.map((city) => (
-                                <option key={city} value={city}>
-                                  {city}
-                                </option>
-                              ))}
-                            </select>
-                          ) : (
-                            <input
-                              className={`rounded border border-[#d4d7df] px-3 py-2 text-sm text-[#2b2f36] focus:border-[#7f8696] focus:outline-none ${fieldBg}`}
-                              value={familyForm.city}
-                              onChange={
-                                cityOptions.length === 0
-                                  ? handleCityManualChange
-                                  : undefined
-                              }
-                              placeholder="Renseignez un code postal"
-                              readOnly={cityOptions.length === 1}
-                            />
-                          )}
+                  <div className="space-y-4 text-sm text-[#2b2f36]">
+                    <div className="rounded-3xl border border-[#e8dcd1] bg-[#fdf8f4] p-6 shadow-lg md:p-7">
+                      <div className="mb-4 flex items-center justify-between">
+                        <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-[#1f2330]">
+                          Coordonnées de l&apos;adulte principal
+                        </h3>
                       </div>
-                      <label className="flex flex-col gap-1">
-                        <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
-                          Mail
-                        </span>
-                        <input
-                          className={`rounded border border-[#d4d7df] px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none ${fieldBg}`}
-                          value={familyForm.email}
-                          onChange={handleFamilyFieldChange("email")}
-                          placeholder="famille@example.com"
-                        />
-                      </label>
-                      {cityLookupState === "loading" ? (
-                        <p className="pt-1 text-[11px] font-medium uppercase tracking-[0.16em] text-[#7f8696]">
-                          Recherche de la commune…
-                        </p>
-                      ) : null}
-                      {cityLookupState === "error" && cityLookupError ? (
-                        <p className="pt-1 text-[11px] font-medium uppercase tracking-[0.16em] text-red-600">
-                          {cityLookupError}
-                        </p>
-                      ) : null}
-                    </div>
-                      <label className="flex flex-col gap-1 md:col-span-2 xl:col-span-1">
-                        <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
-                          Pays
-                        </span>
-                        <input
-                          className={`rounded border border-[#d4d7df] px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none ${fieldBg}`}
-                          value={familyForm.country}
-                          onChange={handleFamilyFieldChange("country")}
-                          placeholder="France"
-                        />
-                      </label>
-                      <label className="flex flex-col gap-1 md:col-span-2 xl:col-span-3">
-                        <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
-                          Partenaire principal
-                        </span>
-                        <input
-                          className={`rounded border border-[#d4d7df] px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none ${fieldBg}`}
-                          value={familyForm.partner}
-                          onChange={handleFamilyFieldChange("partner")}
-                          placeholder="Nom du partenaire"
-                        />
-                      </label>
+                      <div className="grid gap-4 lg:grid-cols-2">
+                        <div className="space-y-4">
+                          <label className="flex flex-col gap-1">
+                            <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
+                              Adresse
+                            </span>
+                            <input
+                              className={`rounded border border-[#d4d7df] px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none ${fieldBg}`}
+                              value={familyForm.address}
+                              onChange={handleAddressChange}
+                              placeholder="N° et rue"
+                            />
+                            {addressError ? (
+                              <p className="mt-1 text-xs font-semibold text-red-600">
+                                {addressError}
+                              </p>
+                            ) : null}
+                            {isAddressLoading ? (
+                              <p className="mt-1 text-xs text-[#5c606b]">
+                                Recherche d&apos;adresses...
+                              </p>
+                            ) : null}
+                            {addressSuggestions.length > 0 ? (
+                              <div className="mt-2 rounded-lg border border-[#ccd0d8] bg-white shadow-lg">
+                                <ul className="divide-y divide-[#e7e9ef]">
+                                  {addressSuggestions.map((suggestion, index) => (
+                                    <li
+                                      key={`${suggestion.label}-${index}`}
+                                      className="cursor-pointer px-3 py-2 text-sm hover:bg-[#f7f8fb]"
+                                      onClick={() => handleSelectAddressSuggestion(suggestion)}
+                                    >
+                                      <p className="font-semibold text-[#1f2330]">
+                                        {suggestion.label}
+                                      </p>
+                                      <p className="text-xs text-[#5c606b]">
+                                        {suggestion.postcode} {suggestion.city}
+                                      </p>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            ) : null}
+                          </label>
+                          <label className="flex flex-col gap-1">
+                            <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
+                              Complément
+                            </span>
+                            <input
+                              className={`rounded border border-[#d4d7df] px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none ${fieldBg}`}
+                              value={familyForm.complement}
+                              onChange={handleFamilyFieldChange("complement")}
+                              placeholder="Bâtiment, étage..."
+                            />
+                          </label>
+                          <div className="flex flex-col gap-1">
+                            <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
+                              Code postal et ville
+                            </span>
+                            <div className="grid grid-cols-[140px_1fr] gap-3">
+                              <input
+                                className={`rounded border border-[#d4d7df] px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none ${fieldBg}`}
+                                value={familyForm.postalCode}
+                                onChange={handlePostalCodeChange}
+                                placeholder="75017"
+                                inputMode="numeric"
+                              />
+                              {cityOptions.length > 1 ? (
+                                <select
+                                  className={`rounded border border-[#d4d7df] px-3 py-2 text-sm text-[#2b2f36] focus:border-[#7f8696] focus:outline-none ${fieldBg}`}
+                                  value={familyForm.city}
+                                  onChange={handleCityManualChange}
+                                >
+                                  {cityOptions.map((city) => (
+                                    <option key={city} value={city}>
+                                      {city}
+                                    </option>
+                                  ))}
+                                </select>
+                              ) : (
+                                <input
+                                  className={`rounded border border-[#d4d7df] px-3 py-2 text-sm text-[#2b2f36] focus:border-[#7f8696] focus:outline-none ${fieldBg}`}
+                                  value={familyForm.city}
+                                  onChange={
+                                    cityOptions.length === 0
+                                      ? handleCityManualChange
+                                      : undefined
+                                  }
+                                  placeholder="Renseignez un code postal"
+                                  readOnly={cityOptions.length === 1}
+                                />
+                              )}
+                            </div>
+                          </div>
+                          <label className="flex flex-col gap-1">
+                            <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
+                              Pays
+                            </span>
+                            <input
+                              className={`rounded border border-[#d4d7df] px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none ${fieldBg}`}
+                              value={familyForm.country}
+                              onChange={handleFamilyFieldChange("country")}
+                              placeholder="France"
+                            />
+                          </label>
+                        </div>
+                        <div className="space-y-4">
+                          <label className="flex flex-col gap-1">
+                            <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
+                              Téléphone 1
+                            </span>
+                            <input
+                              className={`rounded border border-[#d4d7df] px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none ${fieldBg}`}
+                              value={familyForm.phone1}
+                              onChange={handlePhoneChange("phone1")}
+                              placeholder="07 71 07 26 55"
+                              inputMode="tel"
+                              maxLength={14}
+                            />
+                          </label>
+                          <label className="flex flex-col gap-1">
+                            <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
+                              Téléphone 2
+                            </span>
+                            <input
+                              className="rounded border border-[#d4d7df] bg-white px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none"
+                              value={familyForm.phone2}
+                              onChange={handlePhoneChange("phone2")}
+                              placeholder="07 00 00 00 00"
+                              inputMode="tel"
+                              maxLength={14}
+                            />
+                          </label>
+                          <label className="flex flex-col gap-1">
+                            <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
+                              Mail
+                            </span>
+                            <input
+                              className={`rounded border border-[#d4d7df] px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none ${fieldBg}`}
+                              value={familyForm.email}
+                              onChange={handleFamilyFieldChange("email")}
+                              placeholder="famille@example.com"
+                            />
+                          </label>
+                          <label className="flex flex-col gap-1">
+                            <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
+                              Partenaire principal
+                            </span>
+                            <input
+                              className={`rounded border border-[#d4d7df] px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none ${fieldBg}`}
+                              value={familyForm.partner}
+                              onChange={handleFamilyFieldChange("partner")}
+                              placeholder="Nom du partenaire"
+                            />
+                          </label>
+                          {cityLookupState === "loading" ? (
+                            <p className="pt-1 text-[11px] font-medium uppercase tracking-[0.16em] text-[#7f8696]">
+                              Recherche de la commune…
+                            </p>
+                          ) : null}
+                          {cityLookupState === "error" && cityLookupError ? (
+                            <p className="pt-1 text-[11px] font-medium uppercase tracking-[0.16em] text-red-600">
+                              {cityLookupError}
+                            </p>
+                          ) : null}
+                        </div>
+                      </div>
                     </div>
 
                     <div className="flex flex-wrap items-center justify-end gap-2 pt-2">
@@ -2285,7 +2592,7 @@ export default function ClientsPage() {
 
       {isSecondaryContactModalOpen ? (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-neutral-950/70 px-4 py-10 backdrop-blur">
-          <div className="relative w-full max-w-xl rounded-2xl border border-[#3f4350] bg-[#2b2f36] p-8 shadow-2xl">
+          <div className="relative w-full max-w-3xl rounded-2xl border border-[#3f4350] bg-[#2b2f36] p-6 shadow-2xl md:p-7 lg:p-8 max-h-[85vh] overflow-y-auto">
             <button
               type="button"
               className="absolute right-5 top-5 text-sm font-semibold uppercase tracking-[0.16em] text-[#d0d4de] transition hover:text-white"
@@ -2295,7 +2602,7 @@ export default function ClientsPage() {
             </button>
             <header className="mb-4 text-center">
               <h3 className="text-lg font-semibold uppercase tracking-[0.2em] text-white">
-                Parent 2
+                Autre adulte
               </h3>
               <p className="mt-1 text-sm text-[#d0d4de]">
                 Renseignez les informations du responsable secondaire.
@@ -2304,11 +2611,27 @@ export default function ClientsPage() {
             <div className="grid gap-4 text-sm text-[#e5e8f0] md:grid-cols-2">
               <label className="flex flex-col gap-1">
                 <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#f0f1f5]">
+                  Civilité
+                </span>
+                <select
+                  className="rounded border border-white/20 bg-white/90 px-3 py-2 text-[#1f2330] focus:border-[#c77845] focus:outline-none"
+                  value={adultForm.civility ?? ""}
+                  onChange={handleSecondaryContactChange("civility")}
+                >
+                  {CIVILITY_OPTIONS.map((option) => (
+                    <option key={option} value={option}>
+                      {option || "Sélectionner"}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="flex flex-col gap-1">
+                <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#f0f1f5]">
                   Nom
                 </span>
                 <input
                   className="rounded border border-white/20 bg-white/90 px-3 py-2 text-[#1f2330] focus:border-[#c77845] focus:outline-none"
-                  value={familyForm.secondaryContact.lastName}
+                  value={adultForm.lastName}
                   onChange={handleSecondaryContactChange("lastName")}
                   placeholder="Nom"
                 />
@@ -2319,7 +2642,7 @@ export default function ClientsPage() {
                 </span>
                 <input
                   className="rounded border border-white/20 bg-white/90 px-3 py-2 text-[#1f2330] focus:border-[#c77845] focus:outline-none"
-                  value={familyForm.secondaryContact.firstName}
+                  value={adultForm.firstName}
                   onChange={handleSecondaryContactChange("firstName")}
                   placeholder="Prénom"
                 />
@@ -2330,9 +2653,94 @@ export default function ClientsPage() {
                 </span>
                 <input
                   className="rounded border border-white/20 bg-white/90 px-3 py-2 text-[#1f2330] focus:border-[#c77845] focus:outline-none"
-                  value={familyForm.secondaryContact.role}
+                  value={adultForm.role}
                   onChange={handleSecondaryContactChange("role")}
                   placeholder="Responsable légal, grand-parent..."
+                />
+              </label>
+              <label className="flex flex-col gap-1 md:col-span-2">
+                <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#f0f1f5]">
+                  Adresse
+                </span>
+                <input
+                  className="rounded border border-white/20 bg-white/90 px-3 py-2 text-[#1f2330] focus:border-[#c77845] focus:outline-none"
+                  value={adultForm.address}
+                  onChange={handleSecondaryAddressChange}
+                  placeholder="N° et rue"
+                />
+                {secondaryAddressError ? (
+                  <p className="mt-1 text-xs font-semibold text-amber-200">
+                    {secondaryAddressError}
+                  </p>
+                ) : null}
+                {isSecondaryAddressLoading ? (
+                  <p className="mt-1 text-xs text-[#e5e8f0]">
+                    Recherche d&apos;adresses...
+                  </p>
+                ) : null}
+                {secondaryAddressSuggestions.length > 0 ? (
+                  <div className="mt-2 rounded-lg border border-white/30 bg-white/90 text-[#1f2330] shadow-lg">
+                    <ul className="divide-y divide-[#e7e9ef]">
+                      {secondaryAddressSuggestions.map((suggestion, index) => (
+                        <li
+                          key={`${suggestion.label}-${index}`}
+                          className="cursor-pointer px-3 py-2 text-sm hover:bg-[#f7f8fb]"
+                          onClick={() => handleSelectSecondaryAddressSuggestion(suggestion)}
+                        >
+                          <p className="font-semibold text-[#1f2330]">
+                            {suggestion.label}
+                          </p>
+                          <p className="text-xs text-[#5c606b]">
+                            {suggestion.postcode} {suggestion.city}
+                          </p>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null}
+              </label>
+              <label className="flex flex-col gap-1 md:col-span-2">
+                <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#f0f1f5]">
+                  Complément
+                </span>
+                <input
+                  className="rounded border border-white/20 bg-white/90 px-3 py-2 text-[#1f2330] focus:border-[#c77845] focus:outline-none"
+                  value={adultForm.complement}
+                  onChange={handleSecondaryContactChange("complement")}
+                  placeholder="Bâtiment, étage..."
+                />
+              </label>
+              <label className="flex flex-col gap-1">
+                <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#f0f1f5]">
+                  Code postal
+                </span>
+                <input
+                  className="rounded border border-white/20 bg-white/90 px-3 py-2 text-[#1f2330] focus:border-[#c77845] focus:outline-none"
+                  value={adultForm.postalCode}
+                  onChange={handleSecondaryContactChange("postalCode")}
+                  placeholder="75017"
+                />
+              </label>
+              <label className="flex flex-col gap-1">
+                <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#f0f1f5]">
+                  Ville
+                </span>
+                <input
+                  className="rounded border border-white/20 bg-white/90 px-3 py-2 text-[#1f2330] focus:border-[#c77845] focus:outline-none"
+                  value={adultForm.city}
+                  onChange={handleSecondaryContactChange("city")}
+                  placeholder="Paris"
+                />
+              </label>
+              <label className="flex flex-col gap-1 md:col-span-2">
+                <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#f0f1f5]">
+                  Pays
+                </span>
+                <input
+                  className="rounded border border-white/20 bg-white/90 px-3 py-2 text-[#1f2330] focus:border-[#c77845] focus:outline-none"
+                  value={adultForm.country}
+                  onChange={handleSecondaryContactChange("country")}
+                  placeholder="France"
                 />
               </label>
               <label className="flex flex-col gap-1">
@@ -2341,8 +2749,19 @@ export default function ClientsPage() {
                 </span>
                 <input
                   className="rounded border border-white/20 bg-white/90 px-3 py-2 text-[#1f2330] focus:border-[#c77845] focus:outline-none"
-                  value={familyForm.secondaryContact.phone}
+                  value={adultForm.phone}
                   onChange={handleSecondaryContactChange("phone")}
+                  placeholder="07 00 00 00 00"
+                />
+              </label>
+              <label className="flex flex-col gap-1">
+                <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#f0f1f5]">
+                  Téléphone 2
+                </span>
+                <input
+                  className="rounded border border-white/20 bg-white/90 px-3 py-2 text-[#1f2330] focus:border-[#c77845] focus:outline-none"
+                  value={adultForm.phone2}
+                  onChange={handleSecondaryContactChange("phone2")}
                   placeholder="07 00 00 00 00"
                 />
               </label>
@@ -2352,9 +2771,20 @@ export default function ClientsPage() {
                 </span>
                 <input
                   className="rounded border border-white/20 bg-white/90 px-3 py-2 text-[#1f2330] focus:border-[#c77845] focus:outline-none"
-                  value={familyForm.secondaryContact.email}
+                  value={adultForm.email}
                   onChange={handleSecondaryContactChange("email")}
                   placeholder="parent@example.com"
+                />
+              </label>
+              <label className="flex flex-col gap-1 md:col-span-2">
+                <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#f0f1f5]">
+                  Partenaire
+                </span>
+                <input
+                  className="rounded border border-white/20 bg-white/90 px-3 py-2 text-[#1f2330] focus:border-[#c77845] focus:outline-none"
+                  value={adultForm.partner ?? ""}
+                  onChange={handleSecondaryContactChange("partner")}
+                  placeholder="Nom du partenaire"
                 />
               </label>
             </div>
@@ -2365,6 +2795,13 @@ export default function ClientsPage() {
                 onClick={handleCloseSecondaryContactModal}
               >
                 Fermer
+              </button>
+              <button
+                type="button"
+                className="inline-flex items-center gap-2 rounded-md border border-[#c77845] bg-[#c77845] px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-[#b45b12]"
+                onClick={handleSaveSecondaryAdult}
+              >
+                Enregistrer
               </button>
               <button
                 type="button"
