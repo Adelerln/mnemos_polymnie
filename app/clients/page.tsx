@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -129,18 +129,18 @@ const quickActions = [
 ];
 
 const auditEntries = [
-  { label: "Créé par" },
-  { label: "Créé le" },
-  { label: "Dernière modification" },
-  { label: "Mise à jour" },
+  { label: "Cree par" },
+  { label: "Cree le" },
+  { label: "Derniere modification" },
+  { label: "Mise a jour" },
 ];
 
 const CIVILITY_OPTIONS = ["", "M", "Mme", "M et Mme"] as const;
 const GENDER_OPTIONS = ["", "F", "M"] as const;
 const PRIMARY_ROLE_OPTIONS = [
   "",
-  "Père",
-  "Mère",
+  "Pere",
+  "Mere",
   "Educateur",
   "Educatrice",
   "Assistant(e) social(e)",
@@ -515,7 +515,7 @@ export default function ClientsPage() {
         );
 
         if (!response.ok) {
-          throw new Error("Réponse invalide du service postal.");
+          throw new Error("reponse invalide du service postal.");
         }
 
         const data = (await response.json()) as Array<{ nom: string }>;
@@ -556,7 +556,7 @@ export default function ClientsPage() {
         const message =
           error instanceof Error
             ? error.message
-            : "Impossible de récupérer la ville.";
+            : "Impossible de recuperer la ville.";
 
         setCityLookupState("error");
         setCityLookupError(message);
@@ -629,7 +629,7 @@ export default function ClientsPage() {
       } catch (error) {
         if (controller.signal.aborted) return;
         const message =
-          error instanceof Error ? error.message : "Erreur lors de la récupération des adresses.";
+          error instanceof Error ? error.message : "Erreur lors de la racuparation des adresses.";
         setAddressError(message);
         setAddressSuggestions([]);
       } finally {
@@ -682,7 +682,7 @@ export default function ClientsPage() {
       } catch (error) {
         if (controller.signal.aborted) return;
         const message =
-          error instanceof Error ? error.message : "Erreur lors de la récupération des adresses.";
+          error instanceof Error ? error.message : "Erreur lors de la racuparation des adresses.";
         setSecondaryAddressError(message);
         setSecondaryAddressSuggestions([]);
       } finally {
@@ -1043,7 +1043,7 @@ export default function ClientsPage() {
 
   const handleCreateNewFamily = () => {
     if (isDirty) {
-      alert("Enregistrez ou annulez les modifications avant de créer une nouvelle fiche.");
+      alert("Enregistrez ou annulez les modifications avant de creer une nouvelle fiche.");
       return;
     }
     const freshId = nextFamilyId;
@@ -1088,7 +1088,7 @@ export default function ClientsPage() {
     setIsSaving(true);
 
     if (!familyForm.id.trim()) {
-      setSaveError("Le numéro de client est manquant.");
+      setSaveError("Le numaro de client est manquant.");
       setIsSaving(false);
       return;
     }
@@ -1100,7 +1100,7 @@ export default function ClientsPage() {
     }
 
     if (!familyForm.firstName.trim()) {
-      setSaveError("Veuillez renseigner le prénom.");
+      setSaveError("Veuillez renseigner le prenom.");
       setIsSaving(false);
       return;
     }
@@ -1117,7 +1117,7 @@ export default function ClientsPage() {
         ? "update"
         : "insert";
 
-      // Sauvegarder en base de données
+      // Sauvegarder en base de donnees
       const savedFamily = await saveFamily(record);
 
           const recordIdForLog =
@@ -1137,7 +1137,7 @@ export default function ClientsPage() {
         );
       }
 
-      // Mettre à jour l'état local
+      // Mettre a jour l'atat local
       upsertFamiliesState(savedFamily);
 
       setSelectedFamilyId(savedFamily.id);
@@ -1146,7 +1146,7 @@ export default function ClientsPage() {
       if (savedFamily.city) {
         setCityOptions([savedFamily.city]);
       }
-      setFeedback("Fiche famille enregistrée avec succès.");
+      setFeedback("Fiche famille enregistree avec succes.");
       setIsDirty(false);
     } catch (error) {
       console.error("Erreur lors de la sauvegarde:", error);
@@ -1236,8 +1236,8 @@ export default function ClientsPage() {
     }
 
     if (!adultForm.lastName.trim() || !adultForm.firstName.trim()) {
-      setAdultError("Nom et prénom sont requis pour ajouter un adulte.");
-      console.error("[Adult] Nom/prénom manquants pour l'adulte secondaire.");
+      setAdultError("Nom et prenom sont requis pour ajouter un adulte.");
+      console.error("[Adult] Nom/prenom manquants pour l'adulte secondaire.");
       return;
     }
 
@@ -1273,7 +1273,7 @@ export default function ClientsPage() {
       console.log("[Adult] Sauvegarde adulte secondaire payload:", payloadForSave);
 
       const newAdultId = await upsertSecondaryAdult(payloadForSave);
-      console.log("[Adult] Adulte secondaire enregistré avec id:", newAdultId);
+      console.log("[Adult] Adulte secondaire enregistra avec id:", newAdultId);
 
       setFamilyForm((prev) => {
         const nextAdults = [...(prev.secondaryAdults ?? [])];
@@ -1294,7 +1294,7 @@ export default function ClientsPage() {
       });
 
       await refreshFamiliesAfterAdultChange(selectedFamilyId);
-      setAdultFeedback("Adulte secondaire enregistré.");
+      setAdultFeedback("Adulte secondaire enregistra.");
     } catch (error) {
       console.error("[Adult] Erreur lors de l'enregistrement de l'adulte secondaire:", error);
       setAdultError(
@@ -1338,7 +1338,7 @@ export default function ClientsPage() {
       await deleteFamily(targetId);
       setFamilies((prev) => prev.filter((family) => family.id !== targetId));
       resetFamilyForms();
-      setFeedback("Fiche famille supprimée.");
+      setFeedback("Fiche famille supprimee.");
 
       const recordIdForLog = familyToDelete?.rowId;
 
@@ -1414,7 +1414,7 @@ export default function ClientsPage() {
     const editingId = editingChildId;
 
     if (!childForm.lastName.trim() || !childForm.firstName.trim()) {
-      setChildError("Nom et prénom de l'enfant sont requis.");
+      setChildError("Nom et prenom de l'enfant sont requis.");
       return;
     }
 
@@ -1457,8 +1457,8 @@ export default function ClientsPage() {
     if (!hasExistingFamily) {
       setFeedback(
         isEditing
-          ? "Enfant mis à jour. Enregistrez la fiche pour le conserver."
-          : "Enfant ajouté. Enregistrez la fiche pour le conserver.",
+          ? "Enfant mis a jour. Enregistrez la fiche pour le conserver."
+          : "Enfant ajouta. Enregistrez la fiche pour le conserver.",
       );
       return;
     }
@@ -1482,7 +1482,7 @@ export default function ClientsPage() {
         savedFamily.rowId ?? existingFamily?.rowId ?? undefined;
 
       if (recordIdForLog !== undefined) {
-        // Logging disabled here to éviter les erreurs console lors de l'ajout d'un enfant.
+        // Logging disabled here to aviter les erreurs console lors de l'ajout d'un enfant.
         // await logEdit({ ... });
       } else {
         console.warn(
@@ -1498,7 +1498,7 @@ export default function ClientsPage() {
       }
       setSelectedFamilyId(savedFamily.id);
       setFeedback(
-        isEditing ? "Enfant mis à jour et sauvegardé." : "Enfant ajouté et sauvegardé.",
+        isEditing ? "Enfant mis a jour et sauvegarda." : "Enfant ajouta et sauvegarda.",
       );
     } catch (error) {
       console.error("Erreur lors de la sauvegarde de l'enfant:", error);
@@ -1581,7 +1581,7 @@ export default function ClientsPage() {
           : child,
       ),
     }));
-    setHealthFeedback("Informations sanitaires enregistrées.");
+    setHealthFeedback("Informations sanitaires enregistrees.");
     setIsDirty(true);
   };
 
@@ -1774,8 +1774,8 @@ export default function ClientsPage() {
           <div className="px-8 pb-4 text-sm text-[#5c606b]">
             {hasActiveSearch ? (
               filteredFamilies.length > 1
-                ? `Résultats : ${filteredFamilies.length}`
-                : `Résultat : ${filteredFamilies.length}`
+                ? `resultats : ${filteredFamilies.length}`
+                : `resultat : ${filteredFamilies.length}`
             ) : (
               "Effectuez une recherche pour afficher les dossiers."
             )}
@@ -1803,7 +1803,7 @@ export default function ClientsPage() {
                 </label>
                 <label className="flex flex-col gap-1">
                   <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[#5c606b]">
-                    Prénom
+                    prenom
                   </span>
                   <input
                     className="rounded border border-[#ccd0d8] bg-white px-3 py-2 outline-none focus:border-[#7f8696]"
@@ -1849,7 +1849,7 @@ export default function ClientsPage() {
                 </label>
                 <label className="flex flex-col gap-1">
                   <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[#5c606b]">
-                    Téléphone 1
+                    Telephone 1
                   </span>
                   <input
                     className="rounded border border-[#ccd0d8] bg-white px-3 py-2 outline-none focus:border-[#7f8696]"
@@ -1864,7 +1864,7 @@ export default function ClientsPage() {
                 </label>
                 <label className="flex flex-col gap-1">
                   <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[#5c606b]">
-                    Téléphone 2
+                    Telephone 2
                   </span>
                   <input
                     className="rounded border border-[#ccd0d8] bg-white px-3 py-2 outline-none focus:border-[#7f8696]"
@@ -1961,7 +1961,7 @@ export default function ClientsPage() {
                 </label>
                 <label className="flex flex-col gap-1">
                   <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[#5c606b]">
-                    Prénom de l&apos;enfant
+                    prenom de l&apos;enfant
                   </span>
                   <input
                     className="rounded border border-[#ccd0d8] bg-white px-3 py-2 outline-none focus:border-[#7f8696]"
@@ -2013,24 +2013,24 @@ export default function ClientsPage() {
                           className="px-5 py-6 text-center text-sm text-[#7f8696]"
                           colSpan={4}
                         >
-                          Aucune famille enregistrée pour le moment.
+                          Aucune famille enregistree pour le moment.
                         </td>
                       </tr>
                     ) : (
                       paddedFamilies.map((item, index) => {
-                        if (!item) {
-                          return (
-                            <tr
-                              key={`placeholder-${index}`}
-                              className="border-t border-[#e3e6ed] bg-white/60 text-[#9aa0ad]"
-                            >
-                              <td className="px-5 py-3">—</td>
-                              <td className="px-5 py-3">—</td>
-                              <td className="px-5 py-3">—</td>
-                              <td className="px-5 py-3">—</td>
-                            </tr>
-                          );
-                        }
+                      if (!item) {
+                        return (
+                          <tr
+                            key={`placeholder-${index}`}
+                            className="border-t border-[#e3e6ed] bg-white/60 text-[#9aa0ad]"
+                          >
+                            <td className="px-5 py-3">-</td>
+                            <td className="px-5 py-3">-</td>
+                            <td className="px-5 py-3">-</td>
+                            <td className="px-5 py-3">-</td>
+                          </tr>
+                        );
+                      }
 
                         const isSelected = selectedFamilyId === item.id;
                         return (
@@ -2065,7 +2065,7 @@ export default function ClientsPage() {
             </div>
           ) : (
             <div className="mx-auto mb-6 w-full max-w-5xl rounded-2xl border border-dashed border-[#d4d7df] bg-white px-6 py-8 text-center text-sm text-[#5c606b] shadow-sm">
-              Lancez une recherche pour afficher les dossiers parents.
+              Lancez une recherche pour afficher les dossiers Perents.
             </div>
           )}
         </header>
@@ -2081,7 +2081,7 @@ export default function ClientsPage() {
                   <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em]">
                     <span className="text-[#A56A57]">ID client</span>
                     <input
-                      className="h-8 w-28 rounded-md border border-[#A56A57] bg-transparent px-3 text-sm text-[#A56A57] outline-none placeholder:text-[#A56A57]/70"
+                      className="h-8 w-28 rounded-md border border-[#A56A57] bg-transPerent px-3 text-sm text-[#A56A57] outline-none placeholder:text-[#A56A57]/70"
                       value={familyForm.id}
                       readOnly
                     />
@@ -2091,7 +2091,7 @@ export default function ClientsPage() {
               <div className="flex flex-wrap items-center gap-2 text-xs uppercase tracking-[0.16em]">
                 <button
                   type="button"
-                  className="group relative inline-flex size-9 items-center justify-center rounded-full border border-[#A56A57] bg-transparent text-[#A56A57] transition hover:bg-transparent cursor-pointer"
+                  className="group relative inline-flex size-9 items-center justify-center rounded-full border border-[#A56A57] bg-transPerent text-[#A56A57] transition hover:bg-transPerent cursor-pointer"
                   onClick={handleCreateNewFamily}
                   title="Nouvelle famille"
                 >
@@ -2103,7 +2103,7 @@ export default function ClientsPage() {
                 </button>
                 <button
                   type="button"
-                  className="group relative inline-flex size-9 items-center justify-center rounded-full border border-[#A56A57] bg-transparent text-[#A56A57] transition hover:bg-transparent disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                  className="group relative inline-flex size-9 items-center justify-center rounded-full border border-[#A56A57] bg-transPerent text-[#A56A57] transition hover:bg-transPerent disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                   onClick={handleDeleteFamily}
                   disabled={!canDeleteFamily || isDeleting || isSaving}
                   title="Supprimer la famille"
@@ -2117,7 +2117,7 @@ export default function ClientsPage() {
                 <button
                   type="submit"
                   form="family-form"
-                  className="group relative inline-flex size-9 items-center justify-center rounded-full border border-[#A56A57] bg-transparent text-[#A56A57] transition hover:bg-transparent disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                  className="group relative inline-flex size-9 items-center justify-center rounded-full border border-[#A56A57] bg-transPerent text-[#A56A57] transition hover:bg-transPerent disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                   disabled={isSaving || isDeleting}
                   title="Enregistrer"
                 >
@@ -2129,7 +2129,7 @@ export default function ClientsPage() {
                 </button>
                 <button
                   type="button"
-                  className="group relative inline-flex size-9 items-center justify-center rounded-full border border-[#A56A57] bg-transparent text-[#A56A57] transition hover:bg-transparent disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                  className="group relative inline-flex size-9 items-center justify-center rounded-full border border-[#A56A57] bg-transPerent text-[#A56A57] transition hover:bg-transPerent disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                   onClick={resetFamilyForms}
                   disabled={isSaving || isDeleting}
                   title="Annuler"
@@ -2155,7 +2155,7 @@ export default function ClientsPage() {
                 <div className="rounded-2xl bg-[#1f2330] p-4 text-white shadow-md md:rounded-3xl md:p-5">
                   <div className="grid gap-3 text-xs font-semibold uppercase tracking-[0.08em] leading-[1.4] sm:grid-cols-2 lg:grid-cols-[140px_1fr_1fr_1fr]">
                     <label className="space-y-1">
-                      <span className="text-[11px] tracking-[0.08em]">Civilité</span>
+                      <span className="text-[11px] tracking-[0.08em]">Civilita</span>
                       <select
                         className={`w-full max-w-[140px] rounded-lg border border-[#4b5163] px-3 py-2 text-sm font-medium text-[#1f2330] outline-none ${fieldBg}`}
                         value={familyForm.civility}
@@ -2163,7 +2163,7 @@ export default function ClientsPage() {
                       >
                         {CIVILITY_OPTIONS.map((option) => (
                           <option key={option} value={option}>
-                            {option ? option : "Sélectionner"}
+                            {option ? option : "Salectionner"}
                           </option>
                         ))}
                       </select>
@@ -2178,16 +2178,16 @@ export default function ClientsPage() {
                       />
                     </label>
                     <label className="space-y-1">
-                      <span className="text-[11px] tracking-[0.08em]">Prénom</span>
+                      <span className="text-[11px] tracking-[0.08em]">prenom</span>
                       <input
                         className={`w-full rounded-lg border border-[#4b5163] px-3 py-2 text-sm font-medium text-[#1f2330] outline-none ${fieldBg}`}
                         value={familyForm.firstName}
                         onChange={handleFamilyFieldChange("firstName")}
-                        placeholder="Prénom"
+                        placeholder="prenom"
                       />
                     </label>
                     <label className="space-y-1">
-                      <span className="text-[11px] tracking-[0.08em]">Rôle</span>
+                      <span className="text-[11px] tracking-[0.08em]">Rale</span>
                       <select
                         className={`w-full rounded-lg border border-[#4b5163] px-3 py-2 text-sm font-medium text-[#1f2330] outline-none ${fieldBg}`}
                         value={familyForm.primaryRole ?? ""}
@@ -2200,7 +2200,7 @@ export default function ClientsPage() {
                       >
                         {PRIMARY_ROLE_OPTIONS.map((option) => (
                           <option key={option || "empty"} value={option}>
-                            {option || "Sélectionner"}
+                            {option || "Salectionner"}
                           </option>
                         ))}
                       </select>
@@ -2270,10 +2270,10 @@ export default function ClientsPage() {
                                 <div className="flex items-start justify-between gap-3">
                                   <div className="space-y-1">
                                     <p className="text-base font-semibold text-[#1f2330]">
-                                      {fullName || "Informations à compléter"}
+                                      {fullName || "Informations a complater"}
                                     </p>
                                     <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#b45b12]">
-                                      {adult.role || "Rôle non renseigné"}
+                                      {adult.role || "Rale non renseigna"}
                                     </p>
                                     {adult.partner ? (
                                       <p className="text-[11px] text-[#6d7280]">
@@ -2292,12 +2292,12 @@ export default function ClientsPage() {
                                 <div className="mt-2 space-y-1 text-sm">
                                   {adult.phone ? (
                                     <p className="text-[#2b2f36]">
-                                      Téléphone : {adult.phone}
+                                      Telephone : {adult.phone}
                                     </p>
                                   ) : null}
                                   {adult.phone2 ? (
                                     <p className="text-[#2b2f36]">
-                                      Téléphone 2 : {adult.phone2}
+                                      Telephone 2 : {adult.phone2}
                                     </p>
                                   ) : null}
                                   {adult.email ? (
@@ -2314,7 +2314,7 @@ export default function ClientsPage() {
                                   ) : null}
                                   {!hasInfo ? (
                                     <p className="text-[#6d7280]">
-                                      Aucun détail renseigné pour l&apos;instant.
+                                      Aucun datail renseigna pour l&apos;instant.
                                     </p>
                                   ) : null}
                                 </div>
@@ -2339,7 +2339,7 @@ export default function ClientsPage() {
                     <div className="rounded-3xl border border-[#e8dcd1] bg-[#fdf8f4] p-6 shadow-lg md:p-7">
                       <div className="mb-4 flex items-center justify-between">
                         <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-[#1f2330]">
-                          Coordonnées de l&apos;adulte principal
+                          Coordonnees de l&apos;adulte principal
                         </h3>
                       </div>
                       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -2353,7 +2353,7 @@ export default function ClientsPage() {
                               className={`rounded border border-[#d4d7df] px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none ${fieldBg}`}
                               value={familyForm.address}
                               onChange={handleAddressChange}
-                              placeholder="N° et rue"
+                              placeholder="NAo et rue"
                             />
                             {addressError ? (
                               <p className="mt-1 text-xs font-semibold text-red-600">
@@ -2390,7 +2390,7 @@ export default function ClientsPage() {
                         <div className="space-y-2">
                           <label className="flex flex-col gap-1">
                             <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
-                              Téléphone 1
+                              Telephone 1
                             </span>
                             <input
                               className={`rounded border border-[#d4d7df] px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none ${fieldBg}`}
@@ -2407,20 +2407,20 @@ export default function ClientsPage() {
                         <div className="space-y-2">
                           <label className="flex flex-col gap-1">
                             <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
-                              Complément
+                              Complament
                             </span>
                             <input
                               className={`rounded border border-[#d4d7df] px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none ${fieldBg}`}
                               value={familyForm.complement}
                               onChange={handleFamilyFieldChange("complement")}
-                              placeholder="Bâtiment, étage..."
+                              placeholder="Batiment, atage..."
                             />
                           </label>
                         </div>
                         <div className="space-y-2">
                           <label className="flex flex-col gap-1">
                             <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
-                              Téléphone 2
+                              Telephone 2
                             </span>
                             <input
                               className="rounded border border-[#d4d7df] bg-white px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none"
@@ -2512,7 +2512,7 @@ export default function ClientsPage() {
 
                         {cityLookupState === "loading" ? (
                           <p className="pt-1 text-[11px] font-medium uppercase tracking-[0.16em] text-[#7f8696]">
-                            Recherche de la commune…
+                            Recherche de la commune
                           </p>
                         ) : null}
                         {cityLookupState === "error" && cityLookupError ? (
@@ -2550,28 +2550,45 @@ export default function ClientsPage() {
                       <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-[#1f2330]">
                         Informations enfants
                       </h3>
-                      <button
-                        type="button"
-                        className="inline-flex items-center gap-2 rounded-md border border-[#d4d7df] bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-[#2b2f36] transition hover:bg-[#f0f3f8] cursor-pointer"
-                        onClick={() => {
-                          setIsChildFormOpen((open) => !open);
-                          setChildError(null);
-                          setChildForm(createEmptyChildForm());
-                          setEditingChildId(null);
-                        }}
-                      >
-                        <UserRoundPlus className="size-3.5" />
-                        {isChildFormOpen ? "Fermer" : "Ajouter"}
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          className="inline-flex items-center gap-2 rounded-md border border-[#d4d7df] bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-[#2b2f36] transition hover:bg-[#f0f3f8] cursor-pointer"
+                          onClick={() => {
+                            setIsChildFormOpen((open) => !open);
+                            setChildError(null);
+                            setChildForm(createEmptyChildForm());
+                            setEditingChildId(null);
+                          }}
+                        >
+                          <UserRoundPlus className="size-3.5" />
+                          {isChildFormOpen ? "Fermer" : "Ajouter"}
+                        </button>
+                        <button
+                          type="button"
+                          className="inline-flex items-center justify-center rounded-md border border-[#d4d7df] bg-white p-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#2b2f36] transition hover:bg-[#f0f3f8] cursor-pointer"
+                          onClick={() => {
+                            const firstChild = familyForm.children[0];
+                            if (!firstChild) {
+                              setChildError("Aucun enfant a modifier.");
+                              return;
+                            }
+                            handleEditChild(firstChild.id);
+                          }}
+                          aria-label="Modifier un enfant"
+                        >
+                          <NotebookPen className="size-4" />
+                        </button>
+                      </div>
                     </div>
                     <div className="w-full overflow-hidden rounded-2xl border border-[#d4d7df]">
                       <table className="w-full border-collapse text-sm text-[#2b2f36]">
                         <thead className="bg-[#2f3442] text-xs font-semibold uppercase tracking-[0.16em] text-white">
                           <tr>
                             <th className="px-5 py-3 text-left">Nom de famille</th>
-                            <th className="px-5 py-3 text-left">Prénom</th>
+                            <th className="px-5 py-3 text-left">prenom</th>
                             <th className="px-5 py-3 text-left">Date de naissance</th>
-                            <th className="px-5 py-3 text-left">Âge</th>
+                            <th className="px-5 py-3 text-left">age</th>
                             <th className="px-5 py-3 text-left">Sexe</th>
                             <th className="px-5 py-3 text-center">
                               <span className="sr-only">Inscription</span>
@@ -2586,8 +2603,8 @@ export default function ClientsPage() {
                                 className="px-5 py-6 text-center text-sm text-[#7f8696]"
                                 colSpan={7}
                               >
-                                Les enfants de la famille apparaîtront ici une fois
-                                ajoutés.
+                                Les enfants de la famille apparaatront ici une fois
+                                ajoutas.
                               </td>
                             </tr>
                           ) : (
@@ -2613,20 +2630,13 @@ export default function ClientsPage() {
                                     type="button"
                                     className="inline-flex items-center justify-center rounded-full border border-[#d4d7df] bg-white px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#2b2f36] transition hover:border-[#c77845] hover:text-[#c77845] cursor-pointer"
                                     onClick={() => handleCreateChildRegistration(child.id)}
-                                    aria-label={`Créer une inscription pour ${child.firstName} ${child.lastName}`}
+                                    aria-label={`Creer une inscription pour ${child.firstName} ${child.lastName}`}
                                   >
-                                    Créer inscription
+                                    Creer inscription
                                   </button>
                                 </td>
                                 <td className="px-5 py-3 text-center text-xs uppercase tracking-[0.16em] text-[#5c606b]">
                                   <div className="flex flex-col items-center gap-2">
-                                    <button
-                                      type="button"
-                                      className="rounded-md border border-[#d4d7df] bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#2b2f36] transition hover:bg-[#f0f3f8] cursor-pointer"
-                                      onClick={() => handleEditChild(child.id)}
-                                    >
-                                      Modifier
-                                    </button>
                                     <button
                                       type="button"
                                       className="rounded-md border border-[#d4d7df] bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#2b2f36] transition hover:bg-[#f0f3f8] cursor-pointer"
@@ -2668,13 +2678,13 @@ export default function ClientsPage() {
                           </label>
                           <label className="flex flex-col gap-1">
                             <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
-                              Prénom
+                              prenom
                             </span>
                             <input
                               className="rounded border border-[#d4d7df] bg-white px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none"
                               value={childForm.firstName}
                               onChange={handleChildFieldChange("firstName")}
-                              placeholder="Prénom"
+                              placeholder="prenom"
                             />
                           </label>
                           <label className="flex flex-col gap-1">
@@ -2690,7 +2700,7 @@ export default function ClientsPage() {
                           </label>
                           <label className="flex flex-col gap-1">
                             <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
-                              Âge
+                              age
                             </span>
                             <input
                               className="rounded border border-[#d4d7df] bg-[#f7f8fb] px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none min-w-[200px]"
@@ -2710,7 +2720,7 @@ export default function ClientsPage() {
                             >
                               {GENDER_OPTIONS.map((option) => (
                                 <option key={option} value={option}>
-                                  {option ? option : "Sélectionner"}
+                                  {option ? option : "Salectionner"}
                                 </option>
                               ))}
                             </select>
@@ -2743,7 +2753,7 @@ export default function ClientsPage() {
                             {isAutoSavingChildren
                               ? "Sauvegarde..."
                               : editingChildId
-                                ? "Mettre à jour l'enfant"
+                                ? "Mettre a jour l'enfant"
                                 : "Ajouter l'enfant"}
                           </button>
                         </div>
@@ -2801,7 +2811,7 @@ export default function ClientsPage() {
           </form>
         ) : (
           <div className="rounded-b-3xl bg-white px-8 py-10 text-sm text-[#5c606b]">
-            Sélectionnez un dossier dans le tableau pour afficher la fiche.
+            Salectionnez un dossier dans le tableau pour afficher la fiche.
           </div>
         )}
         </section>
@@ -2838,7 +2848,7 @@ export default function ClientsPage() {
             <div className="grid gap-4 text-sm text-[#e5e8f0] md:grid-cols-2">
               <label className="flex flex-col gap-1">
                 <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#f0f1f5]">
-                  Civilité
+                  Civilita
                 </span>
                 <select
                   className="max-w-[140px] rounded border border-white/20 bg-white/90 px-3 py-2 text-[#1f2330] focus:border-[#c77845] focus:outline-none"
@@ -2847,7 +2857,7 @@ export default function ClientsPage() {
                 >
                   {CIVILITY_OPTIONS.map((option) => (
                     <option key={option} value={option}>
-                      {option || "Sélectionner"}
+                      {option || "Salectionner"}
                     </option>
                   ))}
                 </select>
@@ -2865,33 +2875,33 @@ export default function ClientsPage() {
               </label>
               <label className="flex flex-col gap-1">
                 <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#f0f1f5]">
-                  Prénom
+                  prenom
                 </span>
                 <input
                   className="rounded border border-white/20 bg-white/90 px-3 py-2 text-[#1f2330] focus:border-[#c77845] focus:outline-none"
                   value={adultForm.firstName}
                   onChange={handleSecondaryContactChange("firstName")}
-                  placeholder="Prénom"
+                  placeholder="prenom"
                 />
               </label>
               <label className="flex flex-col gap-1 md:col-span-2">
                 <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#f0f1f5]">
-                  Rôle dans la famille
+                  Rale dans la famille
                 </span>
                 <input
                   className="rounded border border-white/20 bg-white/90 px-3 py-2 text-[#1f2330] focus:border-[#c77845] focus:outline-none"
                   value={adultForm.role}
                   onChange={handleSecondaryContactChange("role")}
                   list="secondary-role-suggestions"
-                  placeholder="Mère, Père, Tuteur légal..."
+                  placeholder="Mere, Pere, Tuteur lagal..."
                 />
                 <datalist id="secondary-role-suggestions">
-                  <option value="Mère" />
-                  <option value="Père" />
+                  <option value="Mere" />
+                  <option value="Pere" />
                   <option value="Famille d'accueil" />
-                  <option value="Éducateur" />
+                  <option value="aducateur" />
                   <option value="Assistante sociale" />
-                  <option value="Tuteur légal" />
+                  <option value="Tuteur lagal" />
                   <option value="Autre" />
                 </datalist>
               </label>
@@ -2903,7 +2913,7 @@ export default function ClientsPage() {
                   className="rounded border border-white/20 bg-white/90 px-3 py-2 text-[#1f2330] focus:border-[#c77845] focus:outline-none"
                   value={adultForm.address}
                   onChange={handleSecondaryAddressChange}
-                  placeholder="N° et rue"
+                  placeholder="NAo et rue"
                 />
                 {secondaryAddressError ? (
                   <p className="mt-1 text-xs font-semibold text-amber-200">
@@ -2938,13 +2948,13 @@ export default function ClientsPage() {
               </label>
               <label className="flex flex-col gap-1 md:col-span-2">
                 <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#f0f1f5]">
-                  Complément
+                  Complament
                 </span>
                 <input
                   className="rounded border border-white/20 bg-white/90 px-3 py-2 text-[#1f2330] focus:border-[#c77845] focus:outline-none"
                   value={adultForm.complement}
                   onChange={handleSecondaryContactChange("complement")}
-                  placeholder="Bâtiment, étage..."
+                  placeholder="Batiment, atage..."
                 />
               </label>
               <label className="flex flex-col gap-1">
@@ -2982,7 +2992,7 @@ export default function ClientsPage() {
               </label>
               <label className="flex flex-col gap-1">
                 <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#f0f1f5]">
-                  Téléphone
+                  Telephone
                 </span>
                 <input
                   className="rounded border border-white/20 bg-white/90 px-3 py-2 text-[#1f2330] focus:border-[#c77845] focus:outline-none"
@@ -2993,7 +3003,7 @@ export default function ClientsPage() {
               </label>
               <label className="flex flex-col gap-1">
                 <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#f0f1f5]">
-                  Téléphone 2
+                  Telephone 2
                 </span>
                 <input
                   className="rounded border border-white/20 bg-white/90 px-3 py-2 text-[#1f2330] focus:border-[#c77845] focus:outline-none"
@@ -3010,7 +3020,7 @@ export default function ClientsPage() {
                   className="rounded border border-white/20 bg-white/90 px-3 py-2 text-[#1f2330] focus:border-[#c77845] focus:outline-none"
                   value={adultForm.email}
                   onChange={handleSecondaryContactChange("email")}
-                  placeholder="parent@example.com"
+                  placeholder="Perent@example.com"
                 />
               </label>
               <label className="flex flex-col gap-1 md:col-span-2">
@@ -3028,7 +3038,7 @@ export default function ClientsPage() {
             <div className="mt-6 flex flex-wrap items-center justify-end gap-2">
               <button
                 type="button"
-                className="inline-flex items-center gap-2 rounded-md border border-[#505664] bg-transparent px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#d0d4de] transition hover:bg-[#3a3f4c]"
+                className="inline-flex items-center gap-2 rounded-md border border-[#505664] bg-transPerent px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#d0d4de] transition hover:bg-[#3a3f4c]"
                 onClick={handleCloseSecondaryContactModal}
               >
                 Fermer
@@ -3045,7 +3055,7 @@ export default function ClientsPage() {
                 className="inline-flex items-center gap-2 rounded-md border border-[#c7433c] bg-[#d65a52] px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-[#b9403a]"
                 onClick={handleRemoveSecondaryContact}
               >
-                Retirer le parent 2
+                Retirer le Perent 2
               </button>
             </div>
           </div>
@@ -3079,23 +3089,23 @@ export default function ClientsPage() {
                   className="min-h-[80px] rounded border border-white/20 bg-white/90 px-3 py-2 text-[#1f2330] focus:border-[#c77845] focus:outline-none"
                   value={healthForm.allergies}
                   onChange={handleHealthFieldChange("allergies")}
-                  placeholder="Aliments, médicaments..."
+                  placeholder="Aliments, madicaments..."
                 />
               </label>
               <label className="flex flex-col gap-1">
                 <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#f0f1f5]">
-                  Régime alimentaire
+                  Ragime alimentaire
                 </span>
                 <input
                   className="rounded border border-white/20 bg-white/90 px-3 py-2 text-[#1f2330] focus:border-[#c77845] focus:outline-none"
                   value={healthForm.diet}
                   onChange={handleHealthFieldChange("diet")}
-                  placeholder="Sans porc, végétarien..."
+                  placeholder="Sans porc, vagatarien..."
                 />
               </label>
               <label className="flex flex-col gap-1">
                 <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#f0f1f5]">
-                  Difficultés de santé
+                  Difficultas de santa
                 </span>
                 <textarea
                   className="min-h-[80px] rounded border border-white/20 bg-white/90 px-3 py-2 text-[#1f2330] focus:border-[#c77845] focus:outline-none"
@@ -3106,13 +3116,13 @@ export default function ClientsPage() {
               </label>
               <label className="flex flex-col gap-1">
                 <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#f0f1f5]">
-                  Conduite à tenir
+                  Conduite a tenir
                 </span>
                 <textarea
                   className="min-h-[80px] rounded border border-white/20 bg-white/90 px-3 py-2 text-[#1f2330] focus:border-[#c77845] focus:outline-none"
                   value={healthForm.instructions}
                   onChange={handleHealthFieldChange("instructions")}
-                  placeholder="Geste à effectuer en cas d'incident..."
+                  placeholder="Geste a effectuer en cas d'incident..."
                 />
               </label>
               <label className="md:col-span-2 flex flex-col gap-1">
@@ -3123,7 +3133,7 @@ export default function ClientsPage() {
                   className="min-h-[80px] rounded border border-white/20 bg-white/90 px-3 py-2 text-[#1f2330] focus:border-[#c77845] focus:outline-none"
                   value={healthForm.transportNotes}
                   onChange={handleHealthFieldChange("transportNotes")}
-                  placeholder="À rappeler aux équipes transport..."
+                  placeholder="A rappeler aux aquipes transport..."
                 />
               </label>
               <label className="flex flex-col gap-1">
@@ -3134,7 +3144,7 @@ export default function ClientsPage() {
                   className="rounded border border-white/20 bg-white/90 px-3 py-2 text-[#1f2330] focus:border-[#c77845] focus:outline-none"
                   value={healthForm.friend}
                   onChange={handleHealthFieldChange("friend")}
-                  placeholder="Nom et prénom"
+                  placeholder="Nom et prenom"
                 />
               </label>
               <label className="flex flex-col gap-1">
@@ -3145,7 +3155,7 @@ export default function ClientsPage() {
                   className="rounded border border-white/20 bg-white/90 px-3 py-2 text-[#1f2330] focus:border-[#c77845] focus:outline-none"
                   value={healthForm.vacaf}
                   onChange={handleHealthFieldChange("vacaf")}
-                  placeholder="Numéro VACAF"
+                  placeholder="Numaro VACAF"
                 />
               </label>
             </div>
@@ -3157,7 +3167,7 @@ export default function ClientsPage() {
             <div className="mt-6 flex flex-wrap items-center justify-end gap-2">
               <button
                 type="button"
-                className="inline-flex items-center gap-2 rounded-md border border-[#505664] bg-transparent px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#d0d4de] transition hover:bg-[#3a3f4c]"
+                className="inline-flex items-center gap-2 rounded-md border border-[#505664] bg-transPerent px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#d0d4de] transition hover:bg-[#3a3f4c]"
                 onClick={handleCloseHealthModal}
               >
                 Fermer
@@ -3176,3 +3186,9 @@ export default function ClientsPage() {
     </div>
   );
 }
+
+
+
+
+
+
