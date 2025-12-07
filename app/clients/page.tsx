@@ -137,6 +137,16 @@ const auditEntries = [
 
 const CIVILITY_OPTIONS = ["", "M", "Mme", "M et Mme"] as const;
 const GENDER_OPTIONS = ["", "F", "M"] as const;
+const PRIMARY_ROLE_OPTIONS = [
+  "",
+  "Père",
+  "Mère",
+  "Educateur",
+  "Educatrice",
+  "Assistant(e) social(e)",
+  "Famille d'accueil",
+  "Autre",
+] as const;
 
 const createEmptySecondaryContact = (): SecondaryContact => ({
   civility: "",
@@ -712,27 +722,93 @@ export default function ClientsPage() {
     [families],
   );
 
+  const hasActiveSearch = useMemo(() => {
+    const term = searchTerm.trim();
+    const hasFilters = Object.values(searchFilters).some((value) => value.trim() !== "");
+    return hasFilters || term !== "";
+  }, [searchFilters, searchTerm]);
+
   const filteredFamilies = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
     const hasFilters = Object.values(searchFilters).some((value) => value.trim() !== "");
 
-    if (!term && !hasFilters) {
-      return orderedFamilies;
+    if (!hasActiveSearch) {
+      return [];
     }
 
     return orderedFamilies.filter((family) => {
+      const allAdults = [
+        {
+          lastName: family.lastName ?? "",
+          firstName: family.firstName ?? "",
+          address: family.address ?? "",
+          complement: family.complement ?? "",
+          postalCode: family.postalCode ?? "",
+          city: family.city ?? "",
+          country: family.country ?? "",
+          phone1: family.phone1 ?? "",
+          phone2: family.phone2 ?? "",
+          email: family.email ?? "",
+          partner: family.partner ?? "",
+        },
+        ...(family.secondaryAdults ?? []).map((adult) => ({
+          lastName: adult.lastName ?? "",
+          firstName: adult.firstName ?? "",
+          address: adult.address ?? "",
+          complement: adult.complement ?? "",
+          postalCode: adult.postalCode ?? "",
+          city: adult.city ?? "",
+          country: adult.country ?? "",
+          phone1: adult.phone ?? "",
+          phone2: adult.phone2 ?? "",
+          email: adult.email ?? "",
+          partner: adult.partner ?? "",
+        })),
+      ];
+
       if (hasFilters) {
         const matches = [
-          !searchFilters.lastName || family.lastName.toLowerCase().includes(searchFilters.lastName.toLowerCase()),
-          !searchFilters.firstName || family.firstName.toLowerCase().includes(searchFilters.firstName.toLowerCase()),
-          !searchFilters.address || (family.address ?? "").toLowerCase().includes(searchFilters.address.toLowerCase()),
-          !searchFilters.postalCode || (family.postalCode ?? "").toLowerCase().includes(searchFilters.postalCode.toLowerCase()),
-          !searchFilters.city || (family.city ?? "").toLowerCase().includes(searchFilters.city.toLowerCase()),
-          !searchFilters.country || (family.country ?? "").toLowerCase().includes(searchFilters.country.toLowerCase()),
-          !searchFilters.phone1 || (family.phone1 ?? "").toLowerCase().includes(searchFilters.phone1.toLowerCase()),
-          !searchFilters.phone2 || (family.phone2 ?? "").toLowerCase().includes(searchFilters.phone2.toLowerCase()),
-          !searchFilters.email || (family.email ?? "").toLowerCase().includes(searchFilters.email.toLowerCase()),
-          !searchFilters.partner || (family.partner ?? "").toLowerCase().includes(searchFilters.partner.toLowerCase()),
+          !searchFilters.lastName ||
+            allAdults.some((adult) =>
+              adult.lastName.toLowerCase().includes(searchFilters.lastName.toLowerCase()),
+            ),
+          !searchFilters.firstName ||
+            allAdults.some((adult) =>
+              adult.firstName.toLowerCase().includes(searchFilters.firstName.toLowerCase()),
+            ),
+          !searchFilters.address ||
+            allAdults.some((adult) =>
+              adult.address.toLowerCase().includes(searchFilters.address.toLowerCase()) ||
+              adult.complement.toLowerCase().includes(searchFilters.address.toLowerCase()),
+            ),
+          !searchFilters.postalCode ||
+            allAdults.some((adult) =>
+              adult.postalCode.toLowerCase().includes(searchFilters.postalCode.toLowerCase()),
+            ),
+          !searchFilters.city ||
+            allAdults.some((adult) =>
+              adult.city.toLowerCase().includes(searchFilters.city.toLowerCase()),
+            ),
+          !searchFilters.country ||
+            allAdults.some((adult) =>
+              adult.country.toLowerCase().includes(searchFilters.country.toLowerCase()),
+            ),
+          !searchFilters.phone1 ||
+            allAdults.some((adult) =>
+              adult.phone1.toLowerCase().includes(searchFilters.phone1.toLowerCase()),
+            ),
+          !searchFilters.phone2 ||
+            allAdults.some((adult) =>
+              adult.phone2.toLowerCase().includes(searchFilters.phone2.toLowerCase()),
+            ),
+          !searchFilters.email ||
+            allAdults.some((adult) =>
+              adult.email.toLowerCase().includes(searchFilters.email.toLowerCase()),
+            ),
+          !searchFilters.partner ||
+            allAdults.some((adult) =>
+              adult.partner.toLowerCase().includes(searchFilters.partner.toLowerCase()),
+            ),
           !searchFilters.childLastName ||
             family.children.some((child) =>
               (child.lastName ?? "").toLowerCase().includes(searchFilters.childLastName.toLowerCase()),
@@ -758,6 +834,22 @@ export default function ClientsPage() {
         return true;
       }
 
+      const adultStrings = allAdults.flatMap((adult) =>
+        [
+          adult.lastName,
+          adult.firstName,
+          adult.address,
+          adult.complement,
+          adult.postalCode,
+          adult.city,
+          adult.country,
+          adult.phone1,
+          adult.phone2,
+          adult.email,
+          adult.partner,
+        ].filter(Boolean),
+      );
+
       const haystack = [
         family.id,
         family.lastName,
@@ -770,6 +862,7 @@ export default function ClientsPage() {
         family.phone2,
         family.email,
         family.partner,
+        ...adultStrings,
       ]
         .filter(Boolean)
         .join(" ")
@@ -777,7 +870,7 @@ export default function ClientsPage() {
 
       return haystack.includes(term);
     });
-  }, [orderedFamilies, searchFilters, searchTerm]);
+  }, [orderedFamilies, searchFilters, searchTerm, hasActiveSearch]);
 
   const displayedFamilies = useMemo(
     () => filteredFamilies,
@@ -1679,9 +1772,13 @@ export default function ClientsPage() {
             </div>
           </div>
           <div className="px-8 pb-4 text-sm text-[#5c606b]">
-            {filteredFamilies.length > 1
-              ? `Résultats : ${filteredFamilies.length}`
-              : `Résultat : ${filteredFamilies.length}`}
+            {hasActiveSearch ? (
+              filteredFamilies.length > 1
+                ? `Résultats : ${filteredFamilies.length}`
+                : `Résultat : ${filteredFamilies.length}`
+            ) : (
+              "Effectuez une recherche pour afficher les dossiers."
+            )}
           </div>
           {isSearchPanelOpen ? (
             <div className="mx-auto mb-4 grid w-full max-w-5xl gap-3 rounded-2xl border border-[#d4d7df] bg-white p-4 text-sm text-[#2b2f36] shadow-sm">
@@ -1894,77 +1991,83 @@ export default function ClientsPage() {
               </div>
             </div>
           ) : null}
-          <div className="mx-auto mb-6 w-full max-w-5xl overflow-hidden rounded-2xl border border-[#e6e9f0] bg-red-200 shadow-sm">
-            <div
-              className="max-h-[300px] overflow-y-auto overscroll-y-contain touch-pan-y sm:max-h-[320px]"
-              style={{ WebkitOverflowScrolling: "touch" }}
-            >
-              <table className="w-full border-collapse bg-white text-sm text-[#2b2f36]">
-                <thead className="sticky top-0 z-10 text-left text-xs font-semibold uppercase tracking-[0.18em] text-[#A56A57] shadow">
-                  <tr className="bg-[#F4E3DD]">
-                    <th className="px-5 py-3">ID client</th>
-                    <th className="px-5 py-3">Nom du client</th>
-                    <th className="px-5 py-3">Code postal</th>
-                    <th className="px-5 py-3">Ville</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white">
-                  {paddedFamilies.every((item) => item === null) ? (
-                    <tr>
-                      <td
-                        className="px-5 py-6 text-center text-sm text-[#7f8696]"
-                        colSpan={4}
-                      >
-                        Aucune famille enregistrée pour le moment.
-                      </td>
+          {hasActiveSearch ? (
+            <div className="mx-auto mb-6 w-full max-w-5xl overflow-hidden rounded-2xl border border-[#e6e9f0] bg-red-200 shadow-sm">
+              <div
+                className="max-h-[300px] overflow-y-auto overscroll-y-contain touch-pan-y sm:max-h-[320px]"
+                style={{ WebkitOverflowScrolling: "touch" }}
+              >
+                <table className="w-full border-collapse bg-white text-sm text-[#2b2f36]">
+                  <thead className="sticky top-0 z-10 text-left text-xs font-semibold uppercase tracking-[0.18em] text-[#A56A57] shadow">
+                    <tr className="bg-[#F4E3DD]">
+                      <th className="px-5 py-3">ID client</th>
+                      <th className="px-5 py-3">Nom du client</th>
+                      <th className="px-5 py-3">Code postal</th>
+                      <th className="px-5 py-3">Ville</th>
                     </tr>
-                  ) : (
-                    paddedFamilies.map((item, index) => {
-                      if (!item) {
+                  </thead>
+                  <tbody className="bg-white">
+                    {paddedFamilies.every((item) => item === null) ? (
+                      <tr>
+                        <td
+                          className="px-5 py-6 text-center text-sm text-[#7f8696]"
+                          colSpan={4}
+                        >
+                          Aucune famille enregistrée pour le moment.
+                        </td>
+                      </tr>
+                    ) : (
+                      paddedFamilies.map((item, index) => {
+                        if (!item) {
+                          return (
+                            <tr
+                              key={`placeholder-${index}`}
+                              className="border-t border-[#e3e6ed] bg-white/60 text-[#9aa0ad]"
+                            >
+                              <td className="px-5 py-3">—</td>
+                              <td className="px-5 py-3">—</td>
+                              <td className="px-5 py-3">—</td>
+                              <td className="px-5 py-3">—</td>
+                            </tr>
+                          );
+                        }
+
+                        const isSelected = selectedFamilyId === item.id;
                         return (
                           <tr
-                            key={`placeholder-${index}`}
-                            className="border-t border-[#e3e6ed] bg-white/60 text-[#9aa0ad]"
+                            key={item.id}
+                            className={`cursor-pointer border-t border-[#e3e6ed] transition hover:bg-[#f7f8fb] focus:bg-[#f0f3f8] ${isSelected ? "bg-[#f0f3f8]" : ""}`}
+                            onClick={() => handleSelectFamily(item.id)}
+                            onKeyDown={handleRowKeyDown(item.id)}
+                            tabIndex={0}
+                            role="button"
+                            aria-pressed={isSelected}
                           >
-                            <td className="px-5 py-3">—</td>
-                            <td className="px-5 py-3">—</td>
-                            <td className="px-5 py-3">—</td>
-                            <td className="px-5 py-3">—</td>
+                            <td className="px-5 py-3 font-semibold text-[#1f2330]">
+                              {item.id}
+                            </td>
+                            <td className="px-5 py-3 text-[#2b2f36]">
+                              {formatPrimaryAdultName(item)}
+                            </td>
+                            <td className="px-5 py-3 text-[#4d525d]">
+                              {item.postalCode}
+                            </td>
+                            <td className="px-5 py-3 text-[#2b2f36]">
+                              {item.city}
+                            </td>
                           </tr>
                         );
-                      }
-
-                      const isSelected = selectedFamilyId === item.id;
-                      return (
-                        <tr
-                          key={item.id}
-                        className={`cursor-pointer border-t border-[#e3e6ed] transition hover:bg-[#f7f8fb] focus:bg-[#f0f3f8] ${isSelected ? "bg-[#f0f3f8]" : ""}`}
-                          onClick={() => handleSelectFamily(item.id)}
-                          onKeyDown={handleRowKeyDown(item.id)}
-                          tabIndex={0}
-                          role="button"
-                          aria-pressed={isSelected}
-                        >
-                          <td className="px-5 py-3 font-semibold text-[#1f2330]">
-                            {item.id}
-                          </td>
-                          <td className="px-5 py-3 text-[#2b2f36]">
-                            {formatPrimaryAdultName(item)}
-                          </td>
-                          <td className="px-5 py-3 text-[#4d525d]">
-                            {item.postalCode}
-                          </td>
-                          <td className="px-5 py-3 text-[#2b2f36]">
-                            {item.city}
-                          </td>
-                        </tr>
-                      );
-                    })
-                  )}
-                </tbody>
-              </table>
+                      })
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="mx-auto mb-6 w-full max-w-5xl rounded-2xl border border-dashed border-[#d4d7df] bg-white px-6 py-8 text-center text-sm text-[#5c606b] shadow-sm">
+              Lancez une recherche pour afficher les dossiers parents.
+            </div>
+          )}
         </header>
 
         <section className="mx-auto w-full max-w-6xl rounded-3xl border border-[#d4d7df] bg-[#FDEFE8] shadow-xl">
@@ -2085,7 +2188,7 @@ export default function ClientsPage() {
                     </label>
                     <label className="space-y-1">
                       <span className="text-[11px] tracking-[0.08em]">Rôle</span>
-                      <input
+                      <select
                         className={`w-full rounded-lg border border-[#4b5163] px-3 py-2 text-sm font-medium text-[#1f2330] outline-none ${fieldBg}`}
                         value={familyForm.primaryRole ?? ""}
                         onChange={(event) =>
@@ -2094,8 +2197,13 @@ export default function ClientsPage() {
                             primaryRole: event.target.value,
                           }))
                         }
-                        placeholder="Ex : Mère, Père, Tuteur légal..."
-                      />
+                      >
+                        {PRIMARY_ROLE_OPTIONS.map((option) => (
+                          <option key={option || "empty"} value={option}>
+                            {option || "Sélectionner"}
+                          </option>
+                        ))}
+                      </select>
                     </label>
                   </div>
                   <p className="mt-4 text-[10px] font-medium uppercase tracking-[0.14em] text-[#cfd1d8]">

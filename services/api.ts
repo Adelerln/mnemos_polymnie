@@ -728,7 +728,7 @@ export const saveFamily = async (family: FamilyRecord): Promise<FamilyRecord> =>
       {
         is_primary: true,
         adult_id: adultId,
-        role: "AUTRE",
+        role: family.primaryRole ?? null,
         can_be_contacted: true,
         adult: {
           civility: family.civility,
