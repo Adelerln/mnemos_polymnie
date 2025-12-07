@@ -2,6 +2,7 @@
 
 import {
   Suspense,
+  useEffect,
   useState,
   type ChangeEvent,
   type FormEvent,
@@ -15,7 +16,6 @@ type SejourFormState = {
   periodeGlobale: string;
   dateDebut: string;
   dateFin: string;
-  prixBase: string;
   nomCommum: string;
   ddcsCentre: string;
   ddcsComplementaire: string;
@@ -32,7 +32,6 @@ const createEmptySejour = (): SejourFormState => ({
   periodeGlobale: "",
   dateDebut: "",
   dateFin: "",
-  prixBase: "",
   nomCommum: "",
   ddcsCentre: "",
   ddcsComplementaire: "",
@@ -62,6 +61,8 @@ function SejoursPageContent() {
     saison: "",
     reference: "",
   });
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isSearchPanelOpen, setIsSearchPanelOpen] = useState(false);
   const [form, setForm] = useState<SejourFormState>(() => createEmptySejour());
   const [sejourList] = useState<Array<{ id: number; reference: string; centre: string; annee: string; periode: string }>>([]);
   const assuranceRows: Array<{ id: number; name: string; value: string; unit: string }> = [];
@@ -109,64 +110,156 @@ function SejoursPageContent() {
     // TODO: connect to Supabase
   };
 
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        setIsSearchPanelOpen((open) => !open);
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
+
+  const filteredSejours = sejourList.filter((item) => {
+    const term = searchTerm.trim().toLowerCase();
+    const matchesFilters =
+      (!filters.annee || item.annee.toLowerCase().includes(filters.annee.toLowerCase())) &&
+      (!filters.centre || item.centre.toLowerCase().includes(filters.centre.toLowerCase())) &&
+      (!filters.saison || item.periode.toLowerCase().includes(filters.saison.toLowerCase())) &&
+      (!filters.reference || item.reference.toLowerCase().includes(filters.reference.toLowerCase()));
+    if (!matchesFilters) return false;
+    if (!term) return true;
+    return (
+      item.reference.toLowerCase().includes(term) ||
+      item.centre.toLowerCase().includes(term) ||
+      item.annee.toLowerCase().includes(term) ||
+      item.periode.toLowerCase().includes(term)
+    );
+  });
+
   return (
     <div className="min-h-screen bg-[#dde1e7] py-10">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 text-[#1f2330] md:px-8">
         <header className="rounded-2xl border border-[#c9ccd5] bg-white/90 px-6 py-5 shadow-lg">
-          <h1 className="text-3xl font-semibold tracking-tight text-[#1f2330]">
-            Gestion des séjours
-          </h1>
-          <p className="mt-1 text-sm text-[#5c606b]">
-            Consultez et mettez à jour les informations de vos séjours.
-          </p>
-        </header>
-
-        <section className="space-y-4 rounded-2xl border border-[#d0d4dc] bg-white p-6 shadow-xl">
-          <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-[#1f2330]">
-            Recherche
-          </h2>
-          <div className="grid gap-3 lg:grid-cols-[repeat(4,minmax(0,1fr))_auto_auto_auto]">
-            <input
-              className="rounded border border-[#d4d7df] bg-white px-3 py-2 text-sm text-[#2b2f36] focus:border-[#7f8696] focus:outline-none"
-              placeholder="Année"
-              value={filters.annee}
-              onChange={handleFilterChange("annee")}
-            />
-            <input
-              className="rounded border border-[#d4d7df] bg-white px-3 py-2 text-sm text-[#2b2f36] focus:border-[#7f8696] focus:outline-none"
-              placeholder="Centre"
-              value={filters.centre}
-              onChange={handleFilterChange("centre")}
-            />
-            <input
-              className="rounded border border-[#d4d7df] bg-white px-3 py-2 text-sm text-[#2b2f36] focus:border-[#7f8696] focus:outline-none"
-              placeholder="Saison"
-              value={filters.saison}
-              onChange={handleFilterChange("saison")}
-            />
-            <input
-              className="rounded border border-[#d4d7df] bg-white px-3 py-2 text-sm text-[#2b2f36] focus:border-[#7f8696] focus:outline-none"
-              placeholder="Période"
-            />
-            <button className="inline-flex items-center justify-center rounded-md border border-[#d4d7df] bg-[#f7f8fb] px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#2b2f36] transition hover:bg-[#eef1f7]">
-              🔍
-            </button>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h1 className="text-3xl font-semibold tracking-tight text-[#1f2330]">
+                Gestion des séjours
+              </h1>
+              <p className="mt-1 text-sm text-[#5c606b]">
+                Consultez et mettez à jour les informations de vos séjours.
+              </p>
+            </div>
             <button
               type="button"
-              onClick={handleReset}
-              className="inline-flex items-center justify-center rounded-md border border-[#d4d7df] bg-[#f7f8fb] px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#2b2f36] transition hover:bg-[#eef1f7]"
+              className="inline-flex items-center gap-2 rounded-md border border-[#ccd0d8] bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#2b2f36] transition hover:border-[#7f8696] hover:bg-[#f7f8fb]"
+              onClick={() => setIsSearchPanelOpen((open) => !open)}
             >
-              ⟳
-            </button>
-            <button className="inline-flex items-center justify-center rounded-md border border-[#d4d7df] bg-[#f7f8fb] px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#2b2f36] transition hover:bg-[#eef1f7]">
-              Trier
+              {isSearchPanelOpen ? "Fermer la recherche" : "Ouvrir la recherche"}
+              <span className="rounded bg-[#f0f1f5] px-2 py-0.5 text-[10px] font-semibold text-[#5c606b]">
+                ⌘K
+              </span>
             </button>
           </div>
-          <textarea
-            className="h-40 w-full rounded border border-[#d4d7df] bg-[#f7f8fb] px-3 py-2 text-sm text-[#2b2f36] focus:border-[#7f8696] focus:outline-none"
-            placeholder="Résultats de la recherche"
-            readOnly
-          />
+          <div className="mt-2 text-sm text-[#5c606b]">
+            {filteredSejours.length > 1
+              ? `Résultats : ${filteredSejours.length}`
+              : `Résultat : ${filteredSejours.length}`}
+          </div>
+          {isSearchPanelOpen ? (
+            <div className="mt-4 grid gap-3 rounded-2xl border border-[#d4d7df] bg-white p-4 shadow-sm text-sm text-[#2b2f36]">
+              <div className="grid gap-3 md:grid-cols-4">
+                <input
+                  className="rounded border border-[#d4d7df] bg-white px-3 py-2 text-sm text-[#2b2f36] focus:border-[#7f8696] focus:outline-none"
+                  placeholder="Année"
+                  value={filters.annee}
+                  onChange={handleFilterChange("annee")}
+                />
+                <input
+                  className="rounded border border-[#d4d7df] bg-white px-3 py-2 text-sm text-[#2b2f36] focus:border-[#7f8696] focus:outline-none"
+                  placeholder="Centre"
+                  value={filters.centre}
+                  onChange={handleFilterChange("centre")}
+                />
+                <input
+                  className="rounded border border-[#d4d7df] bg-white px-3 py-2 text-sm text-[#2b2f36] focus:border-[#7f8696] focus:outline-none"
+                  placeholder="Saison / période"
+                  value={filters.saison}
+                  onChange={handleFilterChange("saison")}
+                />
+                <input
+                  className="rounded border border-[#d4d7df] bg-white px-3 py-2 text-sm text-[#2b2f36] focus:border-[#7f8696] focus:outline-none"
+                  placeholder="Référence"
+                  value={filters.reference}
+                  onChange={handleFilterChange("reference")}
+                />
+              </div>
+              <input
+                className="rounded border border-[#d4d7df] bg-white px-3 py-2 text-sm text-[#2b2f36] focus:border-[#7f8696] focus:outline-none"
+                placeholder="Recherche libre (référence, centre, période…)"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsSearchPanelOpen(false)}
+                  className="inline-flex items-center justify-center rounded-md border border-[#d4d7df] bg-[#f7f8fb] px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#2b2f36] transition hover:bg-[#eef1f7]"
+                >
+                  Fermer
+                </button>
+                <button
+                  type="button"
+                  onClick={handleReset}
+                  className="inline-flex items-center justify-center rounded-md border border-[#d4d7df] bg-[#f7f8fb] px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#2b2f36] transition hover:bg-[#eef1f7]"
+                >
+                  Réinitialiser
+                </button>
+              </div>
+            </div>
+          ) : null}
+        </header>
+
+        <section className="overflow-hidden rounded-2xl border border-[#d0d4dc] bg-white shadow-xl">
+          <div className="max-h-[360px] overflow-y-auto">
+            <table className="w-full border-collapse text-sm text-[#2b2f36]">
+              <thead className="sticky top-0 z-10 text-left text-xs font-semibold uppercase tracking-[0.16em] text-[#A56A57] shadow">
+                <tr className="bg-[#F4E3DD]">
+                  <th className="px-5 py-3">Référence</th>
+                  <th className="px-5 py-3">Centre</th>
+                  <th className="px-5 py-3">Année</th>
+                  <th className="px-5 py-3">Période</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white">
+                {filteredSejours.length === 0 ? (
+                  <tr>
+                    <td
+                      className="px-5 py-6 text-center text-sm text-[#7f8696]"
+                      colSpan={4}
+                    >
+                      Aucun séjour pour le moment. Lancez une recherche (⌘K) ou ajoutez un séjour.
+                    </td>
+                  </tr>
+                ) : (
+                  filteredSejours.map((item) => (
+                    <tr
+                      key={item.id}
+                      className="border-t border-[#e3e6ed] transition hover:bg-[#f7f8fb]"
+                    >
+                      <td className="px-5 py-3 font-semibold text-[#1f2330]">
+                        {item.reference}
+                      </td>
+                      <td className="px-5 py-3 text-[#2b2f36]">{item.centre}</td>
+                      <td className="px-5 py-3 text-[#2b2f36]">{item.annee}</td>
+                      <td className="px-5 py-3 text-[#2b2f36]">{item.periode}</td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </section>
 
         <form
@@ -257,22 +350,6 @@ function SejoursPageContent() {
                     className="rounded border border-white/30 bg-white/20 px-3 py-2 text-sm text-white focus:border-white focus:outline-none"
                     value={form.annee}
                     onChange={handleFormChange("annee")}
-                  />
-                </label>
-                <label className="flex flex-col gap-1">
-                  Période globale
-                  <input
-                    className="rounded border border-white/30 bg-white/20 px-3 py-2 text-sm text-white focus:border-white focus:outline-none"
-                    value={form.periodeGlobale}
-                    onChange={handleFormChange("periodeGlobale")}
-                  />
-                </label>
-                <label className="flex flex-col gap-1">
-                  Prix de base
-                  <input
-                    className="rounded border border-white/30 bg-white/20 px-3 py-2 text-sm text-white focus:border-white focus:outline-none"
-                    value={form.prixBase}
-                    onChange={handleFormChange("prixBase")}
                   />
                 </label>
               </div>

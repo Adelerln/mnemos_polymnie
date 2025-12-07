@@ -9,6 +9,7 @@ export type SecondaryContact = {
   adultId?: string | null;
   position?: number | null;
   canBeContacted?: boolean;
+  canBeContactedGlobal?: boolean;
   lastName: string;
   firstName: string;
   role: string;
@@ -70,6 +71,7 @@ type FamilyRow = {
     adult_id?: string;
     role?: string | null;
     can_be_contacted?: boolean | null;
+    can_be_contacted_global?: boolean | null;
     position?: number | null;
     adult: {
       civility: string | null;
@@ -134,6 +136,25 @@ export type UpsertSecondaryAdultInput = {
   role: string | null;
   position?: number | null;
   canBeContacted?: boolean;
+  canBeContactedGlobal?: boolean;
+};
+
+export type AdultDuplicateMatch = {
+  id: string;
+  first_name: string | null;
+  last_name: string | null;
+  email: string | null;
+  phone_1: string | null;
+  phone_2: string | null;
+  address: string | null;
+  complement: string | null;
+  postal_code: string | null;
+  city: string | null;
+  country: string | null;
+  family_links: Array<{
+    family_id: number | null;
+    family: { id_client: string | null; label: string | null } | null;
+  }>;
 };
 
 const resolvePartnerId = async (partnerName: string | null | undefined) => {
@@ -285,6 +306,7 @@ export const upsertSecondaryAdult = async ({
   role,
   position,
   canBeContacted,
+  canBeContactedGlobal,
 }: UpsertSecondaryAdultInput): Promise<string> => {
   const partnerId = await resolvePartnerId(partnerName || null);
 
@@ -353,6 +375,7 @@ export const upsertSecondaryAdult = async ({
         role: role ?? null,
         position: position ?? 1,
         can_be_contacted: canBeContacted ?? true,
+        can_be_contacted_global: canBeContactedGlobal ?? canBeContacted ?? true,
       },
       { onConflict: "family_id,adult_id" },
     );
@@ -394,6 +417,7 @@ export type FamilyRecord = {
       role: string | null;
       position: number | null;
       canBeContacted: boolean;
+      canBeContactedGlobal?: boolean;
       partner?: string;
     }
   >;
@@ -469,6 +493,8 @@ const mapRowToFamilyRecord = (row: FamilyRow): FamilyRecord => {
           lastName: secondaryAdult.adult.last_name ?? "",
           firstName: secondaryAdult.adult.first_name ?? "",
           role: secondaryAdult.role ?? "",
+          canBeContactedGlobal:
+            secondaryAdult.can_be_contacted_global ?? secondaryAdult.can_be_contacted ?? true,
           phone: secondaryAdult.adult.phone_1 ?? "",
           phone2: secondaryAdult.adult.phone_2 ?? "",
           address: secondaryAdult.adult.address ?? "",
@@ -484,6 +510,7 @@ const mapRowToFamilyRecord = (row: FamilyRow): FamilyRecord => {
       role: link.role ?? null,
       position: link.position ?? null,
       canBeContacted: Boolean(link.can_be_contacted ?? true),
+      canBeContactedGlobal: link.can_be_contacted_global ?? link.can_be_contacted ?? true,
       civility: link.adult?.civility ?? "",
       lastName: link.adult?.last_name ?? "",
       firstName: link.adult?.first_name ?? "",
@@ -511,6 +538,45 @@ const mapFamilyRecordToRow = (family: FamilyRecord): FamilyRowPayloadForSave => 
   notes: family.notes ?? null,
   email: family.familyEmail ?? null,
 });
+
+export const findAdultsByName = async (
+  firstName: string,
+  lastName: string,
+): Promise<AdultDuplicateMatch[]> => {
+  const cleanFirst = firstName.trim();
+  const cleanLast = lastName.trim();
+  if (!cleanFirst || !cleanLast) return [];
+
+  const { data, error } = await supabase
+    .from("adults")
+    .select(
+      `
+        id,
+        first_name,
+        last_name,
+        email,
+        phone_1,
+        phone_2,
+        address,
+        complement,
+        postal_code,
+        city,
+        country,
+        family_links:family_adults(
+          family_id,
+          family:families(id_client, label)
+        )
+      `,
+    )
+    .ilike("first_name", cleanFirst)
+    .ilike("last_name", cleanLast);
+
+  if (error) {
+    throw new Error(`Erreur Supabase (recherche doublon adulte): ${error.message}`);
+  }
+
+  return (data as AdultDuplicateMatch[]) ?? [];
+};
 
 const generateChildId = () => {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
@@ -594,6 +660,7 @@ export const fetchFamilies = async (): Promise<FamilyRecord[]> => {
           role,
           position,
           can_be_contacted,
+          can_be_contacted_global,
           adult:adults(
             civility,
             first_name,

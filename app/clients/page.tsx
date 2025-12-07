@@ -1702,6 +1702,14 @@ export default function ClientsPage() {
     setIsDirty(true);
   };
 
+  const handleConfirmManualAddress = () => {
+    setAddressSuggestions([]);
+    setAddressQuery("");
+    setIsAddressLoading(false);
+    setAddressError(null);
+    setIsDirty(true);
+  };
+
   const handleSelectSecondaryAddressSuggestion = (suggestion: AddressSuggestion) => {
     setAdultForm((prev) => ({
       ...prev,
@@ -1712,6 +1720,13 @@ export default function ClientsPage() {
     }));
     setSecondaryAddressQuery("");
     setSecondaryAddressSuggestions([]);
+    setIsSecondaryAddressLoading(false);
+    setSecondaryAddressError(null);
+  };
+
+  const handleConfirmSecondaryManualAddress = () => {
+    setSecondaryAddressSuggestions([]);
+    setSecondaryAddressQuery("");
     setIsSecondaryAddressLoading(false);
     setSecondaryAddressError(null);
   };
@@ -2366,23 +2381,32 @@ export default function ClientsPage() {
                               </p>
                             ) : null}
                             {addressSuggestions.length > 0 ? (
-                              <div className="mt-2 rounded-lg border border-[#ccd0d8] bg-white shadow-lg">
-                                <ul className="divide-y divide-[#e7e9ef]">
-                                  {addressSuggestions.map((suggestion, index) => (
-                                    <li
-                                      key={`${suggestion.label}-${index}`}
-                                      className="cursor-pointer px-3 py-2 text-sm hover:bg-[#f7f8fb]"
-                                      onClick={() => handleSelectAddressSuggestion(suggestion)}
-                                    >
-                                      <p className="font-semibold text-[#1f2330]">
-                                        {suggestion.label}
-                                      </p>
-                                      <p className="text-xs text-[#5c606b]">
-                                        {suggestion.postcode} {suggestion.city}
-                                      </p>
-                                    </li>
-                                  ))}
-                                </ul>
+                              <div className="mt-2 space-y-2">
+                                <div className="rounded-lg border border-[#ccd0d8] bg-white shadow-lg">
+                                  <ul className="divide-y divide-[#e7e9ef]">
+                                    {addressSuggestions.map((suggestion, index) => (
+                                      <li
+                                        key={`${suggestion.label}-${index}`}
+                                        className="cursor-pointer px-3 py-2 text-sm hover:bg-[#f7f8fb]"
+                                        onClick={() => handleSelectAddressSuggestion(suggestion)}
+                                      >
+                                        <p className="font-semibold text-[#1f2330]">
+                                          {suggestion.label}
+                                        </p>
+                                        <p className="text-xs text-[#5c606b]">
+                                          {suggestion.postcode} {suggestion.city}
+                                        </p>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+                                <button
+                                  type="button"
+                                  className="text-xs font-semibold uppercase tracking-[0.12em] text-[#b45b12] transition hover:text-[#8f4104]"
+                                  onClick={handleConfirmManualAddress}
+                                >
+                                  Utiliser l&apos;adresse saisie
+                                </button>
                               </div>
                             ) : null}
                           </label>
@@ -2926,23 +2950,32 @@ export default function ClientsPage() {
                   </p>
                 ) : null}
                 {secondaryAddressSuggestions.length > 0 ? (
-                  <div className="mt-2 rounded-lg border border-white/30 bg-white/90 text-[#1f2330] shadow-lg">
-                    <ul className="divide-y divide-[#e7e9ef]">
-                      {secondaryAddressSuggestions.map((suggestion, index) => (
-                        <li
-                          key={`${suggestion.label}-${index}`}
-                          className="cursor-pointer px-3 py-2 text-sm hover:bg-[#f7f8fb]"
-                          onClick={() => handleSelectSecondaryAddressSuggestion(suggestion)}
-                        >
-                          <p className="font-semibold text-[#1f2330]">
-                            {suggestion.label}
-                          </p>
-                          <p className="text-xs text-[#5c606b]">
-                            {suggestion.postcode} {suggestion.city}
-                          </p>
-                        </li>
-                      ))}
-                    </ul>
+                  <div className="mt-2 space-y-2">
+                    <div className="rounded-lg border border-white/30 bg-white/90 text-[#1f2330] shadow-lg">
+                      <ul className="divide-y divide-[#e7e9ef]">
+                        {secondaryAddressSuggestions.map((suggestion, index) => (
+                          <li
+                            key={`${suggestion.label}-${index}`}
+                            className="cursor-pointer px-3 py-2 text-sm hover:bg-[#f7f8fb]"
+                            onClick={() => handleSelectSecondaryAddressSuggestion(suggestion)}
+                          >
+                            <p className="font-semibold text-[#1f2330]">
+                              {suggestion.label}
+                            </p>
+                            <p className="text-xs text-[#5c606b]">
+                              {suggestion.postcode} {suggestion.city}
+                            </p>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                    <button
+                      type="button"
+                      className="text-xs font-semibold uppercase tracking-[0.12em] text-[#b45b12] transition hover:text-[#8f4104]"
+                      onClick={handleConfirmSecondaryManualAddress}
+                    >
+                      Utiliser l&apos;adresse saisie
+                    </button>
                   </div>
                 ) : null}
               </label>
