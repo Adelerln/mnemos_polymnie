@@ -396,6 +396,7 @@ export default function ClientsPage() {
   const [childForm, setChildForm] = useState<ChildFormState>(() =>
     createEmptyChildForm(),
   );
+  const [editingChildId, setEditingChildId] = useState<string | null>(null);
   const [isChildFormOpen, setIsChildFormOpen] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [childError, setChildError] = useState<string | null>(null);
@@ -914,6 +915,7 @@ export default function ClientsPage() {
     setCityLookupError(null);
     setIsChildFormOpen(false);
     setChildForm(createEmptyChildForm());
+    setEditingChildId(null);
     setSaveError(null);
     setChildError(null);
     setFeedback(null);
@@ -931,6 +933,7 @@ export default function ClientsPage() {
     setFamilyForm(createEmptyFamilyForm(nextFamilyId));
     setSecondaryContactEnabled(false);
     setChildForm(createEmptyChildForm());
+    setEditingChildId(null);
     setIsChildFormOpen(false);
     setSaveError(null);
     setChildError(null);
@@ -955,6 +958,7 @@ export default function ClientsPage() {
     setFamilyForm(createEmptyFamilyForm(freshId));
     setSecondaryContactEnabled(false);
     setChildForm(createEmptyChildForm());
+    setEditingChildId(null);
     setIsChildFormOpen(false);
     setSaveError(null);
     setChildError(null);
@@ -1291,8 +1295,30 @@ export default function ClientsPage() {
     router.push(`/fiche?${params.toString()}`);
   };
 
+  const handleEditChild = (childId: string) => {
+    const child = familyForm.children.find((item) => item.id === childId);
+
+    if (!child) {
+      setChildError("Impossible de trouver les informations de l'enfant.");
+      return;
+    }
+
+    setChildForm({
+      lastName: child.lastName,
+      firstName: child.firstName,
+      birthDate: child.birthDate,
+      gender: child.gender ?? "",
+    });
+    setEditingChildId(childId);
+    setIsChildFormOpen(true);
+    setChildError(null);
+    setFeedback(null);
+  };
+
   const handleAddChild = async () => {
     setChildError(null);
+    const isEditing = Boolean(editingChildId);
+    const editingId = editingChildId;
 
     if (!childForm.lastName.trim() || !childForm.firstName.trim()) {
       setChildError("Nom et prénom de l'enfant sont requis.");
@@ -1304,16 +1330,24 @@ export default function ClientsPage() {
       return;
     }
 
+    const existingChild = editingId
+      ? familyForm.children.find((child) => child.id === editingId)
+      : null;
+
     const newChild: Child = {
-      id: generateChildId(),
+      id: editingId ?? generateChildId(),
       lastName: childForm.lastName.trim(),
       firstName: childForm.firstName.trim(),
       birthDate: childForm.birthDate,
       gender: childForm.gender,
-      health: createEmptyHealthForm(),
+      health: existingChild?.health ?? createEmptyHealthForm(),
     };
 
-    const nextChildren = [...familyForm.children, newChild];
+    const nextChildren = editingId
+      ? familyForm.children.map((child) =>
+          child.id === editingId ? { ...child, ...newChild } : child,
+        )
+      : [...familyForm.children, newChild];
 
     setFamilyForm((prev) => ({
       ...prev,
@@ -1322,12 +1356,17 @@ export default function ClientsPage() {
     setIsDirty(true);
 
     setChildForm(createEmptyChildForm());
+    setEditingChildId(null);
     setIsChildFormOpen(false);
 
     const hasExistingFamily = Boolean(familyForm.rowId || selectedFamilyId);
 
     if (!hasExistingFamily) {
-      setFeedback("Enfant ajouté. Enregistrez la fiche pour le conserver.");
+      setFeedback(
+        isEditing
+          ? "Enfant mis à jour. Enregistrez la fiche pour le conserver."
+          : "Enfant ajouté. Enregistrez la fiche pour le conserver.",
+      );
       return;
     }
 
@@ -1365,7 +1404,9 @@ export default function ClientsPage() {
         setCityOptions([savedFamily.city]);
       }
       setSelectedFamilyId(savedFamily.id);
-      setFeedback("Enfant ajouté et sauvegardé.");
+      setFeedback(
+        isEditing ? "Enfant mis à jour et sauvegardé." : "Enfant ajouté et sauvegardé.",
+      );
     } catch (error) {
       console.error("Erreur lors de la sauvegarde de l'enfant:", error);
       setChildError(
@@ -1388,10 +1429,17 @@ export default function ClientsPage() {
       setHealthFeedback(null);
     }
 
+    if (editingChildId === childId) {
+      setEditingChildId(null);
+      setChildForm(createEmptyChildForm());
+      setIsChildFormOpen(false);
+    }
+
     setFamilyForm((prev) => ({
       ...prev,
       children: prev.children.filter((child) => child.id !== childId),
     }));
+    setIsDirty(true);
   };
 
   const handleOpenHealthModal = (childId: string) => {
@@ -2400,6 +2448,8 @@ export default function ClientsPage() {
                         onClick={() => {
                           setIsChildFormOpen((open) => !open);
                           setChildError(null);
+                          setChildForm(createEmptyChildForm());
+                          setEditingChildId(null);
                         }}
                       >
                         <UserRoundPlus className="size-3.5" />
@@ -2465,6 +2515,13 @@ export default function ClientsPage() {
                                     <button
                                       type="button"
                                       className="rounded-md border border-[#d4d7df] bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#2b2f36] transition hover:bg-[#f0f3f8] cursor-pointer"
+                                      onClick={() => handleEditChild(child.id)}
+                                    >
+                                      Modifier
+                                    </button>
+                                    <button
+                                      type="button"
+                                      className="rounded-md border border-[#d4d7df] bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#2b2f36] transition hover:bg-[#f0f3f8] cursor-pointer"
                                       onClick={() => handleOpenHealthModal(child.id)}
                                     >
                                       Infos sanitaire
@@ -2487,7 +2544,7 @@ export default function ClientsPage() {
                     {isChildFormOpen ? (
                       <div className="rounded-xl border border-dashed border-[#d4d7df] bg-[#f7f8fb] p-5">
                         <h4 className="text-xs font-semibold uppercase tracking-[0.16em] text-[#1f2330]">
-                          Nouvelle fiche enfant
+                          {editingChildId ? "Modifier la fiche enfant" : "Nouvelle fiche enfant"}
                         </h4>
                         <div className="mt-3 grid gap-3 text-sm text-[#2b2f36] md:grid-cols-2">
                           <label className="flex flex-col gap-1">
@@ -2564,6 +2621,7 @@ export default function ClientsPage() {
                               setChildForm(createEmptyChildForm());
                               setIsChildFormOpen(false);
                               setChildError(null);
+                              setEditingChildId(null);
                             }}
                           >
                             Annuler
@@ -2576,7 +2634,9 @@ export default function ClientsPage() {
                           >
                             {isAutoSavingChildren
                               ? "Sauvegarde..."
-                              : "Ajouter l'enfant"}
+                              : editingChildId
+                                ? "Mettre à jour l'enfant"
+                                : "Ajouter l'enfant"}
                           </button>
                         </div>
                       </div>

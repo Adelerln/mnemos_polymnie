@@ -448,8 +448,8 @@ const mapRowToFamilyRecord = (row: FamilyRow): FamilyRecord => {
     primaryRole: primaryAdultLink?.role ?? "",
     label:
       row.label ??
-      [primaryAdult?.first_name, primaryAdult?.last_name].filter(Boolean).join(" ").trim() ||
-      row.id_client,
+      ([primaryAdult?.first_name, primaryAdult?.last_name].filter(Boolean).join(" ").trim() ||
+        row.id_client),
     civility: primaryAdult?.civility ?? "",
     lastName: primaryAdult?.last_name ?? "",
     firstName: primaryAdult?.first_name ?? "",

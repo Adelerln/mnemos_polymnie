@@ -10,8 +10,6 @@ import { supabase } from "@/lib/supabase-client";
 import { primaryNavItems } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
-const SETTINGS_LABEL = "Paramètres";
-
 export const SiteHeader = () => {
   const pathname = usePathname();
   const router = useRouter();
@@ -51,9 +49,6 @@ export const SiteHeader = () => {
     router.refresh();
   };
 
-  const navItems = primaryNavItems.filter((item) => item.label !== SETTINGS_LABEL);
-  const settingsLink = primaryNavItems.find((item) => item.label === SETTINGS_LABEL);
-
   if (isAuthPage || isLandingPage) {
     return null;
   }
@@ -67,43 +62,43 @@ export const SiteHeader = () => {
         >
           Polymnie
         </Link>
-        <nav className="hidden flex-1 items-center justify-center gap-4 text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500 md:flex">
-          {navItems.map((item) => {
-            const isActive =
-              item.href === "/"
-                ? pathname === item.href
-                : pathname?.startsWith(item.href) ?? false;
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  "relative flex-shrink-0 whitespace-nowrap pb-1.5 transition hover:text-neutral-900",
-                  isActive && "text-neutral-900"
-                )}
-              >
-                {item.label}
-                {isActive ? (
-                  <span className="absolute inset-x-0 -bottom-1 block h-0.5 bg-neutral-900" />
-                ) : null}
-              </Link>
-            );
-          })}
-        </nav>
-        <div className="flex items-center gap-4">
-          {settingsLink ? (
-            <Link
-              href={settingsLink.href}
-              className="hidden rounded-md border border-neutral-300 p-1.5 text-neutral-700 transition hover:border-neutral-900 hover:text-neutral-900 md:inline-flex"
-            >
-              <Settings className="size-5" aria-hidden />
-              <span className="sr-only">{settingsLink.label}</span>
-            </Link>
-          ) : null}
+        <div className="flex items-center gap-6">
+          <nav className="hidden items-center gap-4 text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500 md:flex">
+            {primaryNavItems.map((item) => {
+              const isActive =
+                item.href === "/"
+                  ? pathname === item.href
+                  : pathname?.startsWith(item.href) ?? false;
+              const isSettings = item.label === "Paramètres";
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    "relative flex-shrink-0 whitespace-nowrap pb-1.5 transition hover:text-neutral-900",
+                    isActive && "text-neutral-900",
+                    isSettings && "flex items-center justify-center"
+                  )}
+                >
+                  {isSettings ? (
+                    <>
+                      <Settings className="size-5" aria-hidden />
+                      <span className="sr-only">{item.label}</span>
+                    </>
+                  ) : (
+                    item.label
+                  )}
+                  {isActive ? (
+                    <span className="absolute inset-x-0 -bottom-1 block h-0.5 bg-neutral-900" />
+                  ) : null}
+                </Link>
+              );
+            })}
+          </nav>
           {user ? (
             <div
               ref={menuRef}
-              className="relative flex items-center text-xs font-medium uppercase tracking-[0.18em] text-neutral-600"
+              className="relative flex items-center gap-3 text-xs font-medium uppercase tracking-[0.18em] text-neutral-600"
             >
               <button
                 type="button"
