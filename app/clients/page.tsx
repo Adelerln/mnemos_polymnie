@@ -1331,7 +1331,7 @@ export default function ClientsPage() {
         <header className="mx-auto w-full max-w-6xl rounded-3xl border border-[#d4d7df] bg-[#F8EDE8] shadow-xl">
           <div className="flex flex-col gap-4 px-8 py-6 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <h1 className="text-2xl font-semibold tracking-tight text-[#1f2330]">
+              <h1 className="text-2xl font-semibold tracking-tight text-[#530F2B]">
                 Dossiers Clients
               </h1>
             </div>
