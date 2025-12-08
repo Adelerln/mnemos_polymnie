@@ -144,7 +144,7 @@ function SejoursPageContent() {
         <header className="rounded-3xl border border-[#f2d4de] bg-white/95 px-8 py-7 shadow-[0_25px_60px_rgba(83,15,43,0.05)]">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.5em] text-[#b58096]">Séjours</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.5em] text-[#A53E69]">Séjours</p>
               <h1 className="mt-2 text-3xl font-semibold tracking-tight text-[#2d1826]">
                 Gestion des séjours
               </h1>
