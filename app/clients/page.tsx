@@ -1749,7 +1749,7 @@ const filteredFamilies = useMemo(() => {
   return (
     <div className="min-h-screen bg-neutral-50 py-12">
       <div className="flex w-full flex-col gap-10 px-6 text-[#2b2f36] md:px-10 xl:px-16">
-        <header className="mx-auto w-full max-w-6xl rounded-3xl border border-[#d4d7df] bg-[#FCDCE9] shadow-xl">
+        <header className="mx-auto w-full max-w-6xl rounded-3xl border border-[#d4d7df] bg-[#F5DBE3] shadow-xl">
           <div className="flex flex-col gap-4 px-8 py-6 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <h1 className="text-2xl font-semibold tracking-tight text-[#530F2B]">
@@ -2086,7 +2086,7 @@ const filteredFamilies = useMemo(() => {
           )}
         </header>
 
-        <section className="mx-auto w-full max-w-6xl rounded-3xl border border-[#d4d7df] bg-[#FCDCE9] shadow-xl">
+        <section className="mx-auto w-full max-w-6xl rounded-3xl border border-[#d4d7df] bg-[#F5DBE3] shadow-xl">
           <header className="rounded-t-3xl bg-[#F4E3DD] px-8 py-5 text-white">
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-4">
@@ -3220,4 +3220,3 @@ const filteredFamilies = useMemo(() => {
     </div>
   );
 }
-
