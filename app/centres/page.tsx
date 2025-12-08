@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, type ChangeEvent } from "react";
+import { AlertTriangle, ArrowLeftCircle, PlusCircle, Save, Trash2 } from "lucide-react";
 
 import { formatFrenchPhoneNumber } from "@/lib/phone";
 import { supabase } from "@/lib/supabase-client";
@@ -244,6 +245,11 @@ export default function CentresPage() {
   };
   const formatPhone = (value: string | null) => (value ? formatFrenchPhoneNumber(value) : "—");
 
+  const baseInputClasses =
+    "w-full rounded-lg border border-[#d4d7df] px-3 py-2 text-sm text-[#1f2330] focus:outline-none";
+  const activeInputClasses = `${baseInputClasses} bg-white focus:border-[#c77845]`;
+  const inactiveInputClasses = `${baseInputClasses} bg-[#f5f6f8] text-[#1f2330]`;
+
   const handleFormChange =
     (field: keyof CentreForm) =>
     (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -255,6 +261,7 @@ export default function CentresPage() {
       }
       setForm((prev) => (prev ? { ...prev, [field]: value } : prev));
       setDirty(true);
+      setIsEditing(true);
     };
 
   const handleResetForm = () => {
@@ -277,6 +284,36 @@ export default function CentresPage() {
     } else {
       setForm(createEmptyForm());
     }
+    setDirty(false);
+    setIsEditing(false);
+  };
+
+  const handleAddNew = () => {
+    if (dirty) {
+      alert("Enregistrez ou annulez les modifications avant de créer un nouveau centre.");
+      return;
+    }
+    setSelectedCentreId(null);
+    setSelectedCentre(null);
+    setContacts([]);
+    setForm(createEmptyForm());
+    setDirty(true);
+    setIsEditing(true);
+  };
+
+  const handleDeleteCentre = async () => {
+    if (!selectedCentre?.id) return;
+    if (!confirm("Supprimer ce centre ?")) return;
+    const { error: deleteError } = await supabase.from("centres").delete().eq("id", selectedCentre.id);
+    if (deleteError) {
+      setDetailError(`Erreur lors de la suppression : ${deleteError.message}`);
+      return;
+    }
+    setCentres((prev) => prev.filter((c) => c.id !== selectedCentre.id));
+    setSelectedCentreId(null);
+    setSelectedCentre(null);
+    setContacts([]);
+    setForm(null);
     setDirty(false);
     setIsEditing(false);
   };
@@ -430,8 +467,17 @@ export default function CentresPage() {
                 : `${filteredCentres.length} centre`}
           </div>
           {error ? <p className="mt-2 text-sm text-[#b42318]">{error}</p> : null}
+        </header>
+
+        <section className="rounded-2xl border border-[#d0d4dc] bg-white shadow-xl">
+          <div className="flex items-center justify-between border-b border-[#e8ebf1] px-6 py-4">
+            <h2 className="text-sm font-semibold uppercase tracking-[0.18em] text-[#2b2f36]">Centres</h2>
+            <span className="text-sm text-[#5c606b]">
+              {filteredCentres.length} résultat{filteredCentres.length > 1 ? "s" : ""}
+            </span>
+          </div>
           {isSearchOpen ? (
-            <div className="mt-4 grid gap-3 rounded-xl border border-[#e3cfc1] bg-white/70 p-4 text-sm text-[#1f2330]">
+            <div className="mx-6 mt-4 mb-2 grid gap-3 rounded-xl border border-[#e3cfc1] bg-white/70 p-4 text-sm text-[#1f2330]">
               <div className="grid gap-3 md:grid-cols-4">
                 <input
                   className="rounded border border-[#e3cfc1] bg-white px-3 py-2 text-sm text-[#1f2330] placeholder:text-[#8c8f99] focus:border-[#c77845] focus:outline-none"
@@ -469,18 +515,12 @@ export default function CentresPage() {
               </div>
             </div>
           ) : null}
-        </header>
-
-        <section className="rounded-2xl border border-[#d0d4dc] bg-white shadow-xl">
-          <div className="flex items-center justify-between border-b border-[#e8ebf1] px-6 py-4">
-            <h2 className="text-sm font-semibold uppercase tracking-[0.18em] text-[#2b2f36]">Centres</h2>
-            <span className="text-sm text-[#5c606b]">
-              {filteredCentres.length} résultat{filteredCentres.length > 1 ? "s" : ""}
-            </span>
-          </div>
-          <div className="max-h-[520px] overflow-y-auto">
+          <div
+            className="max-h-[260px] overflow-y-auto overscroll-y-contain touch-pan-y sm:max-h-[280px]"
+            style={{ WebkitOverflowScrolling: "touch" }}
+          >
             <table className="w-full border-collapse text-sm text-[#2b2f36]">
-              <thead className="bg-[#f3f5f8] text-xs uppercase tracking-[0.14em] text-[#5c606b]">
+              <thead className="sticky top-0 z-10 bg-[#f3f5f8] text-xs uppercase tracking-[0.14em] text-[#5c606b] shadow">
                 <tr>
                   <th className="px-4 py-3 text-left">Nom du centre</th>
                   <th className="px-4 py-3 text-left">En activité ?</th>
@@ -531,7 +571,21 @@ export default function CentresPage() {
                       <td className="px-4 py-3">{centre.city || "—"}</td>
                       <td className="px-4 py-3">{centre.postal_code || "—"}</td>
                       <td className="px-4 py-3">{formatPhone(centre.phone_landline)}</td>
-                      <td className="px-4 py-3">{formatDate(centre.commission_expiry_date)}</td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2">
+                          <span>{formatDate(centre.commission_expiry_date)}</span>
+                          {centre.commission_expiry_date &&
+                          !Number.isNaN(new Date(centre.commission_expiry_date).getTime()) &&
+                          new Date(centre.commission_expiry_date) < new Date() ? (
+                            <span
+                              className="flex h-6 w-6 items-center justify-center rounded-full bg-[#fee2e2] shadow-sm ring-1 ring-[#f8b4b4]"
+                              title="Commission périmée"
+                            >
+                              <AlertTriangle className="h-4 w-4 text-[#c2410c]" />
+                            </span>
+                          ) : null}
+                        </div>
+                      </td>
                     </tr>
                   ))
                 )}
@@ -545,6 +599,46 @@ export default function CentresPage() {
             <h2 className="text-sm font-semibold uppercase tracking-[0.18em] text-[#2b2f36]">
               Informations Centres
             </h2>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleAddNew}
+                className="flex h-8 w-8 items-center justify-center rounded-full border border-[#b96d3c] text-[#b96d3c] transition hover:bg-[#f8ede5]"
+                title="Ajouter"
+              >
+                <PlusCircle className="h-3.5 w-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (!selectedCentre?.id) return;
+                  if (!confirm("Supprimer ce centre ?")) return;
+                  handleDeleteCentre();
+                }}
+                disabled={!selectedCentre?.id}
+                className="flex h-8 w-8 items-center justify-center rounded-full border border-[#b96d3c] text-[#b96d3c] transition hover:bg-[#f8ede5] disabled:cursor-not-allowed disabled:opacity-50"
+                title="Supprimer"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveForm}
+                disabled={saving || !isEditing}
+                className="flex h-8 w-8 items-center justify-center rounded-full border border-[#b96d3c] text-[#b96d3c] transition hover:bg-[#f8ede5] disabled:cursor-not-allowed disabled:opacity-50"
+                title="Enregistrer"
+              >
+                <Save className="h-3.5 w-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={handleResetForm}
+                className="flex h-8 w-8 items-center justify-center rounded-full border border-[#b96d3c] text-[#b96d3c] transition hover:bg-[#f8ede5]"
+                title="Annuler les modifications"
+              >
+                <ArrowLeftCircle className="h-3.5 w-3.5" />
+              </button>
+            </div>
           </div>
           <div className="px-6 py-5">
             {detailLoading ? (
@@ -562,9 +656,10 @@ export default function CentresPage() {
                         Nom du centre
                       </label>
                       <input
-                        className="w-full rounded-lg border border-[#d4d7df] bg-white px-3 py-2 text-sm text-[#1f2330] focus:border-[#c77845] focus:outline-none"
+                        className={isEditing ? activeInputClasses : inactiveInputClasses}
                         value={form.name}
                         onChange={handleFormChange("name")}
+                        onFocus={() => setIsEditing(true)}
                       />
                     </div>
                     <div className="flex items-center gap-2">
@@ -581,6 +676,7 @@ export default function CentresPage() {
                           checked={form.is_active}
                           onChange={handleFormChange("is_active")}
                           className="h-4 w-4 rounded border-[#c9ccd5] text-[#c77845] focus:ring-[#c77845]"
+                          onFocus={() => setIsEditing(true)}
                         />
                         En activité
                       </label>
@@ -593,28 +689,32 @@ export default function CentresPage() {
                         Adresse
                       </label>
                       <input
-                        className="w-full rounded-lg border border-[#d4d7df] bg-white px-3 py-2 text-sm text-[#1f2330] focus:border-[#c77845] focus:outline-none"
+                        className={isEditing ? activeInputClasses : inactiveInputClasses}
                         value={form.address_street}
                         onChange={handleFormChange("address_street")}
+                        onFocus={() => setIsEditing(true)}
                       />
                       <input
-                        className="w-full rounded-lg border border-[#d4d7df] bg-white px-3 py-2 text-sm text-[#1f2330] focus:border-[#c77845] focus:outline-none"
+                        className={isEditing ? activeInputClasses : inactiveInputClasses}
                         value={form.address_extra}
                         onChange={handleFormChange("address_extra")}
                         placeholder="Complément"
+                        onFocus={() => setIsEditing(true)}
                       />
                       <div className="grid grid-cols-[1fr,2fr] gap-3">
                         <input
-                          className="w-full rounded-lg border border-[#d4d7df] bg-white px-3 py-2 text-sm text-[#1f2330] focus:border-[#c77845] focus:outline-none"
+                          className={isEditing ? activeInputClasses : inactiveInputClasses}
                           value={form.postal_code}
                           onChange={handleFormChange("postal_code")}
                           placeholder="Code postal"
+                          onFocus={() => setIsEditing(true)}
                         />
                         <input
-                          className="w-full rounded-lg border border-[#d4d7df] bg-white px-3 py-2 text-sm text-[#1f2330] focus:border-[#c77845] focus:outline-none"
+                          className={isEditing ? activeInputClasses : inactiveInputClasses}
                           value={form.city}
                           onChange={handleFormChange("city")}
                           placeholder="Ville"
+                          onFocus={() => setIsEditing(true)}
                         />
                       </div>
                     </div>
@@ -625,9 +725,10 @@ export default function CentresPage() {
                           Téléphone fixe
                         </label>
                         <input
-                          className="w-full rounded-lg border border-[#d4d7df] bg-white px-3 py-2 text-sm text-[#1f2330] focus:border-[#c77845] focus:outline-none"
+                          className={isEditing ? activeInputClasses : inactiveInputClasses}
                           value={form.phone_landline}
                           onChange={handleFormChange("phone_landline")}
+                          onFocus={() => setIsEditing(true)}
                         />
                       </div>
                       <div className="space-y-1">
@@ -635,9 +736,10 @@ export default function CentresPage() {
                           Mail générique
                         </label>
                         <input
-                          className="w-full rounded-lg border border-[#d4d7df] bg-white px-3 py-2 text-sm text-[#1f2330] focus:border-[#c77845] focus:outline-none"
+                          className={isEditing ? activeInputClasses : inactiveInputClasses}
                           value={form.generic_email}
                           onChange={handleFormChange("generic_email")}
+                          onFocus={() => setIsEditing(true)}
                         />
                       </div>
                       <div className="space-y-1">
@@ -645,9 +747,10 @@ export default function CentresPage() {
                           N° DDCS
                         </label>
                         <input
-                          className="w-full rounded-lg border border-[#d4d7df] bg-white px-3 py-2 text-sm text-[#1f2330] focus:border-[#c77845] focus:outline-none"
+                          className={isEditing ? activeInputClasses : inactiveInputClasses}
                           value={form.ddcs_number}
                           onChange={handleFormChange("ddcs_number")}
+                          onFocus={() => setIsEditing(true)}
                         />
                       </div>
                     </div>
@@ -660,9 +763,10 @@ export default function CentresPage() {
                       </label>
                       <input
                         type="date"
-                        className="w-full rounded-lg border border-[#d4d7df] bg-white px-3 py-2 text-sm text-[#1f2330] focus:border-[#c77845] focus:outline-none"
+                        className={isEditing ? activeInputClasses : inactiveInputClasses}
                         value={form.commission_pv_date}
                         onChange={handleFormChange("commission_pv_date")}
+                        onFocus={() => setIsEditing(true)}
                       />
                     </div>
                     <div className="space-y-1">
@@ -671,9 +775,10 @@ export default function CentresPage() {
                       </label>
                       <input
                         type="date"
-                        className="w-full rounded-lg border border-[#d4d7df] bg-white px-3 py-2 text-sm text-[#1f2330] focus:border-[#c77845] focus:outline-none"
+                        className={isEditing ? activeInputClasses : inactiveInputClasses}
                         value={form.commission_expiry_date}
                         onChange={handleFormChange("commission_expiry_date")}
+                        onFocus={() => setIsEditing(true)}
                       />
                     </div>
                   </div>
@@ -684,9 +789,10 @@ export default function CentresPage() {
                         Latitude
                       </label>
                       <input
-                        className="w-full rounded-lg border border-[#d4d7df] bg-white px-3 py-2 text-sm text-[#1f2330] focus:border-[#c77845] focus:outline-none"
+                        className={isEditing ? activeInputClasses : inactiveInputClasses}
                         value={form.gps_latitude}
                         onChange={handleFormChange("gps_latitude")}
+                        onFocus={() => setIsEditing(true)}
                       />
                     </div>
                     <div className="space-y-1">
@@ -694,30 +800,15 @@ export default function CentresPage() {
                         Longitude
                       </label>
                       <input
-                        className="w-full rounded-lg border border-[#d4d7df] bg-white px-3 py-2 text-sm text-[#1f2330] focus:border-[#c77845] focus:outline-none"
+                        className={isEditing ? activeInputClasses : inactiveInputClasses}
                         value={form.gps_longitude}
                         onChange={handleFormChange("gps_longitude")}
+                        onFocus={() => setIsEditing(true)}
                       />
                     </div>
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-3">
-                    <button
-                      type="button"
-                      onClick={handleSaveForm}
-                      disabled={saving}
-                      className="inline-flex items-center justify-center rounded-md border border-[#b96d3c] bg-[#c77845] px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-white transition hover:bg-[#b45b12] disabled:cursor-not-allowed disabled:opacity-60"
-                    >
-                      {saving ? "Enregistrement…" : "Enregistrer"}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleResetForm}
-                      className="inline-flex items-center justify-center rounded-md border border-[#ccd0d8] bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-[#2b2f36] transition hover:bg-[#f7f8fb]"
-                    >
-                      Annuler
-                    </button>
-                  </div>
+                  <div className="flex flex-wrap items-center gap-3" />
                 </div>
 
                 <div className="space-y-3">
