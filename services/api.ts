@@ -1,15 +1,27 @@
 import { supabase } from "@/lib/supabase-client";
 
-const FAMILY_TABLE = "clients";
+const FAMILY_TABLE = "families";
 const CHILDREN_TABLE = "children";
 
 // Types partagés avec le front (camelCase)
 export type SecondaryContact = {
+  civility?: string;
+  adultId?: string | null;
+  position?: number | null;
+  canBeContacted?: boolean;
+  canBeContactedGlobal?: boolean;
   lastName: string;
   firstName: string;
   role: string;
   phone: string;
+  phone2?: string;
+  address?: string;
+  complement?: string;
+  postalCode?: string;
+  city?: string;
+  country?: string;
   email: string;
+  partner?: string;
 };
 
 export type HealthFormState = {
@@ -33,7 +45,7 @@ export type Child = {
 
 type ChildRow = {
   id: string;
-  client_id: string;
+  family_id: string;
   last_name: string | null;
   first_name: string | null;
   birth_date: string | null;
@@ -44,7 +56,6 @@ type ChildRow = {
   instructions: string | null;
   transport_notes: string | null;
   friend: string | null;
-  vacaf: string | null;
   created_at?: string;
   updated_at?: string;
 };
@@ -52,38 +63,340 @@ type ChildRow = {
 type FamilyRow = {
   id?: number;
   id_client: string;
-  civility: string | null;
-  last_name: string | null;
+  label: string | null;
+  notes: string | null;
+  email: string | null;
+  family_adults?: Array<{
+    is_primary: boolean;
+    adult_id?: string;
+    role?: string | null;
+    can_be_contacted?: boolean | null;
+    can_be_contacted_global?: boolean | null;
+    position?: number | null;
+    adult: {
+      civility: string | null;
+      first_name: string | null;
+      last_name: string | null;
+      address: string | null;
+      complement: string | null;
+      postal_code: string | null;
+      city: string | null;
+      country: string | null;
+      phone_1: string | null;
+      phone_2: string | null;
+      email: string | null;
+      notes: string | null;
+      partner: { name: string | null; id?: string | number | null } | null;
+    } | null;
+  }>;
+  children?: ChildRow[];
+  created_at?: string;
+  updated_at?: string;
+};
+type FamilyRowPayload = Pick<FamilyRow, "id_client" | "label" | "notes" | "email">;
+
+// Payload pour la sauvegarde (children gérés dans la table dédiée)
+type FamilyRowPayloadForSave = FamilyRowPayload;
+
+type UpsertPrimaryAdultInput = {
+  familyRowId: number;
+  familyIdClient: string;
+  adultId?: string;
+  civility: string;
+  lastName: string;
+  firstName: string;
+  role?: string | null;
+  address: string;
+  complement: string;
+  postalCode: string;
+  city: string;
+  country: string;
+  phone1: string;
+  phone2: string;
+  email: string;
+  partnerName: string;
+};
+
+export type UpsertSecondaryAdultInput = {
+  familyRowId: number;
+  familyIdClient: string;
+  adultId?: string | null;
+  civility: string;
+  lastName: string;
+  firstName: string;
+  address: string;
+  complement: string;
+  postalCode: string;
+  city: string;
+  country: string;
+  phone1: string;
+  phone2: string;
+  email: string;
+  partnerName: string;
+  role: string | null;
+  position?: number | null;
+  canBeContacted?: boolean;
+  canBeContactedGlobal?: boolean;
+};
+
+export type AdultDuplicateMatch = {
+  id: string;
   first_name: string | null;
+  last_name: string | null;
+  email: string | null;
+  phone_1: string | null;
+  phone_2: string | null;
   address: string | null;
   complement: string | null;
   postal_code: string | null;
   city: string | null;
   country: string | null;
-  phone_1: string | null;
-  phone_2: string | null;
-  email: string | null;
-  partner: string | null;
-  prestashop_p1: string | null;
-  prestashop_p2: string | null;
-  secondary_contact: SecondaryContact | null;
-  children?: ChildRow[];
-  created_at?: string;
-  updated_at?: string;
+  family_links: Array<{
+    family_id: number | null;
+    family: { id_client: string | null; label: string | null } | null;
+  }>;
 };
-type FamilyRowPayload = Omit<FamilyRow, "id" | "created_at" | "updated_at" | "children">;
 
-// Payload pour la sauvegarde (children gérés dans la table dédiée)
-type FamilyRowPayloadForSave = FamilyRowPayload;
+const resolvePartnerId = async (partnerName: string | null | undefined) => {
+  const name = partnerName?.trim();
+  if (!name) return null;
 
+  const { data: existing, error: partnerError } = await supabase
+    .from("partners")
+    .select("id")
+    .ilike("name", name)
+    .maybeSingle();
+
+  if (partnerError && partnerError.code !== "PGRST116") {
+    throw new Error(`Erreur Supabase (partner lookup): ${partnerError.message}`);
+  }
+
+  if (existing?.id) {
+    return existing.id as string | number;
+  }
+
+  const { data: created, error: insertError } = await supabase
+    .from("partners")
+    .insert({ name })
+    .select("id")
+    .single();
+
+  if (insertError) {
+    throw new Error(`Erreur Supabase (partner create): ${insertError.message}`);
+  }
+
+  return created?.id ?? null;
+};
+
+const upsertPrimaryAdult = async ({
+  familyRowId,
+  adultId,
+  civility,
+  lastName,
+  firstName,
+  role,
+  address,
+  complement,
+  postalCode,
+  city,
+  country,
+  phone1,
+  phone2,
+  email,
+  partnerName,
+}: UpsertPrimaryAdultInput): Promise<string> => {
+  const partnerId = await resolvePartnerId(partnerName || null);
+
+  let resultingAdultId = adultId ?? null;
+
+  if (resultingAdultId) {
+    const { error: adultUpdateError } = await supabase
+      .from("adults")
+      .update({
+        civility,
+        last_name: lastName,
+        first_name: firstName,
+        address,
+        complement,
+        postal_code: postalCode,
+        city,
+        country,
+        phone_1: phone1,
+        phone_2: phone2,
+        email,
+        partner_id: partnerId,
+      })
+      .eq("id", resultingAdultId);
+
+    if (adultUpdateError) {
+      throw new Error(`Erreur Supabase (update adult): ${adultUpdateError.message}`);
+    }
+  } else {
+    const { data: newAdult, error: adultInsertError } = await supabase
+      .from("adults")
+      .insert({
+        civility,
+        last_name: lastName,
+        first_name: firstName,
+        address,
+        complement,
+        postal_code: postalCode,
+        city,
+        country,
+        phone_1: phone1,
+        phone_2: phone2,
+        email,
+        partner_id: partnerId,
+      })
+      .select("id")
+      .single();
+
+    if (adultInsertError) {
+      throw new Error(`Erreur Supabase (create adult): ${adultInsertError.message}`);
+    }
+
+    resultingAdultId = newAdult?.id ?? null;
+  }
+
+  if (!resultingAdultId) {
+    throw new Error("Erreur Supabase (adult): impossible de déterminer l'identifiant adulte.");
+  }
+
+  await supabase
+    .from("family_adults")
+    .update({ is_primary: false })
+    .eq("family_id", familyRowId);
+
+  const { error: linkError } = await supabase
+    .from("family_adults")
+    .upsert(
+      {
+        family_id: familyRowId,
+        adult_id: resultingAdultId,
+        is_primary: true,
+        role: role ?? null,
+        position: 1,
+        can_be_contacted: true,
+      },
+      { onConflict: "family_id,adult_id" },
+    );
+
+  if (linkError) {
+    throw new Error(`Erreur Supabase (link primary adult): ${linkError.message}`);
+  }
+
+  return String(resultingAdultId);
+};
+
+export const upsertSecondaryAdult = async ({
+  familyRowId,
+  adultId,
+  civility,
+  lastName,
+  firstName,
+  address,
+  complement,
+  postalCode,
+  city,
+  country,
+  phone1,
+  phone2,
+  email,
+  partnerName,
+  role,
+  position,
+  canBeContacted,
+  canBeContactedGlobal,
+}: UpsertSecondaryAdultInput): Promise<string> => {
+  const partnerId = await resolvePartnerId(partnerName || null);
+
+  let resultingAdultId = adultId ?? null;
+
+  if (resultingAdultId) {
+    const { error: adultUpdateError } = await supabase
+      .from("adults")
+      .update({
+        civility,
+        last_name: lastName,
+        first_name: firstName,
+        address,
+        complement,
+        postal_code: postalCode,
+        city,
+        country,
+        phone_1: phone1,
+        phone_2: phone2,
+        email,
+        partner_id: partnerId,
+      })
+      .eq("id", resultingAdultId);
+
+    if (adultUpdateError) {
+      throw new Error(`Erreur Supabase (update adult): ${adultUpdateError.message}`);
+    }
+  } else {
+    const { data: newAdult, error: adultInsertError } = await supabase
+      .from("adults")
+      .insert({
+        civility,
+        last_name: lastName,
+        first_name: firstName,
+        address,
+        complement,
+        postal_code: postalCode,
+        city,
+        country,
+        phone_1: phone1,
+        phone_2: phone2,
+        email,
+        partner_id: partnerId,
+      })
+      .select("id")
+      .single();
+
+    if (adultInsertError) {
+      throw new Error(`Erreur Supabase (create adult): ${adultInsertError.message}`);
+    }
+
+    resultingAdultId = newAdult?.id ?? null;
+  }
+
+  if (!resultingAdultId) {
+    throw new Error("Erreur Supabase (adult): impossible de déterminer l'identifiant adulte secondaire.");
+  }
+
+  const { error: linkError } = await supabase
+    .from("family_adults")
+    .upsert(
+      {
+        family_id: familyRowId,
+        adult_id: resultingAdultId,
+        is_primary: false,
+        role: role ?? null,
+        position: position ?? 1,
+        can_be_contacted: canBeContacted ?? true,
+        can_be_contacted_global: canBeContactedGlobal ?? canBeContacted ?? true,
+      },
+      { onConflict: "family_id,adult_id" },
+    );
+
+  if (linkError) {
+    throw new Error(`Erreur Supabase (link secondary adult): ${linkError.message}`);
+  }
+
+  return String(resultingAdultId);
+};
 export type FamilyRecord = {
   /** Identifiant fonctionnel (alias de id_client) */
   id: string;
   /** Identifiant technique de la ligne */
   rowId?: number;
+  primaryAdultId?: string | null;
+  label: string;
   civility: string;
   lastName: string;
   firstName: string;
+  primaryRole?: string | null;
   address: string;
   complement: string;
   postalCode: string;
@@ -96,6 +409,18 @@ export type FamilyRecord = {
   prestashopP1: string;
   prestashopP2: string;
   secondaryContact: SecondaryContact | null;
+  familyEmail?: string | null;
+  notes?: string | null;
+  secondaryAdults: Array<
+    SecondaryContact & {
+      adultId: string | null;
+      role: string | null;
+      position: number | null;
+      canBeContacted: boolean;
+      canBeContactedGlobal?: boolean;
+      partner?: string;
+    }
+  >;
   children: Child[];
   createdAt?: string;
   updatedAt?: string;
@@ -111,6 +436,13 @@ const defaultHealthState: HealthFormState = {
   transportNotes: "",
 };
 
+const pickPrimaryAdult = (row: FamilyRow) =>
+  (row.family_adults ?? []).find((link) => link?.is_primary) ?? null;
+const pickSecondaryAdult = (row: FamilyRow) =>
+  (row.family_adults ?? []).find((link) => !link?.is_primary) ?? null;
+const pickAllSecondaryAdults = (row: FamilyRow) =>
+  (row.family_adults ?? []).filter((link) => !link?.is_primary);
+
 const mapChildRowToChild = (row: ChildRow): Child => ({
   id: row.id,
   lastName: row.last_name ?? "",
@@ -119,56 +451,132 @@ const mapChildRowToChild = (row: ChildRow): Child => ({
   gender: row.gender === "F" || row.gender === "M" ? row.gender : "",
   health: {
     allergies: row.allergies ?? "",
-    diet: row.diet ?? "",
-    healthIssues: row.health_issues ?? "",
-    instructions: row.instructions ?? "",
-    transportNotes: row.transport_notes ?? "",
-    friend: row.friend ?? "",
-    vacaf: row.vacaf ?? "",
+  diet: row.diet ?? "",
+  healthIssues: row.health_issues ?? "",
+  instructions: row.instructions ?? "",
+  transportNotes: row.transport_notes ?? "",
+  friend: row.friend ?? "",
+  vacaf: "",
   },
 });
 
-const mapRowToFamilyRecord = (row: FamilyRow): FamilyRecord => ({
-  id: row.id_client,
-  rowId: row.id,
-  civility: row.civility ?? "",
-  lastName: row.last_name ?? "",
-  firstName: row.first_name ?? "",
-  address: row.address ?? "",
-  complement: row.complement ?? "",
-  postalCode: row.postal_code ?? "",
-  city: row.city ?? "",
-  country: row.country ?? "",
-  phone1: row.phone_1 ?? "",
-  phone2: row.phone_2 ?? "",
-  email: row.email ?? "",
-  partner: row.partner ?? "",
-  prestashopP1: row.prestashop_p1 ?? "",
-  prestashopP2: row.prestashop_p2 ?? "",
-  secondaryContact: row.secondary_contact,
-  children: (row.children ?? []).map(mapChildRowToChild),
-  createdAt: row.created_at ?? undefined,
-  updatedAt: row.updated_at ?? undefined,
-});
+const mapRowToFamilyRecord = (row: FamilyRow): FamilyRecord => {
+  const primaryAdultLink = pickPrimaryAdult(row);
+  const primaryAdult = primaryAdultLink?.adult ?? null;
+  const secondaryAdult = pickSecondaryAdult(row);
+
+  return {
+    id: row.id_client,
+    rowId: row.id,
+    primaryAdultId: primaryAdultLink?.adult_id ?? null,
+    primaryRole: primaryAdultLink?.role ?? "",
+    label:
+      row.label ??
+      ([primaryAdult?.first_name, primaryAdult?.last_name].filter(Boolean).join(" ").trim() ||
+        row.id_client),
+    civility: primaryAdult?.civility ?? "",
+    lastName: primaryAdult?.last_name ?? "",
+    firstName: primaryAdult?.first_name ?? "",
+    address: primaryAdult?.address ?? "",
+    complement: primaryAdult?.complement ?? "",
+    postalCode: primaryAdult?.postal_code ?? "",
+    city: primaryAdult?.city ?? "",
+    country: primaryAdult?.country ?? "",
+    phone1: primaryAdult?.phone_1 ?? "",
+    phone2: primaryAdult?.phone_2 ?? "",
+    email: primaryAdult?.email ?? "",
+    partner: primaryAdult?.partner?.name ?? "",
+    prestashopP1: "",
+    prestashopP2: "",
+    secondaryContact: secondaryAdult?.adult
+      ? {
+          lastName: secondaryAdult.adult.last_name ?? "",
+          firstName: secondaryAdult.adult.first_name ?? "",
+          role: secondaryAdult.role ?? "",
+          canBeContactedGlobal:
+            secondaryAdult.can_be_contacted_global ?? secondaryAdult.can_be_contacted ?? true,
+          phone: secondaryAdult.adult.phone_1 ?? "",
+          phone2: secondaryAdult.adult.phone_2 ?? "",
+          address: secondaryAdult.adult.address ?? "",
+          complement: secondaryAdult.adult.complement ?? "",
+          postalCode: secondaryAdult.adult.postal_code ?? "",
+          city: secondaryAdult.adult.city ?? "",
+          country: secondaryAdult.adult.country ?? "",
+          email: secondaryAdult.adult.email ?? "",
+        }
+      : null,
+    secondaryAdults: pickAllSecondaryAdults(row).map((link) => ({
+      adultId: link.adult_id ?? null,
+      role: link.role ?? null,
+      position: link.position ?? null,
+      canBeContacted: Boolean(link.can_be_contacted ?? true),
+      canBeContactedGlobal: link.can_be_contacted_global ?? link.can_be_contacted ?? true,
+      civility: link.adult?.civility ?? "",
+      lastName: link.adult?.last_name ?? "",
+      firstName: link.adult?.first_name ?? "",
+      address: link.adult?.address ?? "",
+      complement: link.adult?.complement ?? "",
+      postalCode: link.adult?.postal_code ?? "",
+      city: link.adult?.city ?? "",
+      country: link.adult?.country ?? "",
+      phone: link.adult?.phone_1 ?? "",
+      phone2: link.adult?.phone_2 ?? "",
+      email: link.adult?.email ?? "",
+      partner: link.adult?.partner?.name ?? "",
+    })),
+    familyEmail: row.email ?? null,
+    notes: row.notes ?? null,
+    children: (row.children ?? []).map(mapChildRowToChild),
+    createdAt: row.created_at ?? undefined,
+    updatedAt: row.updated_at ?? undefined,
+  };
+};
 
 const mapFamilyRecordToRow = (family: FamilyRecord): FamilyRowPayloadForSave => ({
   id_client: family.id,
-  civility: family.civility,
-  last_name: family.lastName,
-  first_name: family.firstName,
-  address: family.address,
-  complement: family.complement,
-  postal_code: family.postalCode,
-  city: family.city,
-  country: family.country,
-  phone_1: family.phone1,
-  phone_2: family.phone2,
-  email: family.email,
-  partner: family.partner,
-  prestashop_p1: family.prestashopP1,
-  prestashop_p2: family.prestashopP2,
-  secondary_contact: family.secondaryContact,
+  label: family.label || family.id,
+  notes: family.notes ?? null,
+  email: family.familyEmail ?? null,
 });
+
+export const findAdultsByName = async (
+  firstName: string,
+  lastName: string,
+): Promise<AdultDuplicateMatch[]> => {
+  const cleanFirst = firstName.trim();
+  const cleanLast = lastName.trim();
+  if (!cleanFirst || !cleanLast) return [];
+
+  const { data, error } = await supabase
+    .from("adults")
+    .select(
+      `
+        id,
+        first_name,
+        last_name,
+        email,
+        phone_1,
+        phone_2,
+        address,
+        complement,
+        postal_code,
+        city,
+        country,
+        family_links:family_adults(
+          family_id,
+          family:families(id_client, label)
+        )
+      `,
+    )
+    .ilike("first_name", cleanFirst)
+    .ilike("last_name", cleanLast);
+
+  if (error) {
+    throw new Error(`Erreur Supabase (recherche doublon adulte): ${error.message}`);
+  }
+
+  return (data as AdultDuplicateMatch[]) ?? [];
+};
 
 const generateChildId = () => {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
@@ -178,9 +586,9 @@ const generateChildId = () => {
   return Math.random().toString(36).slice(2, 10);
 };
 
-const mapChildToRow = (clientId: string) => (child: Child): ChildRow => ({
+const mapChildToRow = (familyId: string) => (child: Child): ChildRow => ({
   id: child.id || generateChildId(),
-  client_id: clientId,
+  family_id: familyId,
   last_name: child.lastName,
   first_name: child.firstName,
   birth_date: child.birthDate,
@@ -191,35 +599,45 @@ const mapChildToRow = (clientId: string) => (child: Child): ChildRow => ({
   instructions: child.health?.instructions ?? "",
   transport_notes: child.health?.transportNotes ?? "",
   friend: child.health?.friend ?? "",
-  vacaf: child.health?.vacaf ?? "",
 });
 
 const syncChildren = async (
-  clientId: string,
+  familyId: string | number,
   children: Child[],
 ): Promise<ChildRow[]> => {
-  const childRows = children.map(mapChildToRow(clientId));
+  const familyKey = String(familyId);
+  const childRows = children.map(mapChildToRow(familyKey));
+  const ids = childRows.map((child) => child.id);
 
-  const { error: deleteError } = await supabase
-    .from(CHILDREN_TABLE)
-    .delete()
-    .eq("client_id", clientId);
-
-  if (deleteError) {
-    throw new Error(`Erreur Supabase (sync children - delete): ${deleteError.message}`);
-  }
-
-  if (childRows.length === 0) {
+  if (ids.length === 0) {
+    const { error: deleteAllError } = await supabase
+      .from(CHILDREN_TABLE)
+      .delete()
+      .eq("family_id", familyKey);
+    if (deleteAllError) {
+      throw new Error(`Erreur Supabase (sync children - delete all): ${deleteAllError.message}`);
+    }
     return [] as ChildRow[];
   }
 
-  const { data, error: insertError } = await supabase
+  // Supprimer les enfants retirés du formulaire pour cette famille
+  const { error: deleteMissingError } = await supabase
     .from(CHILDREN_TABLE)
-    .insert(childRows)
+    .delete()
+    .eq("family_id", familyKey)
+    .not("id", "in", `(${ids.map((id) => `'${id}'`).join(",")})`);
+
+  if (deleteMissingError) {
+    throw new Error(`Erreur Supabase (sync children - cleanup): ${deleteMissingError.message}`);
+  }
+
+  const { data, error: upsertError } = await supabase
+    .from(CHILDREN_TABLE)
+    .upsert(childRows, { onConflict: "id" })
     .select();
 
-  if (insertError) {
-    throw new Error(`Erreur Supabase (sync children - insert): ${insertError.message}`);
+  if (upsertError) {
+    throw new Error(`Erreur Supabase (sync children - upsert): ${upsertError.message}`);
   }
 
   return data as ChildRow[];
@@ -229,7 +647,51 @@ const syncChildren = async (
 export const fetchFamilies = async (): Promise<FamilyRecord[]> => {
   const { data, error } = await supabase
     .from(FAMILY_TABLE)
-    .select("*, children:children(*)")
+    .select(
+      `
+        id,
+        id_client,
+        label,
+        notes,
+        email,
+        family_adults:family_adults(
+          is_primary,
+          adult_id,
+          role,
+          position,
+          can_be_contacted,
+          can_be_contacted_global,
+          adult:adults(
+            civility,
+            first_name,
+            last_name,
+            address,
+            complement,
+            postal_code,
+            city,
+            country,
+            phone_1,
+            phone_2,
+            email,
+            partner:partners(name)
+          )
+        ),
+        children:children(
+          id,
+          family_id,
+          last_name,
+          first_name,
+          birth_date,
+          gender,
+          allergies,
+          diet,
+          health_issues,
+          instructions,
+          transport_notes,
+          friend
+        )
+      `,
+    )
     .order("id_client", { ascending: true });
 
   console.log("[Supabase] fetchFamilies data:", data);
@@ -300,9 +762,59 @@ export const saveFamily = async (family: FamilyRecord): Promise<FamilyRecord> =>
     throw new Error(`Erreur Supabase (save family): ${error.message}`);
   }
 
-  const syncedChildren = await syncChildren(idClient, children);
+  const familyRowId = existingFamily?.id ?? (data as FamilyRow | null)?.id;
 
-  return mapRowToFamilyRecord({ ...(data as FamilyRow), children: syncedChildren });
+  if (familyRowId === undefined || familyRowId === null) {
+    throw new Error("Erreur Supabase (save family): identifiant famille manquant pour les enfants.");
+  }
+
+  const adultId = await upsertPrimaryAdult({
+    familyRowId,
+    familyIdClient: idClient,
+    adultId: family.primaryAdultId ?? undefined,
+    role: family.primaryRole ?? null,
+    civility: family.civility,
+    lastName: family.lastName,
+    firstName: family.firstName,
+    address: family.address,
+    complement: family.complement,
+    postalCode: family.postalCode,
+    city: family.city,
+    country: family.country,
+    phone1: family.phone1,
+    phone2: family.phone2,
+    email: family.email,
+    partnerName: family.partner,
+  });
+
+  const syncedChildren = await syncChildren(familyRowId, children);
+
+  return mapRowToFamilyRecord({
+    ...(data as FamilyRow),
+    family_adults: [
+      {
+        is_primary: true,
+        adult_id: adultId,
+        role: family.primaryRole ?? null,
+        can_be_contacted: true,
+        adult: {
+          civility: family.civility,
+          first_name: family.firstName,
+          last_name: family.lastName,
+          address: family.address,
+          complement: family.complement,
+          postal_code: family.postalCode,
+          city: family.city,
+          country: family.country,
+          phone_1: family.phone1,
+          phone_2: family.phone2,
+          email: family.email,
+          partner: family.partner ? { name: family.partner } : null,
+        },
+      },
+    ],
+    children: syncedChildren,
+  });
 };
 
 export const deleteFamily = async (familyId: string): Promise<void> => {
