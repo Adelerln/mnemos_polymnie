@@ -222,10 +222,18 @@ function SejoursPageContent() {
             <table className="w-full border-collapse text-sm text-[#2f1d28]">
               <thead className="sticky top-0 z-10 border-b border-[#f3d8e1] bg-white/95 text-left text-[11px] font-semibold uppercase tracking-[0.3em] text-[#b58096]">
                 <tr>
-                  <th className="px-6 py-3">Référence</th>
-                  <th className="px-6 py-3">Centre</th>
-                  <th className="px-6 py-3">Année</th>
-                  <th className="px-6 py-3">Période</th>
+                  <th className="px-6 py-3">
+                    <span className="text-[#A53E69]">Référence</span>
+                  </th>
+                  <th className="px-6 py-3">
+                    <span className="text-[#A53E69]">Centre</span>
+                  </th>
+                  <th className="px-6 py-3">
+                    <span className="text-[#A53E69]">Année</span>
+                  </th>
+                  <th className="px-6 py-3">
+                    <span className="text-[#A53E69]">Période</span>
+                  </th>
                 </tr>
               </thead>
               <tbody>
