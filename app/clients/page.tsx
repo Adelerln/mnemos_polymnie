@@ -308,11 +308,7 @@ const computeNextFamilyId = (items: FamilyRecord[]) => {
   return String(maxId + 1);
 };
 
-const formatFrenchPhoneNumber = (input: string) => {
-  const digits = input.replace(/\D/g, "").slice(0, 10);
-  const groups = digits.match(/.{1,2}/g) ?? [];
-  return groups.join(" ");
-};
+import { formatFrenchPhoneNumber } from "@/lib/phone";
 const formatPhoneFR = (value: string) => formatFrenchPhoneNumber(value);
 
 const createEmptySearchFilters = () => ({
@@ -728,149 +724,154 @@ export default function ClientsPage() {
     return hasFilters || term !== "";
   }, [searchFilters, searchTerm]);
 
-  const filteredFamilies = useMemo(() => {
-    const term = searchTerm.trim().toLowerCase();
-    const hasFilters = Object.values(searchFilters).some((value) => value.trim() !== "");
+const normalizeText = (value: string) =>
+  value ? value.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase() : "";
 
-    if (!hasActiveSearch) {
-      return [];
-    }
+const filteredFamilies = useMemo(() => {
+  const hasFilters = Object.values(searchFilters).some((value) => value.trim() !== "");
+  const phoneFilterRaw = (searchFilters.phone1 || searchFilters.phone2).trim();
+  const phoneFilter = phoneFilterRaw ? phoneFilterRaw.replace(/\s+/g, "").toLowerCase() : "";
+  const normalizedFilters = {
+    lastName: normalizeText(searchFilters.lastName),
+    firstName: normalizeText(searchFilters.firstName),
+    address: normalizeText(searchFilters.address),
+    postalCode: normalizeText(searchFilters.postalCode),
+    city: normalizeText(searchFilters.city),
+    country: normalizeText(searchFilters.country),
+    email: normalizeText(searchFilters.email),
+    partner: normalizeText(searchFilters.partner),
+    childLastName: normalizeText(searchFilters.childLastName),
+    childFirstName: normalizeText(searchFilters.childFirstName),
+    childBirthDate: normalizeText(searchFilters.childBirthDate),
+  };
+  const normTerm = normalizeText(searchTerm.trim());
 
-    return orderedFamilies.filter((family) => {
-      const allAdults = [
-        {
-          lastName: family.lastName ?? "",
-          firstName: family.firstName ?? "",
-          address: family.address ?? "",
-          complement: family.complement ?? "",
-          postalCode: family.postalCode ?? "",
-          city: family.city ?? "",
-          country: family.country ?? "",
-          phone1: family.phone1 ?? "",
-          phone2: family.phone2 ?? "",
-          email: family.email ?? "",
-          partner: family.partner ?? "",
-        },
-        ...(family.secondaryAdults ?? []).map((adult) => ({
-          lastName: adult.lastName ?? "",
-          firstName: adult.firstName ?? "",
-          address: adult.address ?? "",
-          complement: adult.complement ?? "",
-          postalCode: adult.postalCode ?? "",
-          city: adult.city ?? "",
-          country: adult.country ?? "",
-          phone1: adult.phone ?? "",
-          phone2: adult.phone2 ?? "",
-          email: adult.email ?? "",
-          partner: adult.partner ?? "",
-        })),
+  if (!hasActiveSearch) {
+    return [];
+  }
+
+  return orderedFamilies.filter((family) => {
+    const allAdults = [
+      {
+        lastName: family.lastName ?? "",
+        firstName: family.firstName ?? "",
+        address: family.address ?? "",
+        complement: family.complement ?? "",
+        postalCode: family.postalCode ?? "",
+        city: family.city ?? "",
+        country: family.country ?? "",
+        phone1: family.phone1 ?? "",
+        phone2: family.phone2 ?? "",
+        email: family.email ?? "",
+        partner: family.partner ?? "",
+      },
+      ...(family.secondaryAdults ?? []).map((adult) => ({
+        lastName: adult.lastName ?? "",
+        firstName: adult.firstName ?? "",
+        address: adult.address ?? "",
+        complement: adult.complement ?? "",
+        postalCode: adult.postalCode ?? "",
+        city: adult.city ?? "",
+        country: adult.country ?? "",
+        phone1: adult.phone ?? "",
+        phone2: adult.phone2 ?? "",
+        email: adult.email ?? "",
+        partner: adult.partner ?? "",
+      })),
+    ];
+
+    if (hasFilters) {
+      const matches = [
+        !normalizedFilters.lastName ||
+          allAdults.some((adult) => normalizeText(adult.lastName).includes(normalizedFilters.lastName)),
+        !normalizedFilters.firstName ||
+          allAdults.some((adult) => normalizeText(adult.firstName).includes(normalizedFilters.firstName)),
+        !normalizedFilters.address ||
+          allAdults.some((adult) => {
+            const addr = normalizeText(adult.address);
+            const comp = normalizeText(adult.complement);
+            return addr.includes(normalizedFilters.address) || comp.includes(normalizedFilters.address);
+          }),
+        !normalizedFilters.postalCode ||
+          allAdults.some((adult) =>
+            normalizeText(adult.postalCode).includes(normalizedFilters.postalCode),
+          ),
+        !normalizedFilters.city ||
+          allAdults.some((adult) => normalizeText(adult.city).includes(normalizedFilters.city)),
+        !normalizedFilters.country ||
+          allAdults.some((adult) => normalizeText(adult.country).includes(normalizedFilters.country)),
+        !phoneFilter ||
+          allAdults.some((adult) =>
+            [adult.phone1, adult.phone2]
+              .map((phone) => phone.replace(/\s+/g, "").toLowerCase())
+              .some((phone) => phone.includes(phoneFilter)),
+          ),
+        !normalizedFilters.email ||
+          allAdults.some((adult) => normalizeText(adult.email).includes(normalizedFilters.email)),
+        !normalizedFilters.partner ||
+          allAdults.some((adult) => normalizeText(adult.partner).includes(normalizedFilters.partner)),
+        !normalizedFilters.childLastName ||
+          family.children.some((child) =>
+            normalizeText(child.lastName ?? "").includes(normalizedFilters.childLastName),
+          ),
+        !normalizedFilters.childFirstName ||
+          family.children.some((child) =>
+            normalizeText(child.firstName ?? "").includes(normalizedFilters.childFirstName),
+          ),
+        !normalizedFilters.childBirthDate ||
+          family.children.some((child) =>
+            normalizeText(child.birthDate ?? "").includes(normalizedFilters.childBirthDate),
+          ),
       ];
 
-      if (hasFilters) {
-        const matches = [
-          !searchFilters.lastName ||
-            allAdults.some((adult) =>
-              adult.lastName.toLowerCase().includes(searchFilters.lastName.toLowerCase()),
-            ),
-          !searchFilters.firstName ||
-            allAdults.some((adult) =>
-              adult.firstName.toLowerCase().includes(searchFilters.firstName.toLowerCase()),
-            ),
-          !searchFilters.address ||
-            allAdults.some((adult) =>
-              adult.address.toLowerCase().includes(searchFilters.address.toLowerCase()) ||
-              adult.complement.toLowerCase().includes(searchFilters.address.toLowerCase()),
-            ),
-          !searchFilters.postalCode ||
-            allAdults.some((adult) =>
-              adult.postalCode.toLowerCase().includes(searchFilters.postalCode.toLowerCase()),
-            ),
-          !searchFilters.city ||
-            allAdults.some((adult) =>
-              adult.city.toLowerCase().includes(searchFilters.city.toLowerCase()),
-            ),
-          !searchFilters.country ||
-            allAdults.some((adult) =>
-              adult.country.toLowerCase().includes(searchFilters.country.toLowerCase()),
-            ),
-          !searchFilters.phone1 ||
-            allAdults.some((adult) =>
-              adult.phone1.toLowerCase().includes(searchFilters.phone1.toLowerCase()),
-            ),
-          !searchFilters.phone2 ||
-            allAdults.some((adult) =>
-              adult.phone2.toLowerCase().includes(searchFilters.phone2.toLowerCase()),
-            ),
-          !searchFilters.email ||
-            allAdults.some((adult) =>
-              adult.email.toLowerCase().includes(searchFilters.email.toLowerCase()),
-            ),
-          !searchFilters.partner ||
-            allAdults.some((adult) =>
-              adult.partner.toLowerCase().includes(searchFilters.partner.toLowerCase()),
-            ),
-          !searchFilters.childLastName ||
-            family.children.some((child) =>
-              (child.lastName ?? "").toLowerCase().includes(searchFilters.childLastName.toLowerCase()),
-            ),
-          !searchFilters.childFirstName ||
-            family.children.some((child) =>
-              (child.firstName ?? "").toLowerCase().includes(searchFilters.childFirstName.toLowerCase()),
-            ),
-          !searchFilters.childBirthDate ||
-            family.children.some(
-              (child) =>
-                (child.birthDate ?? "").toLowerCase().startsWith(searchFilters.childBirthDate.toLowerCase()) ||
-                (child.birthDate ?? "").toLowerCase().includes(searchFilters.childBirthDate.toLowerCase()),
-            ),
-        ];
-
-        if (matches.some((value) => value === false)) {
-          return false;
-        }
+      if (matches.some((value) => value === false)) {
+        return false;
       }
+    }
 
-      if (!term) {
-        return true;
-      }
+    if (!normTerm) {
+      return true;
+    }
 
-      const adultStrings = allAdults.flatMap((adult) =>
-        [
-          adult.lastName,
-          adult.firstName,
-          adult.address,
-          adult.complement,
-          adult.postalCode,
-          adult.city,
-          adult.country,
-          adult.phone1,
-          adult.phone2,
-          adult.email,
-          adult.partner,
-        ].filter(Boolean),
-      );
-
-      const haystack = [
-        family.id,
-        family.lastName,
-        family.firstName,
-        family.postalCode,
-        family.city,
-        family.address,
-        family.complement,
-        family.phone1,
-        family.phone2,
-        family.email,
-        family.partner,
-        ...adultStrings,
+    const adultStrings = allAdults.flatMap((adult) =>
+      [
+        adult.lastName,
+        adult.firstName,
+        adult.address,
+        adult.complement,
+        adult.postalCode,
+        adult.city,
+        adult.country,
+        adult.phone1,
+        adult.phone2,
+        adult.email,
+        adult.partner,
       ]
         .filter(Boolean)
-        .join(" ")
-        .toLowerCase();
+        .map((value) => normalizeText(value)),
+    );
 
-      return haystack.includes(term);
-    });
-  }, [orderedFamilies, searchFilters, searchTerm, hasActiveSearch]);
+    const haystack = [
+      family.id,
+      family.lastName,
+      family.firstName,
+      family.postalCode,
+      family.city,
+      family.address,
+      family.complement,
+      family.phone1,
+      family.phone2,
+      family.email,
+      family.partner,
+      ...adultStrings,
+    ]
+      .filter(Boolean)
+      .map((value) => normalizeText(String(value)))
+      .join(" ");
+
+    return haystack.includes(normTerm);
+  });
+}, [orderedFamilies, searchFilters, searchTerm, hasActiveSearch]);
 
   const displayedFamilies = useMemo(
     () => filteredFamilies,
@@ -2080,7 +2081,7 @@ export default function ClientsPage() {
             </div>
           ) : (
             <div className="mx-auto mb-6 w-full max-w-5xl rounded-2xl border border-dashed border-[#d4d7df] bg-white px-6 py-8 text-center text-sm text-[#5c606b] shadow-sm">
-              Lancez une recherche pour afficher les dossiers Perents.
+              Lancez une recherche pour afficher les dossiers Parents.
             </div>
           )}
         </header>
@@ -3219,9 +3220,5 @@ export default function ClientsPage() {
     </div>
   );
 }
-
-
-
-
 
 

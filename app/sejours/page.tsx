@@ -195,12 +195,6 @@ function SejoursPageContent() {
                   onChange={handleFilterChange("reference")}
                 />
               </div>
-              <input
-                className="rounded border border-[#d4d7df] bg-white px-3 py-2 text-sm text-[#2b2f36] focus:border-[#7f8696] focus:outline-none"
-                placeholder="Recherche libre (référence, centre, période…)"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
               <div className="flex flex-wrap items-center gap-2">
                 <button
                   type="button"
