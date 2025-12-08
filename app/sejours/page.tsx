@@ -139,74 +139,76 @@ function SejoursPageContent() {
   });
 
   return (
-    <div className="min-h-screen bg-[#dde1e7] py-10">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 text-[#1f2330] md:px-8">
-        <header className="rounded-2xl border border-[#c9ccd5] bg-white/90 px-6 py-5 shadow-lg">
-          <div className="flex flex-wrap items-center justify-between gap-3">
+    <div className="min-h-screen bg-gradient-to-b from-white via-[#fef9fb] to-[#f7eef2] py-12 text-[#2f1d28]">
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-5 md:px-10">
+        <header className="rounded-3xl border border-[#f2d4de] bg-white/95 px-8 py-7 shadow-[0_25px_60px_rgba(83,15,43,0.05)]">
+          <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-semibold tracking-tight text-[#1f2330]">
+              <p className="text-xs font-semibold uppercase tracking-[0.5em] text-[#b58096]">Séjours</p>
+              <h1 className="mt-2 text-3xl font-semibold tracking-tight text-[#2d1826]">
                 Gestion des séjours
               </h1>
-              <p className="mt-1 text-sm text-[#5c606b]">
+              <p className="mt-2 text-sm text-[#806471]">
                 Consultez et mettez à jour les informations de vos séjours.
               </p>
             </div>
             <button
               type="button"
-              className="inline-flex items-center gap-2 rounded-md border border-[#ccd0d8] bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#2b2f36] transition hover:border-[#7f8696] hover:bg-[#f7f8fb]"
+              className="inline-flex items-center gap-3 rounded-full border border-[#f2d4de] bg-white/70 px-5 py-2 text-sm font-medium text-[#3d2433] transition hover:border-[#ebbccc] hover:bg-white"
               onClick={() => setIsSearchPanelOpen((open) => !open)}
             >
               {isSearchPanelOpen ? "Fermer la recherche" : "Ouvrir la recherche"}
-              <span className="rounded bg-[#f0f1f5] px-2 py-0.5 text-[10px] font-semibold text-[#5c606b]">
+              <span className="rounded-full bg-[#f5dbe3] px-2 py-0.5 text-[10px] font-semibold text-[#742f48]">
                 ⌘K
               </span>
             </button>
           </div>
-          <div className="mt-2 text-sm text-[#5c606b]">
+          <div className="mt-3 flex items-center gap-2 text-sm text-[#8e6d7d]">
+            <span className="inline-flex h-1 w-8 rounded-full bg-[#f5dbe3]" aria-hidden="true" />
             {filteredSejours.length > 1
               ? `Résultats : ${filteredSejours.length}`
               : `Résultat : ${filteredSejours.length}`}
           </div>
           {isSearchPanelOpen ? (
-            <div className="mt-4 grid gap-3 rounded-2xl border border-[#d4d7df] bg-white p-4 shadow-sm text-sm text-[#2b2f36]">
+            <div className="mt-5 grid gap-4 rounded-2xl border border-[#f3d5df] bg-[#fff9fb] p-5 text-sm text-[#35202f] shadow-[0_20px_50px_rgba(83,15,43,0.04)]">
               <div className="grid gap-3 md:grid-cols-4">
                 <input
-                  className="rounded border border-[#d4d7df] bg-white px-3 py-2 text-sm text-[#2b2f36] focus:border-[#7f8696] focus:outline-none"
+                  className="rounded-2xl border border-[#f3d5df] bg-white/80 px-4 py-2.5 text-sm text-[#2b1b27] placeholder:text-[#b090a0] focus:border-[#e0a8bc] focus:outline-none"
                   placeholder="Année"
                   value={filters.annee}
                   onChange={handleFilterChange("annee")}
                 />
                 <input
-                  className="rounded border border-[#d4d7df] bg-white px-3 py-2 text-sm text-[#2b2f36] focus:border-[#7f8696] focus:outline-none"
+                  className="rounded-2xl border border-[#f3d5df] bg-white/80 px-4 py-2.5 text-sm text-[#2b1b27] placeholder:text-[#b090a0] focus:border-[#e0a8bc] focus:outline-none"
                   placeholder="Centre"
                   value={filters.centre}
                   onChange={handleFilterChange("centre")}
                 />
                 <input
-                  className="rounded border border-[#d4d7df] bg-white px-3 py-2 text-sm text-[#2b2f36] focus:border-[#7f8696] focus:outline-none"
+                  className="rounded-2xl border border-[#f3d5df] bg-white/80 px-4 py-2.5 text-sm text-[#2b1b27] placeholder:text-[#b090a0] focus:border-[#e0a8bc] focus:outline-none"
                   placeholder="Saison / période"
                   value={filters.saison}
                   onChange={handleFilterChange("saison")}
                 />
                 <input
-                  className="rounded border border-[#d4d7df] bg-white px-3 py-2 text-sm text-[#2b2f36] focus:border-[#7f8696] focus:outline-none"
+                  className="rounded-2xl border border-[#f3d5df] bg-white/80 px-4 py-2.5 text-sm text-[#2b1b27] placeholder:text-[#b090a0] focus:border-[#e0a8bc] focus:outline-none"
                   placeholder="Référence"
                   value={filters.reference}
                   onChange={handleFilterChange("reference")}
                 />
               </div>
-              <div className="flex flex-wrap items-center gap-2">
+              <div className="flex flex-wrap items-center gap-3 text-xs font-medium uppercase tracking-[0.18em] text-[#7b5869]">
                 <button
                   type="button"
                   onClick={() => setIsSearchPanelOpen(false)}
-                  className="inline-flex items-center justify-center rounded-md border border-[#d4d7df] bg-[#f7f8fb] px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#2b2f36] transition hover:bg-[#eef1f7]"
+                  className="inline-flex items-center justify-center rounded-full border border-transparent bg-[#f5dbe3] px-4 py-2 text-[#3b2331] transition hover:bg-[#f2c5d4]"
                 >
                   Fermer
                 </button>
                 <button
                   type="button"
                   onClick={handleReset}
-                  className="inline-flex items-center justify-center rounded-md border border-[#d4d7df] bg-[#f7f8fb] px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#2b2f36] transition hover:bg-[#eef1f7]"
+                  className="inline-flex items-center justify-center rounded-full border border-[#f3d5df] bg-white px-4 py-2 text-[#3b2331] transition hover:bg-[#fff6f9]"
                 >
                   Réinitialiser
                 </button>
@@ -215,22 +217,22 @@ function SejoursPageContent() {
           ) : null}
         </header>
 
-        <section className="overflow-hidden rounded-2xl border border-[#d0d4dc] bg-white shadow-xl">
+        <section className="overflow-hidden rounded-3xl border border-[#f1d6e0] bg-white/95 shadow-[0_30px_70px_rgba(83,15,43,0.04)]">
           <div className="max-h-[360px] overflow-y-auto">
-            <table className="w-full border-collapse text-sm text-[#2b2f36]">
-              <thead className="sticky top-0 z-10 text-left text-xs font-semibold uppercase tracking-[0.16em] text-[#A56A57] shadow">
-                <tr className="bg-[#F4E3DD]">
-                  <th className="px-5 py-3">Référence</th>
-                  <th className="px-5 py-3">Centre</th>
-                  <th className="px-5 py-3">Année</th>
-                  <th className="px-5 py-3">Période</th>
+            <table className="w-full border-collapse text-sm text-[#2f1d28]">
+              <thead className="sticky top-0 z-10 border-b border-[#f3d8e1] bg-white/95 text-left text-[11px] font-semibold uppercase tracking-[0.3em] text-[#b58096]">
+                <tr>
+                  <th className="px-6 py-3">Référence</th>
+                  <th className="px-6 py-3">Centre</th>
+                  <th className="px-6 py-3">Année</th>
+                  <th className="px-6 py-3">Période</th>
                 </tr>
               </thead>
-              <tbody className="bg-white">
+              <tbody>
                 {filteredSejours.length === 0 ? (
                   <tr>
                     <td
-                      className="px-5 py-6 text-center text-sm text-[#7f8696]"
+                      className="px-6 py-7 text-center text-sm text-[#9a7a8a]"
                       colSpan={4}
                     >
                       Aucun séjour pour le moment. Lancez une recherche (⌘K) ou ajoutez un séjour.
@@ -240,14 +242,14 @@ function SejoursPageContent() {
                   filteredSejours.map((item) => (
                     <tr
                       key={item.id}
-                      className="border-t border-[#e3e6ed] transition hover:bg-[#f7f8fb]"
+                      className="border-b border-[#f3d8e1] transition hover:bg-[#fff6f9]"
                     >
-                      <td className="px-5 py-3 font-semibold text-[#1f2330]">
+                      <td className="px-6 py-3 font-semibold text-[#2d1826]">
                         {item.reference}
                       </td>
-                      <td className="px-5 py-3 text-[#2b2f36]">{item.centre}</td>
-                      <td className="px-5 py-3 text-[#2b2f36]">{item.annee}</td>
-                      <td className="px-5 py-3 text-[#2b2f36]">{item.periode}</td>
+                      <td className="px-6 py-3 text-[#463140]">{item.centre}</td>
+                      <td className="px-6 py-3 text-[#463140]">{item.annee}</td>
+                      <td className="px-6 py-3 text-[#463140]">{item.periode}</td>
                     </tr>
                   ))
                 )}
@@ -258,70 +260,76 @@ function SejoursPageContent() {
 
         <form
           onSubmit={handleSubmit}
-          className="space-y-5 rounded-2xl border border-[#d0d4dc] bg-white/95 p-6 shadow-xl"
+          className="space-y-6 rounded-3xl border border-[#f1d6e0] bg-white p-8 shadow-[0_30px_70px_rgba(83,15,43,0.03)]"
         >
-          <div className="flex flex-wrap items-center gap-3 text-xs font-semibold uppercase tracking-[0.16em] text-[#5c606b]">
-            <label className="inline-flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-4 text-[13px] font-medium uppercase tracking-[0.2em] text-[#9b7487]">
+            <label className="inline-flex items-center gap-2 text-[#4d2f3d]">
               Archivé ?
               <input
                 type="checkbox"
-                className="size-4 accent-[#f0a481]"
+                className="size-4 accent-[#d98aa7]"
                 checked={form.archive}
                 onChange={handleFormChange("archive")}
               />
             </label>
           </div>
 
-          <div className="rounded-xl border border-[#b04c5b] bg-[#8f1f33] p-6 text-white shadow-lg">
-            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-              <h2 className="text-lg font-semibold uppercase tracking-[0.18em]">
+          <div className="rounded-2xl border border-[#f3d5df] bg-[#fdf7fa] p-6">
+            <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+              <h2 className="text-xl font-semibold tracking-tight text-[#2d1826]">
                 Informations séjour
               </h2>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 text-[#7b4b60]">
                 <button
                   type="button"
-                  className="inline-flex items-center justify-center rounded-md border border-white/20 bg-white/10 p-2 text-white transition hover:bg-white/20"
+                  className="inline-flex size-9 items-center justify-center rounded-full border border-[#f0c9d7] bg-white/70 text-lg font-semibold transition hover:bg-[#f5dbe3]"
                 >
                   +
                 </button>
                 <button
                   type="button"
-                  className="inline-flex items-center justify-center rounded-md border border-white/20 bg-white/10 p-2 text-white transition hover:bg-white/20"
+                  className="inline-flex size-9 items-center justify-center rounded-full border border-[#f0c9d7] bg-white/70 text-lg font-semibold transition hover:bg-[#f5dbe3]"
                 >
                   −
                 </button>
                 <button
                   type="button"
-                  className="inline-flex items-center justify-center rounded-md border border-white/20 bg-white/10 p-2 text-white transition hover:bg-white/20"
+                  className="inline-flex size-9 items-center justify-center rounded-full border border-[#f0c9d7] bg-white/70 text-lg font-semibold transition hover:bg-[#f5dbe3]"
                 >
                   ⧉
                 </button>
               </div>
             </div>
 
-            <div className="space-y-3 text-xs font-semibold uppercase tracking-[0.14em] text-white/80">
-              <div className="grid gap-3 lg:grid-cols-[minmax(0,2fr)_minmax(0,2fr)_minmax(0,1fr)]">
+            <div className="space-y-4 text-sm text-[#3c2432]">
+              <div className="grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,2fr)_minmax(0,1fr)]">
                 <label className="flex flex-col gap-1">
-                  Nom du centre
+                  <span className="text-xs font-semibold uppercase tracking-[0.25em] text-[#b17f92]">
+                    Nom du centre
+                  </span>
                   <input
-                    className="rounded border border-white/30 bg-white/20 px-3 py-2 text-sm font-medium text-white placeholder:text-white/70 focus:border-white focus:outline-none"
+                    className="rounded-2xl border border-[#f2d4de] bg-white px-4 py-2.5 text-sm text-[#2b1b27] placeholder:text-[#b090a0] focus:border-[#e0a8bc] focus:outline-none"
                     value={form.centre}
                     onChange={handleFormChange("centre")}
                   />
                 </label>
-                <div className="grid gap-2 sm:grid-cols-2">
+                <div className="grid gap-4 sm:grid-cols-2">
                   <label className="flex flex-col gap-1">
-                    Nom commun
+                    <span className="text-xs font-semibold uppercase tracking-[0.25em] text-[#b17f92]">
+                      Nom commun
+                    </span>
                     <input
-                      className="rounded border border-white/30 bg-white/20 px-3 py-2 text-sm font-medium text-white placeholder:text-white/70 focus:border-white focus:outline-none"
+                      className="rounded-2xl border border-[#f2d4de] bg-white px-4 py-2.5 text-sm text-[#2b1b27] placeholder:text-[#b090a0] focus:border-[#e0a8bc] focus:outline-none"
                       value={form.nomCommum}
                       onChange={handleFormChange("nomCommum")}
                     />
                   </label>
                   <label className="flex flex-col gap-1">
-                    Ref séjour
+                    <span className="text-xs font-semibold uppercase tracking-[0.25em] text-[#b17f92]">
+                      Ref séjour
+                    </span>
                     <input
-                      className="rounded border border-white/30 bg-white/20 px-3 py-2 text-sm font-medium text-white placeholder:text-white/70 focus:border-white focus:outline-none"
+                      className="rounded-2xl border border-[#f2d4de] bg-white px-4 py-2.5 text-sm text-[#2b1b27] placeholder:text-[#b090a0] focus:border-[#e0a8bc] focus:outline-none"
                       value={form.reference}
                       onChange={handleFormChange("reference")}
                     />
@@ -329,56 +337,68 @@ function SejoursPageContent() {
                 </div>
               </div>
 
-              <div className="grid gap-3 lg:grid-cols-[repeat(4,minmax(0,1fr))]">
+              <div className="grid gap-4 lg:grid-cols-[repeat(4,minmax(0,1fr))]">
                 <label className="flex flex-col gap-1">
-                  Saison
+                  <span className="text-xs font-semibold uppercase tracking-[0.25em] text-[#b17f92]">
+                    Saison
+                  </span>
                   <input
-                    className="rounded border border-white/30 bg-white/20 px-3 py-2 text-sm text-white focus:border-white focus:outline-none"
+                    className="rounded-2xl border border-[#f2d4de] bg-white px-4 py-2.5 text-sm text-[#2b1b27] placeholder:text-[#b090a0] focus:border-[#e0a8bc] focus:outline-none"
                     value={form.saison}
                     onChange={handleFormChange("saison")}
                   />
                 </label>
                 <label className="flex flex-col gap-1">
-                  Année
+                  <span className="text-xs font-semibold uppercase tracking-[0.25em] text-[#b17f92]">
+                    Année
+                  </span>
                   <input
-                    className="rounded border border-white/30 bg-white/20 px-3 py-2 text-sm text-white focus:border-white focus:outline-none"
+                    className="rounded-2xl border border-[#f2d4de] bg-white px-4 py-2.5 text-sm text-[#2b1b27] placeholder:text-[#b090a0] focus:border-[#e0a8bc] focus:outline-none"
                     value={form.annee}
                     onChange={handleFormChange("annee")}
                   />
                 </label>
               </div>
 
-              <div className="grid gap-3 lg:grid-cols-[repeat(4,minmax(0,1fr))]">
+              <div className="grid gap-4 lg:grid-cols-[repeat(4,minmax(0,1fr))]">
                 <label className="flex flex-col gap-1">
-                  Date début
+                  <span className="text-xs font-semibold uppercase tracking-[0.25em] text-[#b17f92]">
+                    Date début
+                  </span>
                   <input
                     type="date"
-                    className="rounded border border-white/30 bg-white/20 px-3 py-2 text-sm text-white focus:border-white focus:outline-none"
+                    className="rounded-2xl border border-[#f2d4de] bg-white px-4 py-2.5 text-sm text-[#2b1b27] focus:border-[#e0a8bc] focus:outline-none"
                     value={form.dateDebut}
                     onChange={handleFormChange("dateDebut")}
                   />
                 </label>
                 <label className="flex flex-col gap-1">
-                  Date fin
+                  <span className="text-xs font-semibold uppercase tracking-[0.25em] text-[#b17f92]">
+                    Date fin
+                  </span>
                   <input
                     type="date"
-                    className="rounded border border-white/30 bg-white/20 px-3 py-2 text-sm text-white focus:border-white focus:outline-none"
+                    className="rounded-2xl border border-[#f2d4de] bg-white px-4 py-2.5 text-sm text-[#2b1b27] focus:border-[#e0a8bc] focus:outline-none"
                     value={form.dateFin}
                     onChange={handleFormChange("dateFin")}
                   />
                 </label>
                 <label className="flex flex-col gap-1">
-                  N° DDCS centre
+                  <span className="text-xs font-semibold uppercase tracking-[0.25em] text-[#b17f92]">
+                    N° DDCS centre
+                  </span>
                   <input
-                    className="rounded border border-white/30 bg-white/20 px-3 py-2 text-sm text-white focus:border-white focus:outline-none"
+                    className="rounded-2xl border border-[#f2d4de] bg-white px-4 py-2.5 text-sm text-[#2b1b27] placeholder:text-[#b090a0] focus:border-[#e0a8bc] focus:outline-none"
                     value={form.ddcsCentre}
                     onChange={handleFormChange("ddcsCentre")}
                   />
                 </label>
                 <label className="flex flex-col gap-1">
-                  N° DDCS complémentaire
+                  <span className="text-xs font-semibold uppercase tracking-[0.25em] text-[#b17f92]">
+                    N° DDCS complémentaire
+                  </span>
                   <input
-                    className="rounded border border-white/30 bg-white/20 px-3 py-2 text-sm text-white focus:border-white focus:outline-none"
+                    className="rounded-2xl border border-[#f2d4de] bg-white px-4 py-2.5 text-sm text-[#2b1b27] placeholder:text-[#b090a0] focus:border-[#e0a8bc] focus:outline-none"
                     value={form.ddcsComplementaire}
                     onChange={handleFormChange("ddcsComplementaire")}
                   />
@@ -387,76 +407,76 @@ function SejoursPageContent() {
             </div>
           </div>
 
-          <div className="grid gap-4 text-xs font-semibold uppercase tracking-[0.16em] text-[#5c606b] md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+          <div className="grid gap-4 text-sm text-[#3c2432] md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
             <label className="flex flex-col gap-1">
-              Code analytique comptable
+              <span className="text-xs font-semibold uppercase tracking-[0.25em] text-[#b17f92]">
+                Code analytique comptable
+              </span>
               <input
-                className="rounded border border-[#d4d7df] bg-white px-3 py-2 text-sm text-[#2b2f36] focus:border-[#7f8696] focus:outline-none"
+                className="rounded-2xl border border-[#f2d4de] bg-white px-4 py-2.5 text-sm text-[#2b1b27] focus:border-[#e0a8bc] focus:outline-none"
                 value={form.codeAnalytique}
                 onChange={handleFormChange("codeAnalytique")}
               />
             </label>
-            <label className="inline-flex items-center gap-2">
+            <label className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.25em] text-[#b17f92]">
               Séjour sans pique-nique ?
               <input
                 type="checkbox"
-                className="size-4 accent-[#0f4c65]"
+                className="size-4 accent-[#d98aa7]"
                 checked={form.sansPiqueNique}
                 onChange={handleFormChange("sansPiqueNique")}
               />
             </label>
           </div>
 
-          <div className="flex justify-end gap-2">
+          <div className="flex flex-wrap justify-end gap-3">
             <button
               type="button"
               onClick={handleReset}
-              className="inline-flex items-center justify-center rounded-md border border-[#d4d7df] bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#2b2f36] transition hover:bg-[#eef1f7]"
+              className="inline-flex items-center justify-center rounded-full border border-[#f2d4de] bg-white/80 px-5 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-[#3b2431] transition hover:bg-[#fff5f8]"
             >
               Réinitialiser
             </button>
             <button
               type="submit"
-              className="inline-flex items-center justify-center rounded-md border border-[#0f4c65] bg-[#0f4c65] px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-[#0c3850]"
+              className="inline-flex items-center justify-center rounded-full border border-transparent bg-[#f5dbe3] px-5 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-[#3b2431] transition hover:bg-[#f2c5d4]"
             >
               Enregistrer
             </button>
           </div>
         </form>
 
-        <section className="space-y-6 rounded-2xl border border-[#d0d4dc] bg-white/90 p-6 shadow-xl">
-          <div className="grid gap-6 xl:grid-cols-2">
-            <div className="space-y-4">
+        <section className="space-y-10 rounded-3xl border border-[#f1d6e0]/80 bg-white/60 p-8 shadow-[0_25px_60px_rgba(83,15,43,0.03)]">
+          <div className="grid gap-8 xl:grid-cols-2">
+            <div className="space-y-4 rounded-2xl border border-[#f3d5df] bg-white/80 p-5 shadow-sm">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold uppercase tracking-[0.18em] text-[#1f2330]">
-                  Assurances
-                </h3>
-                <button className="inline-flex items-center justify-center rounded-md border border-[#d4d7df] bg-[#ffe2d6] px-2 py-1 text-sm font-semibold text-[#2b2f36] transition hover:bg-[#ffd0bd]">
+                <h3 className="text-base font-semibold tracking-tight text-[#2d1826]">Assurances</h3>
+                <button className="inline-flex size-8 items-center justify-center rounded-full border border-[#f3d5df] text-sm text-[#7b4b60] transition hover:bg-[#f5dbe3]/80">
                   +
                 </button>
               </div>
-              <div className="overflow-hidden rounded-xl border border-[#d4d7df] bg-[#f7f8fb]">
-                <table className="w-full border-collapse text-xs font-semibold uppercase tracking-[0.12em] text-[#5c606b]">
-                  <thead className="bg-[#eceef3]">
+              <div className="overflow-hidden rounded-xl border border-dashed border-[#f3d5df] bg-white/90">
+                <table className="w-full border-collapse text-xs font-medium uppercase tracking-[0.2em] text-[#9b7487]">
+                  <thead className="bg-[#fdf2f6] text-[#7a405c]">
                     <tr>
-                      <th className="px-3 py-2 text-left">Nom de l&apos;assurance</th>
-                      <th className="px-3 py-2 text-left">Valeur</th>
-                      <th className="px-3 py-2 text-left">%/€</th>
+                      <th className="px-4 py-2 text-left">Nom de l&apos;assurance</th>
+                      <th className="px-4 py-2 text-left">Valeur</th>
+                      <th className="px-4 py-2 text-left">%/€</th>
                     </tr>
                   </thead>
                   <tbody>
                     {assuranceRows.length === 0 ? (
                       <tr>
-                        <td colSpan={3} className="px-3 py-4 text-center text-xs font-medium text-[#7f8696]">
+                        <td colSpan={3} className="px-4 py-5 text-center text-xs font-medium text-[#b08c9d]">
                           Aucune assurance configurée.
                         </td>
                       </tr>
                     ) : (
                       assuranceRows.map((row) => (
-                        <tr key={row.id} className="border-t border-[#e3e6ed] odd:bg-white even:bg-[#f5f6f9]">
-                          <td className="px-3 py-2 text-sm text-[#2b2f36]">{row.name}</td>
-                          <td className="px-3 py-2 text-sm text-[#2b2f36]">{row.value}</td>
-                          <td className="px-3 py-2 text-sm text-[#2b2f36]">{row.unit}</td>
+                        <tr key={row.id} className="border-t border-[#f3d5df] odd:bg-white even:bg-[#fff7fa]">
+                          <td className="px-4 py-2 text-sm text-[#2f1d28]">{row.name}</td>
+                          <td className="px-4 py-2 text-sm text-[#2f1d28]">{row.value}</td>
+                          <td className="px-4 py-2 text-sm text-[#2f1d28]">{row.unit}</td>
                         </tr>
                       ))
                     )}
@@ -465,37 +485,35 @@ function SejoursPageContent() {
               </div>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-4 rounded-2xl border border-[#f3d5df] bg-white/80 p-5 shadow-sm">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold uppercase tracking-[0.18em] text-[#1f2330]">
-                  Options artistiques
-                </h3>
-                <button className="inline-flex items-center justify-center rounded-md border border-[#d4d7df] bg-[#ffe2d6] px-2 py-1 text-sm font-semibold text-[#2b2f36] transition hover:bg-[#ffd0bd]">
+                <h3 className="text-base font-semibold tracking-tight text-[#2d1826]">Options artistiques</h3>
+                <button className="inline-flex size-8 items-center justify-center rounded-full border border-[#f3d5df] text-sm text-[#7b4b60] transition hover:bg-[#f5dbe3]/80">
                   +
                 </button>
               </div>
-              <div className="overflow-hidden rounded-xl border border-[#d4d7df] bg-[#f7f8fb]">
-                <table className="w-full border-collapse text-xs font-semibold uppercase tracking-[0.12em] text-[#5c606b]">
-                  <thead className="bg-[#eceef3]">
+              <div className="overflow-hidden rounded-xl border border-dashed border-[#f3d5df] bg-white/90">
+                <table className="w-full border-collapse text-xs font-medium uppercase tracking-[0.2em] text-[#9b7487]">
+                  <thead className="bg-[#fdf2f6] text-[#7a405c]">
                     <tr>
-                      <th className="px-3 py-2 text-left">Nom du séjour</th>
-                      <th className="px-3 py-2 text-left">Option artistique</th>
-                      <th className="px-3 py-2 text-left">Prix</th>
+                      <th className="px-4 py-2 text-left">Nom du séjour</th>
+                      <th className="px-4 py-2 text-left">Option artistique</th>
+                      <th className="px-4 py-2 text-left">Prix</th>
                     </tr>
                   </thead>
                   <tbody>
                     {artisticOptions.length === 0 ? (
                       <tr>
-                        <td colSpan={3} className="px-3 py-4 text-center text-xs font-medium text-[#7f8696]">
+                        <td colSpan={3} className="px-4 py-5 text-center text-xs font-medium text-[#b08c9d]">
                           Aucune option artistique définie.
                         </td>
                       </tr>
                     ) : (
                       artisticOptions.map((row) => (
-                        <tr key={row.id} className="border-t border-[#e3e6ed] odd:bg-white even:bg-[#f5f6f9]">
-                          <td className="px-3 py-2 text-sm text-[#2b2f36]">{row.sejour}</td>
-                          <td className="px-3 py-2 text-sm text-[#2b2f36]">{row.option}</td>
-                          <td className="px-3 py-2 text-sm text-[#2b2f36]">{row.price}</td>
+                        <tr key={row.id} className="border-t border-[#f3d5df] odd:bg-white even:bg-[#fff7fa]">
+                          <td className="px-4 py-2 text-sm text-[#2f1d28]">{row.sejour}</td>
+                          <td className="px-4 py-2 text-sm text-[#2f1d28]">{row.option}</td>
+                          <td className="px-4 py-2 text-sm text-[#2f1d28]">{row.price}</td>
                         </tr>
                       ))
                     )}
@@ -505,47 +523,43 @@ function SejoursPageContent() {
             </div>
           </div>
 
-          <div className="grid gap-6 xl:grid-cols-2">
-            <div className="space-y-4">
+          <div className="grid gap-8 xl:grid-cols-2">
+            <div className="space-y-4 rounded-2xl border border-[#f3d5df] bg-white/80 p-5 shadow-sm">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold uppercase tracking-[0.18em] text-[#1f2330]">
-                  Dates d&apos;entrées
-                </h3>
-                <button className="inline-flex items-center justify-center rounded-md border border-[#d4d7df] bg-[#ffe2d6] px-2 py-1 text-sm font-semibold text-[#2b2f36] transition hover:bg-[#ffd0bd]">
+                <h3 className="text-base font-semibold tracking-tight text-[#2d1826]">Dates d&apos;entrées</h3>
+                <button className="inline-flex size-8 items-center justify-center rounded-full border border-[#f3d5df] text-sm text-[#7b4b60] transition hover:bg-[#f5dbe3]/80">
                   +
                 </button>
               </div>
-              <ul className="min-h-[120px] rounded-xl border border-[#d4d7df] bg-[#f7f8fb] px-3 py-2 text-sm text-[#2b2f36]">
+              <ul className="min-h-[120px] rounded-2xl border border-dashed border-[#f3d5df] bg-white/90 px-4 py-3 text-sm text-[#2f1d28]">
                 {entryDates.length === 0 ? (
-                  <li className="py-4 text-center text-xs font-medium text-[#7f8696]">
+                  <li className="py-4 text-center text-xs font-medium text-[#b08c9d]">
                     Aucune date d&apos;entrée.
                   </li>
                 ) : (
                   entryDates.map((row) => (
-                    <li key={row.id} className="border-b border-[#e3e6ed] py-2 last:border-0">
+                    <li key={row.id} className="border-b border-[#f3d5df] py-2 last:border-0">
                       {row.date}
                     </li>
                   ))
                 )}
               </ul>
             </div>
-            <div className="space-y-4">
+            <div className="space-y-4 rounded-2xl border border-[#f3d5df] bg-white/80 p-5 shadow-sm">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold uppercase tracking-[0.18em] text-[#1f2330]">
-                  Dates de sorties
-                </h3>
-                <button className="inline-flex items-center justify-center rounded-md border border-[#d4d7df] bg-[#ffe2d6] px-2 py-1 text-sm font-semibold text-[#2b2f36] transition hover:bg-[#ffd0bd]">
+                <h3 className="text-base font-semibold tracking-tight text-[#2d1826]">Dates de sorties</h3>
+                <button className="inline-flex size-8 items-center justify-center rounded-full border border-[#f3d5df] text-sm text-[#7b4b60] transition hover:bg-[#f5dbe3]/80">
                   +
                 </button>
               </div>
-              <ul className="min-h-[120px] rounded-xl border border-[#d4d7df] bg-[#f7f8fb] px-3 py-2 text-sm text-[#2b2f36]">
+              <ul className="min-h-[120px] rounded-2xl border border-dashed border-[#f3d5df] bg-white/90 px-4 py-3 text-sm text-[#2f1d28]">
                 {exitDates.length === 0 ? (
-                  <li className="py-4 text-center text-xs font-medium text-[#7f8696]">
+                  <li className="py-4 text-center text-xs font-medium text-[#b08c9d]">
                     Aucune date de sortie.
                   </li>
                 ) : (
                   exitDates.map((row) => (
-                    <li key={row.id} className="border-b border-[#e3e6ed] py-2 last:border-0">
+                    <li key={row.id} className="border-b border-[#f3d5df] py-2 last:border-0">
                       {row.date}
                     </li>
                   ))
@@ -554,36 +568,34 @@ function SejoursPageContent() {
             </div>
           </div>
 
-          <div className="grid gap-6 xl:grid-cols-2">
-            <div className="space-y-4">
+          <div className="grid gap-8 xl:grid-cols-2">
+            <div className="space-y-4 rounded-2xl border border-[#f3d5df] bg-white/80 p-5 shadow-sm">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold uppercase tracking-[0.18em] text-[#1f2330]">
-                  Villes de départ
-                </h3>
-                <button className="inline-flex items-center justify-center rounded-md border border-[#d4d7df] bg-[#ffe2d6] px-2 py-1 text-sm font-semibold text-[#2b2f36] transition hover:bg-[#ffd0bd]">
+                <h3 className="text-base font-semibold tracking-tight text-[#2d1826]">Villes de départ</h3>
+                <button className="inline-flex size-8 items-center justify-center rounded-full border border-[#f3d5df] text-sm text-[#7b4b60] transition hover:bg-[#f5dbe3]/80">
                   +
                 </button>
               </div>
-              <div className="overflow-hidden rounded-xl border border-[#d4d7df] bg-[#f7f8fb]">
-                <table className="w-full border-collapse text-xs font-semibold uppercase tracking-[0.12em] text-[#5c606b]">
-                  <thead className="bg-[#eceef3]">
+              <div className="overflow-hidden rounded-xl border border-dashed border-[#f3d5df] bg-white/90">
+                <table className="w-full border-collapse text-xs font-medium uppercase tracking-[0.2em] text-[#9b7487]">
+                  <thead className="bg-[#fdf2f6] text-[#7a405c]">
                     <tr>
-                      <th className="px-3 py-2 text-left">Villes de départ</th>
-                      <th className="px-3 py-2 text-left">Prix</th>
+                      <th className="px-4 py-2 text-left">Villes de départ</th>
+                      <th className="px-4 py-2 text-left">Prix</th>
                     </tr>
                   </thead>
                   <tbody>
                     {departureCities.length === 0 ? (
                       <tr>
-                        <td colSpan={2} className="px-3 py-4 text-center text-xs font-medium text-[#7f8696]">
+                        <td colSpan={2} className="px-4 py-5 text-center text-xs font-medium text-[#b08c9d]">
                           Aucune ville de départ configurée.
                         </td>
                       </tr>
                     ) : (
                       departureCities.map((row) => (
-                        <tr key={row.id} className="border-t border-[#e3e6ed] odd:bg-white even:bg-[#f5f6f9]">
-                          <td className="px-3 py-2 text-sm text-[#2b2f36]">{row.city}</td>
-                          <td className="px-3 py-2 text-sm text-[#2b2f36]">{row.price}</td>
+                        <tr key={row.id} className="border-t border-[#f3d5df] odd:bg-white even:bg-[#fff7fa]">
+                          <td className="px-4 py-2 text-sm text-[#2f1d28]">{row.city}</td>
+                          <td className="px-4 py-2 text-sm text-[#2f1d28]">{row.price}</td>
                         </tr>
                       ))
                     )}
@@ -592,35 +604,33 @@ function SejoursPageContent() {
               </div>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-4 rounded-2xl border border-[#f3d5df] bg-white/80 p-5 shadow-sm">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold uppercase tracking-[0.18em] text-[#1f2330]">
-                  Villes de retour
-                </h3>
-                <button className="inline-flex items-center justify-center rounded-md border border-[#d4d7df] bg-[#ffe2d6] px-2 py-1 text-sm font-semibold text-[#2b2f36] transition hover:bg-[#ffd0bd]">
+                <h3 className="text-base font-semibold tracking-tight text-[#2d1826]">Villes de retour</h3>
+                <button className="inline-flex size-8 items-center justify-center rounded-full border border-[#f3d5df] text-sm text-[#7b4b60] transition hover:bg-[#f5dbe3]/80">
                   +
                 </button>
               </div>
-              <div className="overflow-hidden rounded-xl border border-[#d4d7df] bg-[#f7f8fb]">
-                <table className="w-full border-collapse text-xs font-semibold uppercase tracking-[0.12em] text-[#5c606b]">
-                  <thead className="bg-[#eceef3]">
+              <div className="overflow-hidden rounded-xl border border-dashed border-[#f3d5df] bg-white/90">
+                <table className="w-full border-collapse text-xs font-medium uppercase tracking-[0.2em] text-[#9b7487]">
+                  <thead className="bg-[#fdf2f6] text-[#7a405c]">
                     <tr>
-                      <th className="px-3 py-2 text-left">Villes de retour</th>
-                      <th className="px-3 py-2 text-left">Prix</th>
+                      <th className="px-4 py-2 text-left">Villes de retour</th>
+                      <th className="px-4 py-2 text-left">Prix</th>
                     </tr>
                   </thead>
                   <tbody>
                     {returnCities.length === 0 ? (
                       <tr>
-                        <td colSpan={2} className="px-3 py-4 text-center text-xs font-medium text-[#7f8696]">
+                        <td colSpan={2} className="px-4 py-5 text-center text-xs font-medium text-[#b08c9d]">
                           Aucune ville de retour configurée.
                         </td>
                       </tr>
                     ) : (
                       returnCities.map((row) => (
-                        <tr key={row.id} className="border-t border-[#e3e6ed] odd:bg-white even:bg-[#f5f6f9]">
-                          <td className="px-3 py-2 text-sm text-[#2b2f36]">{row.city}</td>
-                          <td className="px-3 py-2 text-sm text-[#2b2f36]">{row.price}</td>
+                        <tr key={row.id} className="border-t border-[#f3d5df] odd:bg-white even:bg-[#fff7fa]">
+                          <td className="px-4 py-2 text-sm text-[#2f1d28]">{row.city}</td>
+                          <td className="px-4 py-2 text-sm text-[#2f1d28]">{row.price}</td>
                         </tr>
                       ))
                     )}
@@ -630,35 +640,33 @@ function SejoursPageContent() {
             </div>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-4 rounded-2xl border border-[#f3d5df] bg-white/80 p-5 shadow-sm">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold uppercase tracking-[0.18em] text-[#1f2330]">
-                Périodes de séjour
-              </h3>
-              <button className="inline-flex items-center justify-center rounded-md border border-[#d4d7df] bg-[#ffe2d6] px-2 py-1 text-sm font-semibold text-[#2b2f36] transition hover:bg-[#ffd0bd]">
+              <h3 className="text-base font-semibold tracking-tight text-[#2d1826]">Périodes de séjour</h3>
+              <button className="inline-flex size-8 items-center justify-center rounded-full border border-[#f3d5df] text-sm text-[#7b4b60] transition hover:bg-[#f5dbe3]/80">
                 +
               </button>
             </div>
-            <div className="overflow-hidden rounded-xl border border-[#d4d7df] bg-[#f7f8fb]">
-              <table className="w-full border-collapse text-xs font-semibold uppercase tracking-[0.12em] text-[#5c606b]">
-                <thead className="bg-[#eceef3]">
+            <div className="overflow-hidden rounded-xl border border-dashed border-[#f3d5df] bg-white/90">
+              <table className="w-full border-collapse text-xs font-medium uppercase tracking-[0.2em] text-[#9b7487]">
+                <thead className="bg-[#fdf2f6] text-[#7a405c]">
                   <tr>
-                    <th className="px-3 py-2 text-left">Période</th>
-                    <th className="px-3 py-2 text-left">N° Grp Prestashop</th>
+                    <th className="px-4 py-2 text-left">Période</th>
+                    <th className="px-4 py-2 text-left">N° Grp Prestashop</th>
                   </tr>
                 </thead>
                 <tbody>
                   {sejourPeriods.length === 0 ? (
                     <tr>
-                      <td colSpan={2} className="px-3 py-4 text-center text-xs font-medium text-[#7f8696]">
+                      <td colSpan={2} className="px-4 py-5 text-center text-xs font-medium text-[#b08c9d]">
                         Aucune période enregistrée.
                       </td>
                     </tr>
                   ) : (
                     sejourPeriods.map((row) => (
-                      <tr key={row.id} className="border-t border-[#e3e6ed] odd:bg-white even:bg-[#f5f6f9]">
-                        <td className="px-3 py-2 text-sm text-[#2b2f36]">{row.period}</td>
-                        <td className="px-3 py-2 text-sm text-[#2b2f36]">{row.prestashop}</td>
+                      <tr key={row.id} className="border-t border-[#f3d5df] odd:bg-white even:bg-[#fff7fa]">
+                        <td className="px-4 py-2 text-sm text-[#2f1d28]">{row.period}</td>
+                        <td className="px-4 py-2 text-sm text-[#2f1d28]">{row.prestashop}</td>
                       </tr>
                     ))
                   )}
@@ -667,33 +675,31 @@ function SejoursPageContent() {
             </div>
           </div>
 
-          <div className="grid gap-6 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1.4fr)_minmax(0,1fr)]">
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold uppercase tracking-[0.18em] text-[#1f2330]">
-                Partenariats
-              </h3>
-              <div className="overflow-hidden rounded-xl border border-[#d4d7df] bg-[#f7f8fb]">
-                <table className="w-full border-collapse text-xs font-semibold uppercase tracking-[0.12em] text-[#5c606b]">
-                  <thead className="bg-[#eceef3]">
+          <div className="grid gap-8 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1.4fr)_minmax(0,1fr)]">
+            <div className="space-y-4 rounded-2xl border border-[#f3d5df] bg-white/80 p-5 shadow-sm">
+              <h3 className="text-base font-semibold tracking-tight text-[#2d1826]">Partenariats</h3>
+              <div className="overflow-hidden rounded-xl border border-dashed border-[#f3d5df] bg-white/90">
+                <table className="w-full border-collapse text-xs font-medium uppercase tracking-[0.2em] text-[#9b7487]">
+                  <thead className="bg-[#fdf2f6] text-[#7a405c]">
                     <tr>
-                      <th className="px-3 py-2 text-left">Nom du part.</th>
-                      <th className="px-3 py-2 text-left">Prix hors transport</th>
-                      <th className="px-3 py-2 text-left">Prix transport</th>
+                      <th className="px-4 py-2 text-left">Nom du part.</th>
+                      <th className="px-4 py-2 text-left">Prix hors transport</th>
+                      <th className="px-4 py-2 text-left">Prix transport</th>
                     </tr>
                   </thead>
                   <tbody>
                     {partnerPricing.length === 0 ? (
                       <tr>
-                        <td colSpan={3} className="px-3 py-4 text-center text-xs font-medium text-[#7f8696]">
+                        <td colSpan={3} className="px-4 py-5 text-center text-xs font-medium text-[#b08c9d]">
                           Aucun partenariat enregistré.
                         </td>
                       </tr>
                     ) : (
                       partnerPricing.map((row) => (
-                        <tr key={row.id} className="border-t border-[#e3e6ed] odd:bg-white even:bg-[#f5f6f9]">
-                          <td className="px-3 py-2 text-sm text-[#2b2f36]">{row.name}</td>
-                          <td className="px-3 py-2 text-sm text-[#2b2f36]">{row.base}</td>
-                          <td className="px-3 py-2 text-sm text-[#2b2f36]">{row.transport}</td>
+                        <tr key={row.id} className="border-t border-[#f3d5df] odd:bg-white even:bg-[#fff7fa]">
+                          <td className="px-4 py-2 text-sm text-[#2f1d28]">{row.name}</td>
+                          <td className="px-4 py-2 text-sm text-[#2f1d28]">{row.base}</td>
+                          <td className="px-4 py-2 text-sm text-[#2f1d28]">{row.transport}</td>
                         </tr>
                       ))
                     )}
@@ -702,37 +708,35 @@ function SejoursPageContent() {
               </div>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-4 rounded-2xl border border-[#f3d5df] bg-white/80 p-5 shadow-sm">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold uppercase tracking-[0.18em] text-[#1f2330]">
-                  Tâches associées
-                </h3>
-                <button className="inline-flex items-center justify-center rounded-md border border-[#d4d7df] bg-[#ffe2d6] px-2 py-1 text-sm font-semibold text-[#2b2f36] transition hover:bg-[#ffd0bd]">
+                <h3 className="text-base font-semibold tracking-tight text-[#2d1826]">Tâches associées</h3>
+                <button className="inline-flex size-8 items-center justify-center rounded-full border border-[#f3d5df] text-sm text-[#7b4b60] transition hover:bg-[#f5dbe3]/80">
                   +
                 </button>
               </div>
-              <div className="overflow-hidden rounded-xl border border-[#d4d7df] bg-[#f7f8fb]">
-                <table className="w-full border-collapse text-xs font-semibold uppercase tracking-[0.12em] text-[#5c606b]">
-                  <thead className="bg-[#eceef3]">
+              <div className="overflow-hidden rounded-xl border border-dashed border-[#f3d5df] bg-white/90">
+                <table className="w-full border-collapse text-xs font-medium uppercase tracking-[0.2em] text-[#9b7487]">
+                  <thead className="bg-[#fdf2f6] text-[#7a405c]">
                     <tr>
-                      <th className="px-3 py-2 text-left">Catégorie de tâche</th>
-                      <th className="px-3 py-2 text-left">Tâches associées</th>
-                      <th className="px-3 py-2 text-left">Nb de jours avant</th>
+                      <th className="px-4 py-2 text-left">Catégorie de tâche</th>
+                      <th className="px-4 py-2 text-left">Tâches associées</th>
+                      <th className="px-4 py-2 text-left">Nb de jours avant</th>
                     </tr>
                   </thead>
                   <tbody>
                     {taskCategories.length === 0 ? (
                       <tr>
-                        <td colSpan={3} className="px-3 py-4 text-center text-xs font-medium text-[#7f8696]">
+                        <td colSpan={3} className="px-4 py-5 text-center text-xs font-medium text-[#b08c9d]">
                           Aucune tâche planifiée.
                         </td>
                       </tr>
                     ) : (
                       taskCategories.map((row) => (
-                        <tr key={row.id} className="border-t border-[#e3e6ed] odd:bg-white even:bg-[#f5f6f9]">
-                          <td className="px-3 py-2 text-sm text-[#2b2f36]">{row.category}</td>
-                          <td className="px-3 py-2 text-sm text-[#2b2f36]">{row.tasks}</td>
-                          <td className="px-3 py-2 text-sm text-[#2b2f36]">{row.daysBefore}</td>
+                        <tr key={row.id} className="border-t border-[#f3d5df] odd:bg-white even:bg-[#fff7fa]">
+                          <td className="px-4 py-2 text-sm text-[#2f1d28]">{row.category}</td>
+                          <td className="px-4 py-2 text-sm text-[#2f1d28]">{row.tasks}</td>
+                          <td className="px-4 py-2 text-sm text-[#2f1d28]">{row.daysBefore}</td>
                         </tr>
                       ))
                     )}
@@ -741,32 +745,30 @@ function SejoursPageContent() {
               </div>
             </div>
 
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold uppercase tracking-[0.18em] text-[#1f2330]">
-                Encadrement associé
-              </h3>
-              <div className="overflow-hidden rounded-xl border border-[#d4d7df] bg-[#f7f8fb]">
-                <table className="w-full border-collapse text-xs font-semibold uppercase tracking-[0.12em] text-[#5c606b]">
-                  <thead className="bg-[#eceef3]">
+            <div className="space-y-4 rounded-2xl border border-[#f3d5df] bg-white/80 p-5 shadow-sm">
+              <h3 className="text-base font-semibold tracking-tight text-[#2d1826]">Encadrement associé</h3>
+              <div className="overflow-hidden rounded-xl border border-dashed border-[#f3d5df] bg-white/90">
+                <table className="w-full border-collapse text-xs font-medium uppercase tracking-[0.2em] text-[#9b7487]">
+                  <thead className="bg-[#fdf2f6] text-[#7a405c]">
                     <tr>
-                      <th className="px-3 py-2 text-left">Nom</th>
-                      <th className="px-3 py-2 text-left">Prénom</th>
-                      <th className="px-3 py-2 text-left">Fonction</th>
+                      <th className="px-4 py-2 text-left">Nom</th>
+                      <th className="px-4 py-2 text-left">Prénom</th>
+                      <th className="px-4 py-2 text-left">Fonction</th>
                     </tr>
                   </thead>
                   <tbody>
                     {staffMembers.length === 0 ? (
                       <tr>
-                        <td colSpan={3} className="px-3 py-4 text-center text-xs font-medium text-[#7f8696]">
+                        <td colSpan={3} className="px-4 py-5 text-center text-xs font-medium text-[#b08c9d]">
                           Aucun membre associé.
                         </td>
                       </tr>
                     ) : (
                       staffMembers.map((row) => (
-                        <tr key={row.id} className="border-t border-[#e3e6ed] odd:bg-white even:bg-[#f5f6f9]">
-                          <td className="px-3 py-2 text-sm text-[#2b2f36]">{row.name}</td>
-                          <td className="px-3 py-2 text-sm text-[#2b2f36]">{row.firstName}</td>
-                          <td className="px-3 py-2 text-sm text-[#2b2f36]">{row.role}</td>
+                        <tr key={row.id} className="border-t border-[#f3d5df] odd:bg-white even:bg-[#fff7fa]">
+                          <td className="px-4 py-2 text-sm text-[#2f1d28]">{row.name}</td>
+                          <td className="px-4 py-2 text-sm text-[#2f1d28]">{row.firstName}</td>
+                          <td className="px-4 py-2 text-sm text-[#2f1d28]">{row.role}</td>
                         </tr>
                       ))
                     )}
@@ -777,7 +779,7 @@ function SejoursPageContent() {
           </div>
         </section>
 
-        <section className="rounded-2xl border border-[#d0d4dc] bg-white/80 px-6 py-4 text-xs font-semibold uppercase tracking-[0.16em] text-[#5c606b] shadow">
+        <section className="rounded-3xl border border-dashed border-[#f3d5df] bg-white/50 px-6 py-4 text-xs font-semibold uppercase tracking-[0.3em] text-[#9b7487]">
           <p>
             {sejourList.length === 0
               ? "Aucun séjour sélectionné."
