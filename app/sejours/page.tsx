@@ -154,7 +154,7 @@ function SejoursPageContent() {
             </div>
             <button
               type="button"
-              className="inline-flex items-center gap-3 rounded-full border border-[#f2d4de] bg-white/70 px-5 py-2 text-sm font-medium text-[#3d2433] transition hover:border-[#ebbccc] hover:bg-white"
+              className="inline-flex items-center gap-3 rounded-full border border-[#f2d4de] bg-white/70 px-5 py-2 text-sm font-medium text-[#3d2433] transition hover:border-[#ebbccc] hover:bg-[#E9C6D2]"
               onClick={() => setIsSearchPanelOpen((open) => !open)}
             >
               {isSearchPanelOpen ? "Fermer la recherche" : "Ouvrir la recherche"}
