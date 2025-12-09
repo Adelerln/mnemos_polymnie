@@ -72,7 +72,7 @@ export default function InscriptionsPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-[#d8dce4] via-[#cfd4df] to-[#c4cad6] px-4 text-[#2b2f36]">
+        <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-white to-[#F5D4FF] px-4 text-[#204991]">
           Chargement des inscriptions…
         </div>
       }
@@ -150,161 +150,163 @@ function InscriptionsPageContent() {
   const totalInscriptions = inscriptions.length;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#d8dce4] via-[#cfd4df] to-[#c4cad6] py-12">
-      <div className="flex min-h-[calc(100vh-6rem)] w-full flex-col gap-8 px-4 text-[#2b2f36] md:px-8 lg:px-12">
-        <header className="flex flex-col gap-6 rounded-3xl border border-[#d2d6de] bg-white/85 p-8 shadow-xl backdrop-blur">
+    <div className="min-h-screen bg-gradient-to-b from-white to-[#F5D4FF] py-12 text-[#204991]">
+      <div className="flex min-h-[calc(100vh-6rem)] w-full flex-col gap-8 px-4 text-[#204991] md:px-8 lg:px-12">
+        <header className="flex flex-col gap-6 rounded-3xl border border-[#F5D4FF] bg-white p-8 shadow-[0_25px_60px_rgba(32,73,145,0.08)]">
           <div className="flex flex-wrap items-center justify-between gap-6">
             <div className="space-y-1">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#5c606b]">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#204991]">
                 Suivi des inscriptions
               </p>
-              <h1 className="text-4xl font-semibold tracking-tight text-[#1f2330]">
+              <h1 className="text-4xl font-semibold tracking-tight text-[#204991]">
                 Inscriptions famille
               </h1>
             </div>
             <Link
               href="/clients"
-              className="inline-flex items-center gap-2 rounded-full border border-[#c9ccd5] bg-white px-5 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#2b2f36] transition hover:bg-[#f4f6fa]"
+              className="inline-flex items-center gap-2 rounded-full border border-[#204991] bg-white px-5 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#204991] transition hover:bg-[#EED6FF]"
             >
               <ArrowLeft className="size-4" />
               Retour fiche famille
             </Link>
           </div>
-          <p className="max-w-4xl text-sm text-[#565b66]">
+          <p className="max-w-4xl text-sm text-[#204991]/80">
             Maquette plein écran pour visualiser les inscriptions des enfants
             d&apos;une famille. Reliez cette page à Supabase pour afficher des données
             en temps réel.
           </p>
         </header>
 
-        <section className="grid gap-6 xl:grid-cols-[minmax(0,2.6fr)_minmax(0,1.5fr)_minmax(0,1fr)]">
-          <div className="space-y-4 rounded-3xl border border-[#d3d7df] bg-white p-8 shadow-lg">
-            <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-[#1f2330]">
+        <section className="space-y-6">
+          <div className="space-y-4 overflow-hidden rounded-3xl border border-[#F5D4FF] bg-white p-8 shadow-[0_25px_60px_rgba(32,73,145,0.08)]">
+            <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-[#204991]">
               Filtres familles & participants
             </h2>
             <div className="grid gap-5 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
               <div className="space-y-4">
-                <label className="flex flex-wrap items-center gap-3 text-sm text-[#2b2f36]">
+                <label className="flex flex-wrap items-center gap-3 text-sm text-[#204991]">
                   <span className="flex items-center gap-2">
                     <input
                       type="radio"
                       name="search-type"
                       value="participant"
                       defaultChecked
+                      className="accent-[#D8C2E8]"
                     />
                     Participant
                   </span>
                   <input
-                    className="min-w-[200px] flex-1 rounded border border-[#d4d7df] bg-white px-3 py-2 text-sm focus:border-[#7f8696] focus:outline-none"
+                    className="min-w-[200px] flex-1 rounded border border-[#D8C2E8] bg-white px-3 py-2 text-sm text-[#204991] placeholder:text-[#204991]/60 focus:border-[#B793D6] focus:outline-none"
                     placeholder="Nom du participant..."
                     value={filters.childFirstName}
                     onChange={handleFiltersChange("childFirstName")}
                   />
                 </label>
-                <label className="flex flex-wrap items-center gap-3 text-sm text-[#2b2f36]">
+                <label className="flex flex-wrap items-center gap-3 text-sm text-[#204991]">
                   <span className="flex items-center gap-2">
-                    <input type="radio" name="search-type" value="famille" />
+                    <input type="radio" name="search-type" value="famille" className="accent-[#D8C2E8]" />
                     Famille
                   </span>
                   <input
-                    className="min-w-[200px] flex-1 rounded border border-[#d4d7df] bg-white px-3 py-2 text-sm focus:border-[#7f8696] focus:outline-none"
+                    className="min-w-[200px] flex-1 rounded border border-[#D8C2E8] bg-white px-3 py-2 text-sm text-[#204991] placeholder:text-[#204991]/60 focus:border-[#B793D6] focus:outline-none"
                     placeholder="Nom famille..."
                     value={filters.childLastName}
                     onChange={handleFiltersChange("childLastName")}
                   />
                   <input
-                    className="min-w-[160px] flex-1 rounded border border-[#d4d7df] bg-white px-3 py-2 text-sm focus:border-[#7f8696] focus:outline-none md:flex-none md:w-44"
+                    className="min-w-[160px] flex-1 rounded border border-[#D8C2E8] bg-white px-3 py-2 text-sm text-[#204991] placeholder:text-[#204991]/60 focus:border-[#B793D6] focus:outline-none md:flex-none md:w-44"
                     placeholder="ID Client"
                     value={filters.idClient}
                     onChange={handleFiltersChange("idClient")}
                   />
                 </label>
-                <label className="flex flex-wrap items-center gap-3 text-sm text-[#2b2f36]">
+                <label className="flex flex-wrap items-center gap-3 text-sm text-[#204991]">
                   <span className="flex items-center gap-2">
-                    <input type="radio" name="search-type" value="partenaire" />
+                    <input type="radio" name="search-type" value="partenaire" className="accent-[#D8C2E8]" />
                     Partenaire
                   </span>
                   <input
-                    className="min-w-[200px] flex-1 rounded border border-[#d4d7df] bg-white px-3 py-2 text-sm focus:border-[#7f8696] focus:outline-none"
+                    className="min-w-[200px] flex-1 rounded border border-[#D8C2E8] bg-white px-3 py-2 text-sm text-[#204991] placeholder:text-[#204991]/60 focus:border-[#B793D6] focus:outline-none"
                     placeholder="Nom partenaire..."
                   />
                 </label>
               </div>
               <div className="space-y-4">
                 <div className="grid gap-3 lg:grid-cols-2">
-                  <label className="flex flex-wrap items-center gap-3 text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
+                  <label className="flex flex-wrap items-center gap-3 text-xs font-semibold uppercase tracking-[0.14em] text-[#204991]">
                     <span className="flex items-center gap-2">
                       <input
                         type="radio"
                         name="period-type"
                         value="reference"
                         defaultChecked
+                        className="accent-[#D8C2E8]"
                       />
                       Réf séjour
                     </span>
                     <input
-                      className="min-w-[200px] flex-1 rounded border border-[#d4d7df] bg-white px-3 py-2 text-sm focus:border-[#7f8696] focus:outline-none"
+                      className="min-w-[200px] flex-1 rounded border border-[#D8C2E8] bg-white px-3 py-2 text-sm text-[#204991] placeholder:text-[#204991]/60 focus:border-[#B793D6] focus:outline-none"
                       placeholder="Ex: SEJ-2025-01"
                     />
                   </label>
-                  <label className="flex flex-wrap items-center gap-3 text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
+                  <label className="flex flex-wrap items-center gap-3 text-xs font-semibold uppercase tracking-[0.14em] text-[#204991]">
                     <span className="flex items-center gap-2">
-                      <input type="radio" name="period-type" value="lieu" />
+                      <input type="radio" name="period-type" value="lieu" className="accent-[#D8C2E8]" />
                       Lieu
                     </span>
                     <input
-                      className="min-w-[200px] flex-1 rounded border border-[#d4d7df] bg-white px-3 py-2 text-sm focus:border-[#7f8696] focus:outline-none"
+                      className="min-w-[200px] flex-1 rounded border border-[#D8C2E8] bg-white px-3 py-2 text-sm text-[#204991] placeholder:text-[#204991]/60 focus:border-[#B793D6] focus:outline-none"
                       placeholder="Ville..."
                     />
                   </label>
                 </div>
                 <div className="grid gap-3 lg:grid-cols-2">
-                  <label className="flex flex-wrap items-center gap-3 text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
+                  <label className="flex flex-wrap items-center gap-3 text-xs font-semibold uppercase tracking-[0.14em] text-[#204991]">
                     Période du
                     <input
-                      className="min-w-[200px] flex-1 rounded border border-[#d4d7df] bg-white px-3 py-2 text-sm focus:border-[#7f8696] focus:outline-none"
+                      className="min-w-[200px] flex-1 rounded border border-[#D8C2E8] bg-white px-3 py-2 text-sm text-[#204991] placeholder:text-[#204991]/60 focus:border-[#B793D6] focus:outline-none"
                       placeholder="01/07/2025"
                     />
                   </label>
-                  <label className="flex flex-wrap items-center gap-3 text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
+                  <label className="flex flex-wrap items-center gap-3 text-xs font-semibold uppercase tracking-[0.14em] text-[#204991]">
                     au
                     <input
-                      className="min-w-[200px] flex-1 rounded border border-[#d4d7df] bg-white px-3 py-2 text-sm focus:border-[#7f8696] focus:outline-none"
+                      className="min-w-[200px] flex-1 rounded border border-[#D8C2E8] bg-white px-3 py-2 text-sm text-[#204991] placeholder:text-[#204991]/60 focus:border-[#B793D6] focus:outline-none"
                       placeholder="31/08/2025"
                     />
                   </label>
                 </div>
                 <div className="flex flex-wrap items-center gap-3">
-                  <label className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
-                    <input type="checkbox" defaultChecked />
+                  <label className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-[#204991]">
+                    <input type="checkbox" defaultChecked className="accent-[#D8C2E8]" />
                     Afficher restant dû familles
                   </label>
                   <button
                     type="button"
                     onClick={handleSearch}
-                    className="inline-flex flex-shrink-0 items-center justify-center rounded-md border border-[#d4d7df] bg-white px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#2b2f36] transition hover:bg-[#f0f3f8]"
+                    className="inline-flex size-10 flex-shrink-0 items-center justify-center rounded-full border border-[#204991] bg-white text-xs font-semibold uppercase tracking-[0.16em] text-[#204991] transition hover:bg-[#EED6FF]"
                   >
                     <Search className="size-4" />
                   </button>
                   <button
                     type="button"
                     onClick={handleReset}
-                    className="inline-flex flex-shrink-0 items-center justify-center rounded-md border border-[#d4d7df] bg-white px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#2b2f36] transition hover:bg-[#f0f3f8]"
+                    className="inline-flex size-10 flex-shrink-0 items-center justify-center rounded-full border border-[#204991] bg-white text-xs font-semibold uppercase tracking-[0.16em] text-[#204991] transition hover:bg-[#EED6FF]"
                   >
                     <RefreshCw className="size-4" />
                   </button>
                 </div>
                 <div className="grid gap-3 lg:grid-cols-2">
-                  <label className="flex flex-wrap items-center justify-between gap-2 rounded border border-[#d4d7df] bg-[#f7f8fb] px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#5c606b]">
+                  <label className="flex flex-wrap items-center justify-between gap-2 rounded border border-[#D8C2E8] bg-white px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#204991]">
                     Inscriptions archivées ?
-                    <select className="rounded border border-[#d4d7df] bg-white px-2 py-1 text-xs focus:border-[#7f8696]">
+                    <select className="rounded border border-[#D8C2E8] bg-white px-2 py-1 text-xs text-[#204991] focus:border-[#B793D6]">
                       <option>Oui</option>
                       <option>Non</option>
                     </select>
                   </label>
-                  <label className="flex flex-wrap items-center justify-between gap-2 rounded border border-[#d4d7df] bg-[#f7f8fb] px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#5c606b]">
+                  <label className="flex flex-wrap items-center justify-between gap-2 rounded border border-[#D8C2E8] bg-white px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#204991]">
                     Inscriptions annulées ?
-                    <select className="rounded border border-[#d4d7df] bg-white px-2 py-1 text-xs focus:border-[#7f8696]">
+                    <select className="rounded border border-[#D8C2E8] bg-white px-2 py-1 text-xs text-[#204991] focus:border-[#B793D6]">
                       <option>Non</option>
                       <option>Oui</option>
                     </select>
@@ -314,68 +316,70 @@ function InscriptionsPageContent() {
             </div>
           </div>
 
-          <div className="space-y-4 rounded-3xl border border-[#d3d7df] bg-white p-8 shadow-lg">
-            <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-[#1f2330]">
-              Paramètres séjour
-            </h2>
-            <div className="space-y-3 text-xs uppercase tracking-[0.14em] text-[#5c606b]">
-              <label className="flex flex-col gap-1">
-                Saison
-                <input
-                  className="rounded border border-[#d4d7df] bg-white px-3 py-2 text-sm text-[#2b2f36] focus:border-[#7f8696] focus:outline-none"
-                  placeholder="Été"
-                />
-              </label>
-              <label className="flex flex-col gap-1">
-                Année
-                <input
-                  className="rounded border border-[#d4d7df] bg-white px-3 py-2 text-sm text-[#2b2f36] focus:border-[#7f8696] focus:outline-none"
-                  placeholder="2025"
-                />
-              </label>
-              <label className="flex flex-col gap-1">
-                Thématique artistique
-                <input
-                  className="rounded border border-[#d4d7df] bg-white px-3 py-2 text-sm text-[#2b2f36] focus:border-[#7f8696] focus:outline-none"
-                  placeholder="Musique, théâtre..."
-                />
-              </label>
-              <label className="flex flex-col gap-1">
-                Assurance
-                <input
-                  className="rounded border border-[#d4d7df] bg-white px-3 py-2 text-sm text-[#2b2f36] focus:border-[#7f8696] focus:outline-none"
-                  placeholder="Contrat..."
-                />
-              </label>
-            </div>
-          </div>
-
-          <div className="flex flex-col items-center justify-between rounded-3xl border border-[#d3d7df] bg-white p-8 text-center shadow-lg">
-            <div className="space-y-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#5c606b]">
-                Nombre d&apos;inscriptions
-              </p>
-              <div className="rounded-2xl bg-[#e7f4ec] px-7 py-5 text-4xl font-semibold text-[#238b57] shadow-inner">
-                {isLoading ? "…" : totalInscriptions}
+          <div className="flex flex-col gap-6 xl:flex-row">
+            <div className="space-y-4 rounded-3xl border border-[#F5D4FF] bg-white p-8 shadow-[0_25px_60px_rgba(32,73,145,0.08)] xl:flex-[2]">
+              <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-[#204991]">
+                Paramètres séjour
+              </h2>
+              <div className="space-y-3 text-xs uppercase tracking-[0.14em] text-[#204991]">
+                <label className="flex flex-col gap-1">
+                  Saison
+                  <input
+                    className="rounded border border-[#D8C2E8] bg-white px-3 py-2 text-sm text-[#204991] placeholder:text-[#204991]/60 focus:border-[#B793D6] focus:outline-none"
+                    placeholder="Été"
+                  />
+                </label>
+                <label className="flex flex-col gap-1">
+                  Année
+                  <input
+                    className="rounded border border-[#D8C2E8] bg-white px-3 py-2 text-sm text-[#204991] placeholder:text-[#204991]/60 focus:border-[#B793D6] focus:outline-none"
+                    placeholder="2025"
+                  />
+                </label>
+                <label className="flex flex-col gap-1">
+                  Thématique artistique
+                  <input
+                    className="rounded border border-[#D8C2E8] bg-white px-3 py-2 text-sm text-[#204991] placeholder:text-[#204991]/60 focus:border-[#B793D6] focus:outline-none"
+                    placeholder="Musique, théâtre..."
+                  />
+                </label>
+                <label className="flex flex-col gap-1">
+                  Assurance
+                  <input
+                    className="rounded border border-[#D8C2E8] bg-white px-3 py-2 text-sm text-[#204991] placeholder:text-[#204991]/60 focus:border-[#B793D6] focus:outline-none"
+                    placeholder="Contrat..."
+                  />
+                </label>
               </div>
             </div>
-            <div className="flex flex-col gap-3 text-xs font-semibold uppercase tracking-[0.16em] text-[#5c606b]">
-              <span className="inline-flex items-center gap-2 rounded-full bg-[#fee9ef] px-3 py-1 text-[#d43a6a]">
-                <Users className="size-4" />
-                Participants
-              </span>
-              <span className="inline-flex items-center gap-2 rounded-full bg-[#e8efff] px-3 py-1 text-[#3c5dc9]">
-                <CalendarDays className="size-4" />
-                Séjours
-              </span>
+
+            <div className="flex flex-col items-center justify-between rounded-3xl border border-[#F5D4FF] bg-white p-8 text-center shadow-[0_25px_60px_rgba(32,73,145,0.08)] xl:flex-1">
+              <div className="space-y-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#204991]/80">
+                  Nombre d&apos;inscriptions
+                </p>
+                <div className="rounded-2xl border border-[#D8C2E8] bg-white px-7 py-5 text-4xl font-semibold text-[#204991] shadow-inner shadow-[#d7aef0]">
+                  {isLoading ? "…" : totalInscriptions}
+                </div>
+              </div>
+              <div className="flex flex-col gap-3 text-xs font-semibold uppercase tracking-[0.16em] text-[#204991]">
+                <span className="inline-flex items-center gap-2 rounded-full border border-[#F5D4FF] bg-white px-3 py-1 text-[#204991]">
+                  <Users className="size-4" />
+                  Participants
+                </span>
+                <span className="inline-flex items-center gap-2 rounded-full border border-[#F5D4FF] bg-white px-3 py-1 text-[#204991]">
+                  <CalendarDays className="size-4" />
+                  Séjours
+                </span>
+              </div>
             </div>
           </div>
         </section>
 
-        <section className="flex-1 rounded-3xl border border-[#d3d7df] bg-white/95 shadow-2xl">
-          <div className="max-h-[620px] overflow-auto rounded-3xl">
-            <table className="w-full border-collapse text-sm text-[#2b2f36]">
-              <thead className="sticky top-0 z-10 bg-[#1f2330] text-left text-xs font-semibold uppercase tracking-[0.16em] text-white">
+        <section className="flex-1 rounded-3xl border border-[#F5D4FF] bg-white shadow-[0_30px_70px_rgba(32,73,145,0.08)]">
+          <div className="max-h-[620px] overflow-auto rounded-3xl border border-[#F5D4FF] bg-white">
+            <table className="w-full border-collapse text-sm text-[#204991]">
+              <thead className="sticky top-0 z-10 border-b border-[#F5D4FF] bg-white text-left text-xs font-semibold uppercase tracking-[0.16em] text-[#204991]">
                 <tr>
                   {[
                     "Nom",
@@ -400,7 +404,7 @@ function InscriptionsPageContent() {
                   <tr>
                     <td
                       colSpan={10}
-                      className="px-5 py-6 text-center text-sm font-medium text-[#5c606b]"
+                      className="px-5 py-6 text-center text-sm font-medium text-[#204991]/80"
                     >
                       Chargement des inscriptions…
                     </td>
@@ -409,52 +413,49 @@ function InscriptionsPageContent() {
                   <tr>
                     <td
                       colSpan={10}
-                      className="px-5 py-6 text-center text-sm font-medium text-[#5c606b]"
+                      className="px-5 py-6 text-center text-sm font-medium text-[#204991]/80"
                     >
                       Aucune inscription trouvée pour ces critères.
                     </td>
                   </tr>
                 ) : (
                   inscriptions.map((inscription) => (
-                    <tr
-                      key={inscription.id}
-                      className="border-b border-[#e3e6ed] bg-white odd:bg-[#f7f8fb]"
-                    >
-                      <td className="px-5 py-4 text-sm font-semibold uppercase tracking-wide text-[#1f2330]">
+                    <tr key={inscription.id} className="border-b border-[#F5D4FF] bg-white">
+                      <td className="px-5 py-4 text-sm font-semibold uppercase tracking-wide text-[#204991]">
                         {inscription.childLastName || "—"}
                       </td>
-                      <td className="px-5 py-4 text-sm font-medium text-[#2b2f36]">
+                      <td className="px-5 py-4 text-sm font-medium text-[#204991]">
                         {inscription.childFirstName || "—"}
                       </td>
-                      <td className="px-5 py-4 text-sm text-[#4d525d]">
+                      <td className="px-5 py-4 text-sm text-[#204991]">
                         {formatDate(inscription.childBirthDate)}
                       </td>
-                      <td className="px-5 py-4 text-sm text-[#4d525d]">
+                      <td className="px-5 py-4 text-sm text-[#204991]">
                         {computeAge(
                           inscription.childBirthDate,
                           inscription.dateEntree || inscription.dateSortie,
                         ) || "—"}
                       </td>
-                      <td className="px-5 py-4 text-sm text-[#2b2f36]">
+                      <td className="px-5 py-4 text-sm text-[#204991]">
                         {inscription.referenceSejour || "—"}
                       </td>
-                      <td className="px-5 py-4 text-sm text-[#2b2f36]">
+                      <td className="px-5 py-4 text-sm text-[#204991]">
                         {inscription.theme || "—"}
                       </td>
-                      <td className="px-5 py-4 text-sm text-[#2b2f36]">
+                      <td className="px-5 py-4 text-sm text-[#204991]">
                         {inscription.villeDepart || "—"}
                       </td>
-                      <td className="px-5 py-4 text-sm text-[#2b2f36]">
+                      <td className="px-5 py-4 text-sm text-[#204991]">
                         {inscription.villeRetour || "—"}
                       </td>
-                      <td className="px-5 py-4 text-sm text-[#2b2f36]">
+                      <td className="px-5 py-4 text-sm text-[#204991]">
                         {inscription.partenaire || "—"}
                       </td>
                       <td className="px-5 py-4 text-center text-sm">
                         {inscription.id ? (
                           <Link
                             href={`/fiche?id=${inscription.id}`}
-                            className="inline-flex items-center justify-center rounded-full border border-[#d4d7df] bg-white p-2 text-[#2b2f36] transition hover:border-[#0f4c65] hover:text-[#0f4c65]"
+                            className="inline-flex items-center justify-center rounded-full border border-[#204991] bg-white p-2 text-[#204991] transition hover:bg-[#EED6FF]"
                             aria-label={`Consulter la fiche ${inscription.numInscription || ""}`}
                           >
                             <FileText className="size-4" />
@@ -469,7 +470,7 @@ function InscriptionsPageContent() {
               </tbody>
             </table>
           </div>
-          <footer className="flex flex-wrap items-center justify-between gap-3 px-6 py-4 text-xs font-semibold uppercase tracking-[0.16em] text-[#5c606b]">
+          <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-[#F5D4FF] bg-white px-6 py-4 text-xs font-semibold uppercase tracking-[0.16em] text-[#204991]/80">
             <span>
               {isLoading
                 ? "Chargement…"
