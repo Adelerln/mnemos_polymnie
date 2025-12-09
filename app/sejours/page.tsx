@@ -44,7 +44,7 @@ export default function SejoursPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-screen items-center justify-center bg-neutral-200/60 px-4 text-[#1f2330]">
+        <div className="flex min-h-screen items-center justify-center bg-neutral-200/60 px-4 text-[#204991]">
           Chargement des séjours…
         </div>
       }
@@ -139,76 +139,76 @@ function SejoursPageContent() {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white via-[#fef9fb] to-[#f7eef2] py-12 text-[#2f1d28]">
+    <div className="min-h-screen bg-gradient-to-b from-white via-[#CFE5FF] to-[#CFE5FF] py-12 text-[#204991]">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-5 md:px-10">
-        <header className="rounded-3xl border border-[#f2d4de] bg-white/95 px-8 py-7 shadow-[0_25px_60px_rgba(83,15,43,0.05)]">
+        <header className="rounded-3xl border border-[#CFE5FF] bg-white/95 px-8 py-7 shadow-[0_25px_60px_rgba(83,15,43,0.05)]">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.5em] text-[#A53E69]">Séjours</p>
-              <h1 className="mt-2 text-3xl font-semibold tracking-tight text-[#2d1826]">
+              <p className="text-xs font-semibold uppercase tracking-[0.5em] text-[#204991]">Séjours</p>
+              <h1 className="mt-2 text-3xl font-semibold tracking-tight text-[#204991]">
                 Gestion des séjours
               </h1>
-              <p className="mt-2 text-sm text-[#806471]">
+              <p className="mt-2 text-sm text-[#204991]">
                 Consultez et mettez à jour les informations de vos séjours.
               </p>
             </div>
             <button
               type="button"
-              className="inline-flex items-center gap-3 rounded-full border border-[#f2d4de] bg-white/70 px-5 py-2 text-sm font-medium text-[#3d2433] transition hover:border-[#ebbccc] hover:bg-[#E9C6D2]"
+              className="inline-flex items-center gap-3 rounded-full border border-[#CFE5FF] bg-white/70 px-5 py-2 text-sm font-medium text-[#204991] transition hover:border-[#B3D2FF] hover:bg-[#B3D2FF]"
               onClick={() => setIsSearchPanelOpen((open) => !open)}
             >
               {isSearchPanelOpen ? "Fermer la recherche" : "Ouvrir la recherche"}
-              <span className="rounded-full bg-[#f5dbe3] px-2 py-0.5 text-[10px] font-semibold text-[#742f48]">
+              <span className="rounded-full bg-[#CFE5FF] px-2 py-0.5 text-[10px] font-semibold text-[#204991]">
                 ⌘K
               </span>
             </button>
           </div>
-          <div className="mt-3 flex items-center gap-2 text-sm text-[#8e6d7d]">
-            <span className="inline-flex h-1 w-8 rounded-full bg-[#f5dbe3]" aria-hidden="true" />
+          <div className="mt-3 flex items-center gap-2 text-sm text-[#204991]">
+            <span className="inline-flex h-1 w-8 rounded-full bg-[#CFE5FF]" aria-hidden="true" />
             {filteredSejours.length > 1
               ? `Résultats : ${filteredSejours.length}`
               : `Résultat : ${filteredSejours.length}`}
           </div>
           {isSearchPanelOpen ? (
-            <div className="mt-5 grid gap-4 rounded-2xl border border-[#f3d5df] bg-[#fff9fb] p-5 text-sm text-[#35202f] shadow-[0_20px_50px_rgba(83,15,43,0.04)]">
+            <div className="mt-5 grid gap-4 rounded-2xl border border-[#CFE5FF] bg-[#CFE5FF] p-5 text-sm text-[#204991] shadow-[0_20px_50px_rgba(83,15,43,0.04)]">
               <div className="grid gap-3 md:grid-cols-4">
                 <input
-                  className="rounded-2xl border border-[#f3d5df] bg-white/80 px-4 py-2.5 text-sm text-[#2b1b27] placeholder:text-[#b090a0] focus:border-[#e0a8bc] focus:outline-none"
+                  className="rounded-2xl border border-[#CFE5FF] bg-white/80 px-4 py-2.5 text-sm text-[#204991] placeholder:text-[#204991] focus:border-[#CFE5FF] focus:outline-none"
                   placeholder="Année"
                   value={filters.annee}
                   onChange={handleFilterChange("annee")}
                 />
                 <input
-                  className="rounded-2xl border border-[#f3d5df] bg-white/80 px-4 py-2.5 text-sm text-[#2b1b27] placeholder:text-[#b090a0] focus:border-[#e0a8bc] focus:outline-none"
+                  className="rounded-2xl border border-[#CFE5FF] bg-white/80 px-4 py-2.5 text-sm text-[#204991] placeholder:text-[#204991] focus:border-[#CFE5FF] focus:outline-none"
                   placeholder="Centre"
                   value={filters.centre}
                   onChange={handleFilterChange("centre")}
                 />
                 <input
-                  className="rounded-2xl border border-[#f3d5df] bg-white/80 px-4 py-2.5 text-sm text-[#2b1b27] placeholder:text-[#b090a0] focus:border-[#e0a8bc] focus:outline-none"
+                  className="rounded-2xl border border-[#CFE5FF] bg-white/80 px-4 py-2.5 text-sm text-[#204991] placeholder:text-[#204991] focus:border-[#CFE5FF] focus:outline-none"
                   placeholder="Saison / période"
                   value={filters.saison}
                   onChange={handleFilterChange("saison")}
                 />
                 <input
-                  className="rounded-2xl border border-[#f3d5df] bg-white/80 px-4 py-2.5 text-sm text-[#2b1b27] placeholder:text-[#b090a0] focus:border-[#e0a8bc] focus:outline-none"
+                  className="rounded-2xl border border-[#CFE5FF] bg-white/80 px-4 py-2.5 text-sm text-[#204991] placeholder:text-[#204991] focus:border-[#CFE5FF] focus:outline-none"
                   placeholder="Référence"
                   value={filters.reference}
                   onChange={handleFilterChange("reference")}
                 />
               </div>
-              <div className="flex flex-wrap items-center gap-3 text-xs font-medium uppercase tracking-[0.18em] text-[#7b5869]">
+              <div className="flex flex-wrap items-center gap-3 text-xs font-medium uppercase tracking-[0.18em] text-[#204991]">
                 <button
                   type="button"
                   onClick={() => setIsSearchPanelOpen(false)}
-                  className="inline-flex items-center justify-center rounded-full border border-transparent bg-[#f5dbe3] px-4 py-2 text-[#3b2331] transition hover:bg-[#f2c5d4]"
+                  className="inline-flex items-center justify-center rounded-full border border-transparent bg-[#CFE5FF] px-4 py-2 text-[#204991] transition hover:bg-[#B3D2FF]"
                 >
                   Fermer
                 </button>
                 <button
                   type="button"
                   onClick={handleReset}
-                  className="inline-flex items-center justify-center rounded-full border border-[#f3d5df] bg-white px-4 py-2 text-[#3b2331] transition hover:bg-[#fff6f9]"
+                  className="inline-flex items-center justify-center rounded-full border border-[#CFE5FF] bg-white px-4 py-2 text-[#204991] transition hover:bg-[#B3D2FF]"
                 >
                   Réinitialiser
                 </button>
@@ -217,22 +217,22 @@ function SejoursPageContent() {
           ) : null}
         </header>
 
-        <section className="overflow-hidden rounded-3xl border border-[#f1d6e0] bg-white/95 shadow-[0_30px_70px_rgba(83,15,43,0.04)]">
+        <section className="overflow-hidden rounded-3xl border border-[#CFE5FF] bg-white/95 shadow-[0_30px_70px_rgba(83,15,43,0.04)]">
           <div className="max-h-[360px] overflow-y-auto">
-            <table className="w-full border-collapse text-sm text-[#2f1d28]">
-              <thead className="sticky top-0 z-10 border-b border-[#f3d8e1] bg-white/95 text-left text-[11px] font-semibold uppercase tracking-[0.3em] text-[#b58096]">
+            <table className="w-full border-collapse text-sm text-[#204991]">
+              <thead className="sticky top-0 z-10 border-b border-[#CFE5FF] bg-white/95 text-left text-[11px] font-semibold uppercase tracking-[0.3em] text-[#204991]">
                 <tr>
                   <th className="px-6 py-3">
-                    <span className="text-[#A53E69]">Référence</span>
+                    <span className="text-[#204991]">Référence</span>
                   </th>
                   <th className="px-6 py-3">
-                    <span className="text-[#A53E69]">Centre</span>
+                    <span className="text-[#204991]">Centre</span>
                   </th>
                   <th className="px-6 py-3">
-                    <span className="text-[#A53E69]">Année</span>
+                    <span className="text-[#204991]">Année</span>
                   </th>
                   <th className="px-6 py-3">
-                    <span className="text-[#A53E69]">Période</span>
+                    <span className="text-[#204991]">Période</span>
                   </th>
                 </tr>
               </thead>
@@ -240,7 +240,7 @@ function SejoursPageContent() {
                 {filteredSejours.length === 0 ? (
                   <tr>
                     <td
-                      className="px-6 py-7 text-center text-sm text-[#9a7a8a]"
+                      className="px-6 py-7 text-center text-sm text-[#204991]"
                       colSpan={4}
                     >
                       Aucun séjour pour le moment. Lancez une recherche (⌘K) ou ajoutez un séjour.
@@ -250,14 +250,14 @@ function SejoursPageContent() {
                   filteredSejours.map((item) => (
                     <tr
                       key={item.id}
-                      className="border-b border-[#f3d8e1] transition hover:bg-[#fff6f9]"
+                      className="border-b border-[#CFE5FF] transition hover:bg-[#B3D2FF]"
                     >
-                      <td className="px-6 py-3 font-semibold text-[#2d1826]">
+                      <td className="px-6 py-3 font-semibold text-[#204991]">
                         {item.reference}
                       </td>
-                      <td className="px-6 py-3 text-[#463140]">{item.centre}</td>
-                      <td className="px-6 py-3 text-[#463140]">{item.annee}</td>
-                      <td className="px-6 py-3 text-[#463140]">{item.periode}</td>
+                      <td className="px-6 py-3 text-[#204991]">{item.centre}</td>
+                      <td className="px-6 py-3 text-[#204991]">{item.annee}</td>
+                      <td className="px-6 py-3 text-[#204991]">{item.periode}</td>
                     </tr>
                   ))
                 )}
@@ -268,76 +268,76 @@ function SejoursPageContent() {
 
         <form
           onSubmit={handleSubmit}
-          className="space-y-6 rounded-3xl border border-[#f1d6e0] bg-white p-8 shadow-[0_30px_70px_rgba(83,15,43,0.03)]"
+          className="space-y-6 rounded-3xl border border-[#CFE5FF] bg-white p-8 shadow-[0_30px_70px_rgba(83,15,43,0.03)]"
         >
-          <div className="flex flex-wrap items-center gap-4 text-[13px] font-medium uppercase tracking-[0.2em] text-[#9b7487]">
-            <label className="inline-flex items-center gap-2 text-[#4d2f3d]">
+          <div className="flex flex-wrap items-center gap-4 text-[13px] font-medium uppercase tracking-[0.2em] text-[#204991]">
+            <label className="inline-flex items-center gap-2 text-[#204991]">
               Archivé ?
               <input
                 type="checkbox"
-                className="size-4 accent-[#d98aa7]"
+                className="size-4 accent-[#CFE5FF]"
                 checked={form.archive}
                 onChange={handleFormChange("archive")}
               />
             </label>
           </div>
 
-          <div className="rounded-2xl border border-[#f3d5df] bg-[#fdf7fa] p-6">
+          <div className="rounded-2xl border border-[#CFE5FF] bg-[#CFE5FF] p-6">
             <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-              <h2 className="text-xl font-semibold tracking-tight text-[#2d1826]">
+              <h2 className="text-xl font-semibold tracking-tight text-[#204991]">
                 Informations séjour
               </h2>
-              <div className="flex items-center gap-2 text-[#7b4b60]">
+              <div className="flex items-center gap-2 text-[#204991]">
                 <button
                   type="button"
-                  className="inline-flex size-9 items-center justify-center rounded-full border border-[#f0c9d7] bg-white/70 text-lg font-semibold transition hover:bg-[#f5dbe3]"
+                  className="inline-flex size-9 items-center justify-center rounded-full border border-[#CFE5FF] bg-white/70 text-lg font-semibold transition hover:bg-[#B3D2FF]"
                 >
                   +
                 </button>
                 <button
                   type="button"
-                  className="inline-flex size-9 items-center justify-center rounded-full border border-[#f0c9d7] bg-white/70 text-lg font-semibold transition hover:bg-[#f5dbe3]"
+                  className="inline-flex size-9 items-center justify-center rounded-full border border-[#CFE5FF] bg-white/70 text-lg font-semibold transition hover:bg-[#B3D2FF]"
                 >
                   −
                 </button>
                 <button
                   type="button"
-                  className="inline-flex size-9 items-center justify-center rounded-full border border-[#f0c9d7] bg-white/70 text-lg font-semibold transition hover:bg-[#f5dbe3]"
+                  className="inline-flex size-9 items-center justify-center rounded-full border border-[#CFE5FF] bg-white/70 text-lg font-semibold transition hover:bg-[#B3D2FF]"
                 >
                   ⧉
                 </button>
               </div>
             </div>
 
-            <div className="space-y-4 text-sm text-[#3c2432]">
+            <div className="space-y-4 text-sm text-[#204991]">
               <div className="grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,2fr)_minmax(0,1fr)]">
                 <label className="flex flex-col gap-1">
-                  <span className="text-xs font-semibold uppercase tracking-[0.25em] text-[#b17f92]">
+                  <span className="text-xs font-semibold uppercase tracking-[0.25em] text-[#204991]">
                     Nom du centre
                   </span>
                   <input
-                    className="rounded-2xl border border-[#f2d4de] bg-white px-4 py-2.5 text-sm text-[#2b1b27] placeholder:text-[#b090a0] focus:border-[#e0a8bc] focus:outline-none"
+                    className="rounded-2xl border border-[#CFE5FF] bg-white px-4 py-2.5 text-sm text-[#204991] placeholder:text-[#204991] focus:border-[#CFE5FF] focus:outline-none"
                     value={form.centre}
                     onChange={handleFormChange("centre")}
                   />
                 </label>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <label className="flex flex-col gap-1">
-                    <span className="text-xs font-semibold uppercase tracking-[0.25em] text-[#b17f92]">
+                    <span className="text-xs font-semibold uppercase tracking-[0.25em] text-[#204991]">
                       Nom commun
                     </span>
                     <input
-                      className="rounded-2xl border border-[#f2d4de] bg-white px-4 py-2.5 text-sm text-[#2b1b27] placeholder:text-[#b090a0] focus:border-[#e0a8bc] focus:outline-none"
+                      className="rounded-2xl border border-[#CFE5FF] bg-white px-4 py-2.5 text-sm text-[#204991] placeholder:text-[#204991] focus:border-[#CFE5FF] focus:outline-none"
                       value={form.nomCommum}
                       onChange={handleFormChange("nomCommum")}
                     />
                   </label>
                   <label className="flex flex-col gap-1">
-                    <span className="text-xs font-semibold uppercase tracking-[0.25em] text-[#b17f92]">
+                    <span className="text-xs font-semibold uppercase tracking-[0.25em] text-[#204991]">
                       Ref séjour
                     </span>
                     <input
-                      className="rounded-2xl border border-[#f2d4de] bg-white px-4 py-2.5 text-sm text-[#2b1b27] placeholder:text-[#b090a0] focus:border-[#e0a8bc] focus:outline-none"
+                      className="rounded-2xl border border-[#CFE5FF] bg-white px-4 py-2.5 text-sm text-[#204991] placeholder:text-[#204991] focus:border-[#CFE5FF] focus:outline-none"
                       value={form.reference}
                       onChange={handleFormChange("reference")}
                     />
@@ -347,21 +347,21 @@ function SejoursPageContent() {
 
               <div className="grid gap-4 lg:grid-cols-[repeat(4,minmax(0,1fr))]">
                 <label className="flex flex-col gap-1">
-                  <span className="text-xs font-semibold uppercase tracking-[0.25em] text-[#b17f92]">
+                  <span className="text-xs font-semibold uppercase tracking-[0.25em] text-[#204991]">
                     Saison
                   </span>
                   <input
-                    className="rounded-2xl border border-[#f2d4de] bg-white px-4 py-2.5 text-sm text-[#2b1b27] placeholder:text-[#b090a0] focus:border-[#e0a8bc] focus:outline-none"
+                    className="rounded-2xl border border-[#CFE5FF] bg-white px-4 py-2.5 text-sm text-[#204991] placeholder:text-[#204991] focus:border-[#CFE5FF] focus:outline-none"
                     value={form.saison}
                     onChange={handleFormChange("saison")}
                   />
                 </label>
                 <label className="flex flex-col gap-1">
-                  <span className="text-xs font-semibold uppercase tracking-[0.25em] text-[#b17f92]">
+                  <span className="text-xs font-semibold uppercase tracking-[0.25em] text-[#204991]">
                     Année
                   </span>
                   <input
-                    className="rounded-2xl border border-[#f2d4de] bg-white px-4 py-2.5 text-sm text-[#2b1b27] placeholder:text-[#b090a0] focus:border-[#e0a8bc] focus:outline-none"
+                    className="rounded-2xl border border-[#CFE5FF] bg-white px-4 py-2.5 text-sm text-[#204991] placeholder:text-[#204991] focus:border-[#CFE5FF] focus:outline-none"
                     value={form.annee}
                     onChange={handleFormChange("annee")}
                   />
@@ -370,43 +370,43 @@ function SejoursPageContent() {
 
               <div className="grid gap-4 lg:grid-cols-[repeat(4,minmax(0,1fr))]">
                 <label className="flex flex-col gap-1">
-                  <span className="text-xs font-semibold uppercase tracking-[0.25em] text-[#b17f92]">
+                  <span className="text-xs font-semibold uppercase tracking-[0.25em] text-[#204991]">
                     Date début
                   </span>
                   <input
                     type="date"
-                    className="rounded-2xl border border-[#f2d4de] bg-white px-4 py-2.5 text-sm text-[#2b1b27] focus:border-[#e0a8bc] focus:outline-none"
+                    className="rounded-2xl border border-[#CFE5FF] bg-white px-4 py-2.5 text-sm text-[#204991] focus:border-[#CFE5FF] focus:outline-none"
                     value={form.dateDebut}
                     onChange={handleFormChange("dateDebut")}
                   />
                 </label>
                 <label className="flex flex-col gap-1">
-                  <span className="text-xs font-semibold uppercase tracking-[0.25em] text-[#b17f92]">
+                  <span className="text-xs font-semibold uppercase tracking-[0.25em] text-[#204991]">
                     Date fin
                   </span>
                   <input
                     type="date"
-                    className="rounded-2xl border border-[#f2d4de] bg-white px-4 py-2.5 text-sm text-[#2b1b27] focus:border-[#e0a8bc] focus:outline-none"
+                    className="rounded-2xl border border-[#CFE5FF] bg-white px-4 py-2.5 text-sm text-[#204991] focus:border-[#CFE5FF] focus:outline-none"
                     value={form.dateFin}
                     onChange={handleFormChange("dateFin")}
                   />
                 </label>
                 <label className="flex flex-col gap-1">
-                  <span className="text-xs font-semibold uppercase tracking-[0.25em] text-[#b17f92]">
+                  <span className="text-xs font-semibold uppercase tracking-[0.25em] text-[#204991]">
                     N° DDCS centre
                   </span>
                   <input
-                    className="rounded-2xl border border-[#f2d4de] bg-white px-4 py-2.5 text-sm text-[#2b1b27] placeholder:text-[#b090a0] focus:border-[#e0a8bc] focus:outline-none"
+                    className="rounded-2xl border border-[#CFE5FF] bg-white px-4 py-2.5 text-sm text-[#204991] placeholder:text-[#204991] focus:border-[#CFE5FF] focus:outline-none"
                     value={form.ddcsCentre}
                     onChange={handleFormChange("ddcsCentre")}
                   />
                 </label>
                 <label className="flex flex-col gap-1">
-                  <span className="text-xs font-semibold uppercase tracking-[0.25em] text-[#b17f92]">
+                  <span className="text-xs font-semibold uppercase tracking-[0.25em] text-[#204991]">
                     N° DDCS complémentaire
                   </span>
                   <input
-                    className="rounded-2xl border border-[#f2d4de] bg-white px-4 py-2.5 text-sm text-[#2b1b27] placeholder:text-[#b090a0] focus:border-[#e0a8bc] focus:outline-none"
+                    className="rounded-2xl border border-[#CFE5FF] bg-white px-4 py-2.5 text-sm text-[#204991] placeholder:text-[#204991] focus:border-[#CFE5FF] focus:outline-none"
                     value={form.ddcsComplementaire}
                     onChange={handleFormChange("ddcsComplementaire")}
                   />
@@ -415,22 +415,22 @@ function SejoursPageContent() {
             </div>
           </div>
 
-          <div className="grid gap-4 text-sm text-[#3c2432] md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+          <div className="grid gap-4 text-sm text-[#204991] md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
             <label className="flex flex-col gap-1">
-              <span className="text-xs font-semibold uppercase tracking-[0.25em] text-[#b17f92]">
+              <span className="text-xs font-semibold uppercase tracking-[0.25em] text-[#204991]">
                 Code analytique comptable
               </span>
               <input
-                className="rounded-2xl border border-[#f2d4de] bg-white px-4 py-2.5 text-sm text-[#2b1b27] focus:border-[#e0a8bc] focus:outline-none"
+                className="rounded-2xl border border-[#CFE5FF] bg-white px-4 py-2.5 text-sm text-[#204991] focus:border-[#CFE5FF] focus:outline-none"
                 value={form.codeAnalytique}
                 onChange={handleFormChange("codeAnalytique")}
               />
             </label>
-            <label className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.25em] text-[#b17f92]">
+            <label className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.25em] text-[#204991]">
               Séjour sans pique-nique ?
               <input
                 type="checkbox"
-                className="size-4 accent-[#d98aa7]"
+                className="size-4 accent-[#CFE5FF]"
                 checked={form.sansPiqueNique}
                 onChange={handleFormChange("sansPiqueNique")}
               />
@@ -441,31 +441,31 @@ function SejoursPageContent() {
             <button
               type="button"
               onClick={handleReset}
-              className="inline-flex items-center justify-center rounded-full border border-[#f2d4de] bg-white/80 px-5 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-[#3b2431] transition hover:bg-[#fff5f8]"
+              className="inline-flex items-center justify-center rounded-full border border-[#CFE5FF] bg-white/80 px-5 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-[#204991] transition hover:bg-[#B3D2FF]"
             >
               Réinitialiser
             </button>
             <button
               type="submit"
-              className="inline-flex items-center justify-center rounded-full border border-transparent bg-[#f5dbe3] px-5 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-[#3b2431] transition hover:bg-[#f2c5d4]"
+              className="inline-flex items-center justify-center rounded-full border border-transparent bg-[#CFE5FF] px-5 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-[#204991] transition hover:bg-[#B3D2FF]"
             >
               Enregistrer
             </button>
           </div>
         </form>
 
-        <section className="space-y-10 rounded-3xl border border-[#f1d6e0]/80 bg-white/60 p-8 shadow-[0_25px_60px_rgba(83,15,43,0.03)]">
+        <section className="space-y-10 rounded-3xl border border-[#CFE5FF]/80 bg-white/60 p-8 shadow-[0_25px_60px_rgba(83,15,43,0.03)]">
           <div className="grid gap-8 xl:grid-cols-2">
-            <div className="space-y-4 rounded-2xl border border-[#f3d5df] bg-white/80 p-5 shadow-sm">
+            <div className="space-y-4 rounded-2xl border border-[#CFE5FF] bg-[#CFE5FF] p-5 shadow-sm">
               <div className="flex items-center justify-between">
-                <h3 className="text-base font-semibold tracking-tight text-[#2d1826]">Assurances</h3>
-                <button className="inline-flex size-8 items-center justify-center rounded-full border border-[#f3d5df] text-sm text-[#7b4b60] transition hover:bg-[#f5dbe3]/80">
+                <h3 className="text-base font-semibold tracking-tight text-[#204991]">Assurances</h3>
+                <button className="inline-flex size-8 items-center justify-center rounded-full border border-[#CFE5FF] text-sm text-[#204991] transition hover:bg-[#B3D2FF]/80">
                   +
                 </button>
               </div>
-              <div className="overflow-hidden rounded-xl border border-dashed border-[#f3d5df] bg-white/90">
-                <table className="w-full border-collapse text-xs font-medium uppercase tracking-[0.2em] text-[#9b7487]">
-                  <thead className="bg-[#fdf2f6] text-[#7a405c]">
+              <div className="overflow-hidden rounded-xl border border-dashed border-[#CFE5FF] bg-white/90">
+                <table className="w-full border-collapse text-xs font-medium uppercase tracking-[0.2em] text-[#204991]">
+                  <thead className="bg-[#CFE5FF] text-[#204991]">
                     <tr>
                       <th className="px-4 py-2 text-left">Nom de l&apos;assurance</th>
                       <th className="px-4 py-2 text-left">Valeur</th>
@@ -475,16 +475,16 @@ function SejoursPageContent() {
                   <tbody>
                     {assuranceRows.length === 0 ? (
                       <tr>
-                        <td colSpan={3} className="px-4 py-5 text-center text-xs font-medium text-[#b08c9d]">
+                        <td colSpan={3} className="px-4 py-5 text-center text-xs font-medium text-[#204991]">
                           Aucune assurance configurée.
                         </td>
                       </tr>
                     ) : (
                       assuranceRows.map((row) => (
-                        <tr key={row.id} className="border-t border-[#f3d5df] odd:bg-white even:bg-[#fff7fa]">
-                          <td className="px-4 py-2 text-sm text-[#2f1d28]">{row.name}</td>
-                          <td className="px-4 py-2 text-sm text-[#2f1d28]">{row.value}</td>
-                          <td className="px-4 py-2 text-sm text-[#2f1d28]">{row.unit}</td>
+                        <tr key={row.id} className="border-t border-[#CFE5FF] odd:bg-white even:bg-[#CFE5FF]/30">
+                          <td className="px-4 py-2 text-sm text-[#204991]">{row.name}</td>
+                          <td className="px-4 py-2 text-sm text-[#204991]">{row.value}</td>
+                          <td className="px-4 py-2 text-sm text-[#204991]">{row.unit}</td>
                         </tr>
                       ))
                     )}
@@ -493,16 +493,16 @@ function SejoursPageContent() {
               </div>
             </div>
 
-            <div className="space-y-4 rounded-2xl border border-[#f3d5df] bg-white/80 p-5 shadow-sm">
+            <div className="space-y-4 rounded-2xl border border-[#CFE5FF] bg-[#CFE5FF] p-5 shadow-sm">
               <div className="flex items-center justify-between">
-                <h3 className="text-base font-semibold tracking-tight text-[#2d1826]">Options artistiques</h3>
-                <button className="inline-flex size-8 items-center justify-center rounded-full border border-[#f3d5df] text-sm text-[#7b4b60] transition hover:bg-[#f5dbe3]/80">
+                <h3 className="text-base font-semibold tracking-tight text-[#204991]">Options artistiques</h3>
+                <button className="inline-flex size-8 items-center justify-center rounded-full border border-[#CFE5FF] text-sm text-[#204991] transition hover:bg-[#B3D2FF]/80">
                   +
                 </button>
               </div>
-              <div className="overflow-hidden rounded-xl border border-dashed border-[#f3d5df] bg-white/90">
-                <table className="w-full border-collapse text-xs font-medium uppercase tracking-[0.2em] text-[#9b7487]">
-                  <thead className="bg-[#fdf2f6] text-[#7a405c]">
+              <div className="overflow-hidden rounded-xl border border-dashed border-[#CFE5FF] bg-white/90">
+                <table className="w-full border-collapse text-xs font-medium uppercase tracking-[0.2em] text-[#204991]">
+                  <thead className="bg-[#CFE5FF] text-[#204991]">
                     <tr>
                       <th className="px-4 py-2 text-left">Nom du séjour</th>
                       <th className="px-4 py-2 text-left">Option artistique</th>
@@ -512,16 +512,16 @@ function SejoursPageContent() {
                   <tbody>
                     {artisticOptions.length === 0 ? (
                       <tr>
-                        <td colSpan={3} className="px-4 py-5 text-center text-xs font-medium text-[#b08c9d]">
+                        <td colSpan={3} className="px-4 py-5 text-center text-xs font-medium text-[#204991]">
                           Aucune option artistique définie.
                         </td>
                       </tr>
                     ) : (
                       artisticOptions.map((row) => (
-                        <tr key={row.id} className="border-t border-[#f3d5df] odd:bg-white even:bg-[#fff7fa]">
-                          <td className="px-4 py-2 text-sm text-[#2f1d28]">{row.sejour}</td>
-                          <td className="px-4 py-2 text-sm text-[#2f1d28]">{row.option}</td>
-                          <td className="px-4 py-2 text-sm text-[#2f1d28]">{row.price}</td>
+                        <tr key={row.id} className="border-t border-[#CFE5FF] odd:bg-white even:bg-[#CFE5FF]/30">
+                          <td className="px-4 py-2 text-sm text-[#204991]">{row.sejour}</td>
+                          <td className="px-4 py-2 text-sm text-[#204991]">{row.option}</td>
+                          <td className="px-4 py-2 text-sm text-[#204991]">{row.price}</td>
                         </tr>
                       ))
                     )}
@@ -532,42 +532,42 @@ function SejoursPageContent() {
           </div>
 
           <div className="grid gap-8 xl:grid-cols-2">
-            <div className="space-y-4 rounded-2xl border border-[#f3d5df] bg-white/80 p-5 shadow-sm">
+            <div className="space-y-4 rounded-2xl border border-[#CFE5FF] bg-[#CFE5FF] p-5 shadow-sm">
               <div className="flex items-center justify-between">
-                <h3 className="text-base font-semibold tracking-tight text-[#2d1826]">Dates d&apos;entrées</h3>
-                <button className="inline-flex size-8 items-center justify-center rounded-full border border-[#f3d5df] text-sm text-[#7b4b60] transition hover:bg-[#f5dbe3]/80">
+                <h3 className="text-base font-semibold tracking-tight text-[#204991]">Dates d&apos;entrées</h3>
+                <button className="inline-flex size-8 items-center justify-center rounded-full border border-[#CFE5FF] text-sm text-[#204991] transition hover:bg-[#B3D2FF]/80">
                   +
                 </button>
               </div>
-              <ul className="min-h-[120px] rounded-2xl border border-dashed border-[#f3d5df] bg-white/90 px-4 py-3 text-sm text-[#2f1d28]">
+              <ul className="min-h-[120px] rounded-2xl border border-dashed border-[#CFE5FF] bg-white/90 px-4 py-3 text-sm text-[#204991]">
                 {entryDates.length === 0 ? (
-                  <li className="py-4 text-center text-xs font-medium text-[#b08c9d]">
+                  <li className="py-4 text-center text-xs font-medium text-[#204991]">
                     Aucune date d&apos;entrée.
                   </li>
                 ) : (
                   entryDates.map((row) => (
-                    <li key={row.id} className="border-b border-[#f3d5df] py-2 last:border-0">
+                    <li key={row.id} className="border-b border-[#CFE5FF] py-2 last:border-0">
                       {row.date}
                     </li>
                   ))
                 )}
               </ul>
             </div>
-            <div className="space-y-4 rounded-2xl border border-[#f3d5df] bg-white/80 p-5 shadow-sm">
+            <div className="space-y-4 rounded-2xl border border-[#CFE5FF] bg-[#CFE5FF] p-5 shadow-sm">
               <div className="flex items-center justify-between">
-                <h3 className="text-base font-semibold tracking-tight text-[#2d1826]">Dates de sorties</h3>
-                <button className="inline-flex size-8 items-center justify-center rounded-full border border-[#f3d5df] text-sm text-[#7b4b60] transition hover:bg-[#f5dbe3]/80">
+                <h3 className="text-base font-semibold tracking-tight text-[#204991]">Dates de sorties</h3>
+                <button className="inline-flex size-8 items-center justify-center rounded-full border border-[#CFE5FF] text-sm text-[#204991] transition hover:bg-[#B3D2FF]/80">
                   +
                 </button>
               </div>
-              <ul className="min-h-[120px] rounded-2xl border border-dashed border-[#f3d5df] bg-white/90 px-4 py-3 text-sm text-[#2f1d28]">
+              <ul className="min-h-[120px] rounded-2xl border border-dashed border-[#CFE5FF] bg-white/90 px-4 py-3 text-sm text-[#204991]">
                 {exitDates.length === 0 ? (
-                  <li className="py-4 text-center text-xs font-medium text-[#b08c9d]">
+                  <li className="py-4 text-center text-xs font-medium text-[#204991]">
                     Aucune date de sortie.
                   </li>
                 ) : (
                   exitDates.map((row) => (
-                    <li key={row.id} className="border-b border-[#f3d5df] py-2 last:border-0">
+                    <li key={row.id} className="border-b border-[#CFE5FF] py-2 last:border-0">
                       {row.date}
                     </li>
                   ))
@@ -577,16 +577,16 @@ function SejoursPageContent() {
           </div>
 
           <div className="grid gap-8 xl:grid-cols-2">
-            <div className="space-y-4 rounded-2xl border border-[#f3d5df] bg-white/80 p-5 shadow-sm">
+            <div className="space-y-4 rounded-2xl border border-[#CFE5FF] bg-[#CFE5FF] p-5 shadow-sm">
               <div className="flex items-center justify-between">
-                <h3 className="text-base font-semibold tracking-tight text-[#2d1826]">Villes de départ</h3>
-                <button className="inline-flex size-8 items-center justify-center rounded-full border border-[#f3d5df] text-sm text-[#7b4b60] transition hover:bg-[#f5dbe3]/80">
+                <h3 className="text-base font-semibold tracking-tight text-[#204991]">Villes de départ</h3>
+                <button className="inline-flex size-8 items-center justify-center rounded-full border border-[#CFE5FF] text-sm text-[#204991] transition hover:bg-[#B3D2FF]/80">
                   +
                 </button>
               </div>
-              <div className="overflow-hidden rounded-xl border border-dashed border-[#f3d5df] bg-white/90">
-                <table className="w-full border-collapse text-xs font-medium uppercase tracking-[0.2em] text-[#9b7487]">
-                  <thead className="bg-[#fdf2f6] text-[#7a405c]">
+              <div className="overflow-hidden rounded-xl border border-dashed border-[#CFE5FF] bg-white/90">
+                <table className="w-full border-collapse text-xs font-medium uppercase tracking-[0.2em] text-[#204991]">
+                  <thead className="bg-[#CFE5FF] text-[#204991]">
                     <tr>
                       <th className="px-4 py-2 text-left">Villes de départ</th>
                       <th className="px-4 py-2 text-left">Prix</th>
@@ -595,15 +595,15 @@ function SejoursPageContent() {
                   <tbody>
                     {departureCities.length === 0 ? (
                       <tr>
-                        <td colSpan={2} className="px-4 py-5 text-center text-xs font-medium text-[#b08c9d]">
+                        <td colSpan={2} className="px-4 py-5 text-center text-xs font-medium text-[#204991]">
                           Aucune ville de départ configurée.
                         </td>
                       </tr>
                     ) : (
                       departureCities.map((row) => (
-                        <tr key={row.id} className="border-t border-[#f3d5df] odd:bg-white even:bg-[#fff7fa]">
-                          <td className="px-4 py-2 text-sm text-[#2f1d28]">{row.city}</td>
-                          <td className="px-4 py-2 text-sm text-[#2f1d28]">{row.price}</td>
+                        <tr key={row.id} className="border-t border-[#CFE5FF] odd:bg-white even:bg-[#CFE5FF]/30">
+                          <td className="px-4 py-2 text-sm text-[#204991]">{row.city}</td>
+                          <td className="px-4 py-2 text-sm text-[#204991]">{row.price}</td>
                         </tr>
                       ))
                     )}
@@ -612,16 +612,16 @@ function SejoursPageContent() {
               </div>
             </div>
 
-            <div className="space-y-4 rounded-2xl border border-[#f3d5df] bg-white/80 p-5 shadow-sm">
+            <div className="space-y-4 rounded-2xl border border-[#CFE5FF] bg-[#CFE5FF] p-5 shadow-sm">
               <div className="flex items-center justify-between">
-                <h3 className="text-base font-semibold tracking-tight text-[#2d1826]">Villes de retour</h3>
-                <button className="inline-flex size-8 items-center justify-center rounded-full border border-[#f3d5df] text-sm text-[#7b4b60] transition hover:bg-[#f5dbe3]/80">
+                <h3 className="text-base font-semibold tracking-tight text-[#204991]">Villes de retour</h3>
+                <button className="inline-flex size-8 items-center justify-center rounded-full border border-[#CFE5FF] text-sm text-[#204991] transition hover:bg-[#B3D2FF]/80">
                   +
                 </button>
               </div>
-              <div className="overflow-hidden rounded-xl border border-dashed border-[#f3d5df] bg-white/90">
-                <table className="w-full border-collapse text-xs font-medium uppercase tracking-[0.2em] text-[#9b7487]">
-                  <thead className="bg-[#fdf2f6] text-[#7a405c]">
+              <div className="overflow-hidden rounded-xl border border-dashed border-[#CFE5FF] bg-white/90">
+                <table className="w-full border-collapse text-xs font-medium uppercase tracking-[0.2em] text-[#204991]">
+                  <thead className="bg-[#CFE5FF] text-[#204991]">
                     <tr>
                       <th className="px-4 py-2 text-left">Villes de retour</th>
                       <th className="px-4 py-2 text-left">Prix</th>
@@ -630,15 +630,15 @@ function SejoursPageContent() {
                   <tbody>
                     {returnCities.length === 0 ? (
                       <tr>
-                        <td colSpan={2} className="px-4 py-5 text-center text-xs font-medium text-[#b08c9d]">
+                        <td colSpan={2} className="px-4 py-5 text-center text-xs font-medium text-[#204991]">
                           Aucune ville de retour configurée.
                         </td>
                       </tr>
                     ) : (
                       returnCities.map((row) => (
-                        <tr key={row.id} className="border-t border-[#f3d5df] odd:bg-white even:bg-[#fff7fa]">
-                          <td className="px-4 py-2 text-sm text-[#2f1d28]">{row.city}</td>
-                          <td className="px-4 py-2 text-sm text-[#2f1d28]">{row.price}</td>
+                        <tr key={row.id} className="border-t border-[#CFE5FF] odd:bg-white even:bg-[#CFE5FF]/30">
+                          <td className="px-4 py-2 text-sm text-[#204991]">{row.city}</td>
+                          <td className="px-4 py-2 text-sm text-[#204991]">{row.price}</td>
                         </tr>
                       ))
                     )}
@@ -648,16 +648,16 @@ function SejoursPageContent() {
             </div>
           </div>
 
-          <div className="space-y-4 rounded-2xl border border-[#f3d5df] bg-white/80 p-5 shadow-sm">
+          <div className="space-y-4 rounded-2xl border border-[#CFE5FF] bg-[#CFE5FF] p-5 shadow-sm">
             <div className="flex items-center justify-between">
-              <h3 className="text-base font-semibold tracking-tight text-[#2d1826]">Périodes de séjour</h3>
-              <button className="inline-flex size-8 items-center justify-center rounded-full border border-[#f3d5df] text-sm text-[#7b4b60] transition hover:bg-[#f5dbe3]/80">
+              <h3 className="text-base font-semibold tracking-tight text-[#204991]">Périodes de séjour</h3>
+              <button className="inline-flex size-8 items-center justify-center rounded-full border border-[#CFE5FF] text-sm text-[#204991] transition hover:bg-[#B3D2FF]/80">
                 +
               </button>
             </div>
-            <div className="overflow-hidden rounded-xl border border-dashed border-[#f3d5df] bg-white/90">
-              <table className="w-full border-collapse text-xs font-medium uppercase tracking-[0.2em] text-[#9b7487]">
-                <thead className="bg-[#fdf2f6] text-[#7a405c]">
+            <div className="overflow-hidden rounded-xl border border-dashed border-[#CFE5FF] bg-white/90">
+              <table className="w-full border-collapse text-xs font-medium uppercase tracking-[0.2em] text-[#204991]">
+                <thead className="bg-[#CFE5FF] text-[#204991]">
                   <tr>
                     <th className="px-4 py-2 text-left">Période</th>
                     <th className="px-4 py-2 text-left">N° Grp Prestashop</th>
@@ -666,15 +666,15 @@ function SejoursPageContent() {
                 <tbody>
                   {sejourPeriods.length === 0 ? (
                     <tr>
-                      <td colSpan={2} className="px-4 py-5 text-center text-xs font-medium text-[#b08c9d]">
+                      <td colSpan={2} className="px-4 py-5 text-center text-xs font-medium text-[#204991]">
                         Aucune période enregistrée.
                       </td>
                     </tr>
                   ) : (
                     sejourPeriods.map((row) => (
-                      <tr key={row.id} className="border-t border-[#f3d5df] odd:bg-white even:bg-[#fff7fa]">
-                        <td className="px-4 py-2 text-sm text-[#2f1d28]">{row.period}</td>
-                        <td className="px-4 py-2 text-sm text-[#2f1d28]">{row.prestashop}</td>
+                      <tr key={row.id} className="border-t border-[#CFE5FF] odd:bg-white even:bg-[#CFE5FF]/30">
+                        <td className="px-4 py-2 text-sm text-[#204991]">{row.period}</td>
+                        <td className="px-4 py-2 text-sm text-[#204991]">{row.prestashop}</td>
                       </tr>
                     ))
                   )}
@@ -684,11 +684,11 @@ function SejoursPageContent() {
           </div>
 
           <div className="grid gap-8 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1.4fr)_minmax(0,1fr)]">
-            <div className="space-y-4 rounded-2xl border border-[#f3d5df] bg-white/80 p-5 shadow-sm">
-              <h3 className="text-base font-semibold tracking-tight text-[#2d1826]">Partenariats</h3>
-              <div className="overflow-hidden rounded-xl border border-dashed border-[#f3d5df] bg-white/90">
-                <table className="w-full border-collapse text-xs font-medium uppercase tracking-[0.2em] text-[#9b7487]">
-                  <thead className="bg-[#fdf2f6] text-[#7a405c]">
+            <div className="space-y-4 rounded-2xl border border-[#CFE5FF] bg-[#CFE5FF] p-5 shadow-sm">
+              <h3 className="text-base font-semibold tracking-tight text-[#204991]">Partenariats</h3>
+              <div className="overflow-hidden rounded-xl border border-dashed border-[#CFE5FF] bg-white/90">
+                <table className="w-full border-collapse text-xs font-medium uppercase tracking-[0.2em] text-[#204991]">
+                  <thead className="bg-[#CFE5FF] text-[#204991]">
                     <tr>
                       <th className="px-4 py-2 text-left">Nom du part.</th>
                       <th className="px-4 py-2 text-left">Prix hors transport</th>
@@ -698,16 +698,16 @@ function SejoursPageContent() {
                   <tbody>
                     {partnerPricing.length === 0 ? (
                       <tr>
-                        <td colSpan={3} className="px-4 py-5 text-center text-xs font-medium text-[#b08c9d]">
+                        <td colSpan={3} className="px-4 py-5 text-center text-xs font-medium text-[#204991]">
                           Aucun partenariat enregistré.
                         </td>
                       </tr>
                     ) : (
                       partnerPricing.map((row) => (
-                        <tr key={row.id} className="border-t border-[#f3d5df] odd:bg-white even:bg-[#fff7fa]">
-                          <td className="px-4 py-2 text-sm text-[#2f1d28]">{row.name}</td>
-                          <td className="px-4 py-2 text-sm text-[#2f1d28]">{row.base}</td>
-                          <td className="px-4 py-2 text-sm text-[#2f1d28]">{row.transport}</td>
+                        <tr key={row.id} className="border-t border-[#CFE5FF] odd:bg-white even:bg-[#CFE5FF]/30">
+                          <td className="px-4 py-2 text-sm text-[#204991]">{row.name}</td>
+                          <td className="px-4 py-2 text-sm text-[#204991]">{row.base}</td>
+                          <td className="px-4 py-2 text-sm text-[#204991]">{row.transport}</td>
                         </tr>
                       ))
                     )}
@@ -716,16 +716,16 @@ function SejoursPageContent() {
               </div>
             </div>
 
-            <div className="space-y-4 rounded-2xl border border-[#f3d5df] bg-white/80 p-5 shadow-sm">
+            <div className="space-y-4 rounded-2xl border border-[#CFE5FF] bg-[#CFE5FF] p-5 shadow-sm">
               <div className="flex items-center justify-between">
-                <h3 className="text-base font-semibold tracking-tight text-[#2d1826]">Tâches associées</h3>
-                <button className="inline-flex size-8 items-center justify-center rounded-full border border-[#f3d5df] text-sm text-[#7b4b60] transition hover:bg-[#f5dbe3]/80">
+                <h3 className="text-base font-semibold tracking-tight text-[#204991]">Tâches associées</h3>
+                <button className="inline-flex size-8 items-center justify-center rounded-full border border-[#CFE5FF] text-sm text-[#204991] transition hover:bg-[#B3D2FF]/80">
                   +
                 </button>
               </div>
-              <div className="overflow-hidden rounded-xl border border-dashed border-[#f3d5df] bg-white/90">
-                <table className="w-full border-collapse text-xs font-medium uppercase tracking-[0.2em] text-[#9b7487]">
-                  <thead className="bg-[#fdf2f6] text-[#7a405c]">
+              <div className="overflow-hidden rounded-xl border border-dashed border-[#CFE5FF] bg-white/90">
+                <table className="w-full border-collapse text-xs font-medium uppercase tracking-[0.2em] text-[#204991]">
+                  <thead className="bg-[#CFE5FF] text-[#204991]">
                     <tr>
                       <th className="px-4 py-2 text-left">Catégorie de tâche</th>
                       <th className="px-4 py-2 text-left">Tâches associées</th>
@@ -735,16 +735,16 @@ function SejoursPageContent() {
                   <tbody>
                     {taskCategories.length === 0 ? (
                       <tr>
-                        <td colSpan={3} className="px-4 py-5 text-center text-xs font-medium text-[#b08c9d]">
+                        <td colSpan={3} className="px-4 py-5 text-center text-xs font-medium text-[#204991]">
                           Aucune tâche planifiée.
                         </td>
                       </tr>
                     ) : (
                       taskCategories.map((row) => (
-                        <tr key={row.id} className="border-t border-[#f3d5df] odd:bg-white even:bg-[#fff7fa]">
-                          <td className="px-4 py-2 text-sm text-[#2f1d28]">{row.category}</td>
-                          <td className="px-4 py-2 text-sm text-[#2f1d28]">{row.tasks}</td>
-                          <td className="px-4 py-2 text-sm text-[#2f1d28]">{row.daysBefore}</td>
+                        <tr key={row.id} className="border-t border-[#CFE5FF] odd:bg-white even:bg-[#CFE5FF]/30">
+                          <td className="px-4 py-2 text-sm text-[#204991]">{row.category}</td>
+                          <td className="px-4 py-2 text-sm text-[#204991]">{row.tasks}</td>
+                          <td className="px-4 py-2 text-sm text-[#204991]">{row.daysBefore}</td>
                         </tr>
                       ))
                     )}
@@ -753,11 +753,11 @@ function SejoursPageContent() {
               </div>
             </div>
 
-            <div className="space-y-4 rounded-2xl border border-[#f3d5df] bg-white/80 p-5 shadow-sm">
-              <h3 className="text-base font-semibold tracking-tight text-[#2d1826]">Encadrement associé</h3>
-              <div className="overflow-hidden rounded-xl border border-dashed border-[#f3d5df] bg-white/90">
-                <table className="w-full border-collapse text-xs font-medium uppercase tracking-[0.2em] text-[#9b7487]">
-                  <thead className="bg-[#fdf2f6] text-[#7a405c]">
+            <div className="space-y-4 rounded-2xl border border-[#CFE5FF] bg-[#CFE5FF] p-5 shadow-sm">
+              <h3 className="text-base font-semibold tracking-tight text-[#204991]">Encadrement associé</h3>
+              <div className="overflow-hidden rounded-xl border border-dashed border-[#CFE5FF] bg-white/90">
+                <table className="w-full border-collapse text-xs font-medium uppercase tracking-[0.2em] text-[#204991]">
+                  <thead className="bg-[#CFE5FF] text-[#204991]">
                     <tr>
                       <th className="px-4 py-2 text-left">Nom</th>
                       <th className="px-4 py-2 text-left">Prénom</th>
@@ -767,16 +767,16 @@ function SejoursPageContent() {
                   <tbody>
                     {staffMembers.length === 0 ? (
                       <tr>
-                        <td colSpan={3} className="px-4 py-5 text-center text-xs font-medium text-[#b08c9d]">
+                        <td colSpan={3} className="px-4 py-5 text-center text-xs font-medium text-[#204991]">
                           Aucun membre associé.
                         </td>
                       </tr>
                     ) : (
                       staffMembers.map((row) => (
-                        <tr key={row.id} className="border-t border-[#f3d5df] odd:bg-white even:bg-[#fff7fa]">
-                          <td className="px-4 py-2 text-sm text-[#2f1d28]">{row.name}</td>
-                          <td className="px-4 py-2 text-sm text-[#2f1d28]">{row.firstName}</td>
-                          <td className="px-4 py-2 text-sm text-[#2f1d28]">{row.role}</td>
+                        <tr key={row.id} className="border-t border-[#CFE5FF] odd:bg-white even:bg-[#CFE5FF]/30">
+                          <td className="px-4 py-2 text-sm text-[#204991]">{row.name}</td>
+                          <td className="px-4 py-2 text-sm text-[#204991]">{row.firstName}</td>
+                          <td className="px-4 py-2 text-sm text-[#204991]">{row.role}</td>
                         </tr>
                       ))
                     )}
@@ -787,7 +787,7 @@ function SejoursPageContent() {
           </div>
         </section>
 
-        <section className="rounded-3xl border border-dashed border-[#f3d5df] bg-white/50 px-6 py-4 text-xs font-semibold uppercase tracking-[0.3em] text-[#9b7487]">
+        <section className="rounded-3xl border border-dashed border-[#CFE5FF] bg-white/50 px-6 py-4 text-xs font-semibold uppercase tracking-[0.3em] text-[#204991]">
           <p>
             {sejourList.length === 0
               ? "Aucun séjour sélectionné."

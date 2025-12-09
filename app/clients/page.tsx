@@ -10,7 +10,6 @@ import {
   LineChart,
   NotebookPen,
   Plus,
-  Search,
   Save,
   Trash2,
   Undo2,
@@ -1744,70 +1743,76 @@ const filteredFamilies = useMemo(() => {
     const first = family.firstName ?? "";
     return `${civ}${first} ${last}`.trim();
   };
-  const fieldBg = isDirty ? "bg-white" : "bg-[#f5f5f5]";
+  const fieldBg = isDirty ? "bg-white" : "bg-[#fdf2f6]";
+  const pastelSearchInputClass =
+    "rounded-2xl border border-[#f3d5df] bg-white/80 px-4 py-2.5 text-sm text-[#2b1b27] placeholder:text-[#b090a0] focus:border-[#e0a8bc] focus:outline-none";
+  const pastelLabelClass = "text-xs font-semibold uppercase tracking-[0.25em] text-[#b17f92]";
+  const pastelFieldInputClass =
+    "rounded-2xl border border-[#f2d4de] px-4 py-2.5 text-sm text-[#2b1b27] focus:border-[#e0a8bc] focus:outline-none";
+  const pastelIconButtonClass =
+    "inline-flex size-9 items-center justify-center rounded-full border border-[#f0c9d7] bg-white/70 text-[#7b4b60] transition hover:bg-[#f5dbe3]/80 disabled:cursor-not-allowed disabled:opacity-40";
 
   return (
-    <div className="min-h-screen bg-neutral-50 py-12">
-      <div className="flex w-full flex-col gap-10 px-6 text-[#2b2f36] md:px-10 xl:px-16">
-        <header className="mx-auto w-full max-w-6xl rounded-3xl border border-[#d4d7df] bg-[#F5DBE3] shadow-xl">
-          <div className="flex flex-col gap-4 px-8 py-6 lg:flex-row lg:items-center lg:justify-between">
+    <div className="min-h-screen bg-gradient-to-b from-white via-[#fef9fb] to-[#f7eef2] py-12 text-[#2f1d28]">
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-5 md:px-10">
+        <header className="rounded-3xl border border-[#f2d4de] bg-white/95 px-8 py-7 shadow-[0_25px_60px_rgba(83,15,43,0.05)]">
+          <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-semibold tracking-tight text-[#530F2B]">
+              <p className="text-sm font-semibold uppercase tracking-[0.5em] text-[#A53E69]">
+                Clients
+              </p>
+              <h1 className="mt-2 text-3xl font-semibold tracking-tight text-[#2d1826]">
                 Dossiers Clients
               </h1>
+              <p className="mt-2 text-sm text-[#806471]">
+                Effectuez une recherche pour afficher les dossiers clients.
+              </p>
             </div>
-            <div className="flex flex-wrap items-center gap-3 text-sm text-[#2b2f36]">
-              <button
-                type="button"
-                className="inline-flex items-center gap-2 rounded-md border border-[#ccd0d8] bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#2b2f36] transition hover:border-[#7f8696] hover:bg-[#f7f8fb]"
-                onClick={() => {
-                  if (isDirty) {
-                    alert("Enregistrez ou annulez les modifications avant de rechercher.");
-                    return;
-                  }
-                  if (isSearchPanelOpen) {
-                    setSearchFilters(createEmptySearchFilters());
-                    searchFilterRefs.lastUsed.current = null;
-                    setIsSearchPanelOpen(false);
-                  } else {
-                    setIsSearchPanelOpen(true);
-                    const target =
-                      searchFilterRefs.lastUsed.current ?? searchFilterRefs.primary.current;
-                    if (target) {
-                      target.focus();
-                      if ("select" in target) {
-                        target.select();
-                      }
+            <button
+              type="button"
+              className="inline-flex items-center gap-3 rounded-full border border-[#f2d4de] bg-white/70 px-5 py-2 text-sm font-medium text-[#4C2331] transition hover:border-[#ebbccc] hover:bg-[#E9C6D2]"
+              onClick={() => {
+                if (isDirty) {
+                  alert("Enregistrez ou annulez les modifications avant de rechercher.");
+                  return;
+                }
+                if (isSearchPanelOpen) {
+                  setSearchFilters(createEmptySearchFilters());
+                  searchFilterRefs.lastUsed.current = null;
+                  setIsSearchPanelOpen(false);
+                } else {
+                  setIsSearchPanelOpen(true);
+                  const target = searchFilterRefs.lastUsed.current ?? searchFilterRefs.primary.current;
+                  if (target) {
+                    target.focus();
+                    if ("select" in target) {
+                      target.select();
                     }
                   }
-                }}
-              >
-                <Search className="size-4 text-[#7f8696]" />
-                {isSearchPanelOpen ? "Fermer la recherche" : "Ouvrir la recherche"}
-              </button>
-            </div>
+                }
+              }}
+            >
+              {isSearchPanelOpen ? "FERMER LA RECHERCHE" : "OUVRIR LA RECHERCHE"}
+              <span className="rounded-full bg-[#f5dbe3] px-2 py-0.5 text-[10px] font-semibold text-[#742f48]">
+                ⌘K
+              </span>
+            </button>
           </div>
-          <div className="px-8 pb-4 text-sm text-[#5c606b]">
-            {hasActiveSearch ? (
-              filteredFamilies.length > 1
-                ? `resultats : ${filteredFamilies.length}`
-                : `resultat : ${filteredFamilies.length}`
-            ) : (
-              "Effectuez une recherche pour afficher les dossiers."
-            )}
+          <div className="mt-3 flex items-center gap-2 text-sm text-[#8e6d7d]">
+            <span className="inline-flex h-1 w-8 rounded-full bg-[#f5dbe3]" aria-hidden="true" />
+            {hasActiveSearch
+              ? filteredFamilies.length > 1
+                ? `Résultats : ${filteredFamilies.length}`
+                : `Résultat : ${filteredFamilies.length}`
+              : "Aucune recherche en cours."}
           </div>
           {isSearchPanelOpen ? (
-            <div className="mx-auto mb-4 grid w-full max-w-5xl gap-3 rounded-2xl border border-[#d4d7df] bg-white p-4 text-sm text-[#2b2f36] shadow-sm">
-              <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-[0.16em] text-[#5c606b]">
-                <span>Mode recherche</span>
-              </div>
-              <div className="grid gap-3 md:grid-cols-3">
-                <label className="flex flex-col gap-1">
-                  <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[#5c606b]">
-                    Nom
-                  </span>
+            <div className="mt-5 grid gap-4 rounded-2xl border border-[#f3d5df] bg-[#fff9fb] p-5 text-sm text-[#35202f] shadow-[0_20px_50px_rgba(83,15,43,0.04)]">
+              <div className="grid gap-4 lg:grid-cols-3">
+                <label className="flex flex-col gap-2">
+                  <span className={pastelLabelClass}>Nom</span>
                   <input
-                    className="rounded border border-[#ccd0d8] bg-white px-3 py-2 outline-none focus:border-[#7f8696]"
+                    className={pastelSearchInputClass}
                     ref={searchFilterRefs.primary}
                     value={searchFilters.lastName}
                     onChange={handleSearchFilterChange("lastName")}
@@ -1817,12 +1822,10 @@ const filteredFamilies = useMemo(() => {
                     }}
                   />
                 </label>
-                <label className="flex flex-col gap-1">
-                  <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[#5c606b]">
-                    prenom
-                  </span>
+                <label className="flex flex-col gap-2">
+                  <span className={pastelLabelClass}>Prénom</span>
                   <input
-                    className="rounded border border-[#ccd0d8] bg-white px-3 py-2 outline-none focus:border-[#7f8696]"
+                    className={pastelSearchInputClass}
                     value={searchFilters.firstName}
                     onChange={handleSearchFilterChange("firstName")}
                     onKeyDown={handleSearchFiltersKeyDown}
@@ -1831,12 +1834,10 @@ const filteredFamilies = useMemo(() => {
                     }}
                   />
                 </label>
-                <label className="flex flex-col gap-1">
-                  <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[#5c606b]">
-                    Adresse
-                  </span>
+                <label className="flex flex-col gap-2">
+                  <span className={pastelLabelClass}>Adresse</span>
                   <input
-                    className="rounded border border-[#ccd0d8] bg-white px-3 py-2 outline-none focus:border-[#7f8696]"
+                    className={pastelSearchInputClass}
                     value={searchFilters.address}
                     onChange={handleSearchFilterChange("address")}
                     onKeyDown={handleSearchFiltersKeyDown}
@@ -1847,13 +1848,11 @@ const filteredFamilies = useMemo(() => {
                 </label>
               </div>
 
-              <div className="grid gap-3 md:grid-cols-3">
-                <label className="flex flex-col gap-1">
-                  <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[#5c606b]">
-                    Email
-                  </span>
+              <div className="grid gap-4 lg:grid-cols-3">
+                <label className="flex flex-col gap-2">
+                  <span className={pastelLabelClass}>Email</span>
                   <input
-                    className="rounded border border-[#ccd0d8] bg-white px-3 py-2 outline-none focus:border-[#7f8696]"
+                    className={pastelSearchInputClass}
                     value={searchFilters.email}
                     onChange={handleSearchFilterChange("email")}
                     onKeyDown={handleSearchFiltersKeyDown}
@@ -1863,12 +1862,10 @@ const filteredFamilies = useMemo(() => {
                     inputMode="email"
                   />
                 </label>
-                <label className="flex flex-col gap-1">
-                  <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[#5c606b]">
-                    Telephone 1
-                  </span>
+                <label className="flex flex-col gap-2">
+                  <span className={pastelLabelClass}>Téléphone 1</span>
                   <input
-                    className="rounded border border-[#ccd0d8] bg-white px-3 py-2 outline-none focus:border-[#7f8696]"
+                    className={pastelSearchInputClass}
                     value={searchFilters.phone1}
                     onChange={handleSearchFilterChange("phone1")}
                     onKeyDown={handleSearchFiltersKeyDown}
@@ -1878,12 +1875,10 @@ const filteredFamilies = useMemo(() => {
                     inputMode="tel"
                   />
                 </label>
-                <label className="flex flex-col gap-1">
-                  <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[#5c606b]">
-                    Telephone 2
-                  </span>
+                <label className="flex flex-col gap-2">
+                  <span className={pastelLabelClass}>Téléphone 2</span>
                   <input
-                    className="rounded border border-[#ccd0d8] bg-white px-3 py-2 outline-none focus:border-[#7f8696]"
+                    className={pastelSearchInputClass}
                     value={searchFilters.phone2}
                     onChange={handleSearchFilterChange("phone2")}
                     onKeyDown={handleSearchFiltersKeyDown}
@@ -1895,13 +1890,11 @@ const filteredFamilies = useMemo(() => {
                 </label>
               </div>
 
-              <div className="grid gap-3 md:grid-cols-[repeat(3,minmax(0,1fr))]">
-                <label className="flex flex-col gap-1">
-                  <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[#5c606b]">
-                    Code postal
-                  </span>
+              <div className="grid gap-4 lg:grid-cols-3">
+                <label className="flex flex-col gap-2">
+                  <span className={pastelLabelClass}>Code postal</span>
                   <input
-                    className="rounded border border-[#ccd0d8] bg-white px-3 py-2 outline-none focus:border-[#7f8696]"
+                    className={pastelSearchInputClass}
                     value={searchFilters.postalCode}
                     onChange={handleSearchFilterChange("postalCode")}
                     onKeyDown={handleSearchFiltersKeyDown}
@@ -1912,12 +1905,10 @@ const filteredFamilies = useMemo(() => {
                     maxLength={10}
                   />
                 </label>
-                <label className="flex flex-col gap-1">
-                  <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[#5c606b]">
-                    Ville
-                  </span>
+                <label className="flex flex-col gap-2">
+                  <span className={pastelLabelClass}>Ville</span>
                   <input
-                    className="rounded border border-[#ccd0d8] bg-white px-3 py-2 outline-none focus:border-[#7f8696]"
+                    className={pastelSearchInputClass}
                     value={searchFilters.city}
                     onChange={handleSearchFilterChange("city")}
                     onKeyDown={handleSearchFiltersKeyDown}
@@ -1926,12 +1917,10 @@ const filteredFamilies = useMemo(() => {
                     }}
                   />
                 </label>
-                <label className="flex flex-col gap-1">
-                  <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[#5c606b]">
-                    Pays
-                  </span>
+                <label className="flex flex-col gap-2">
+                  <span className={pastelLabelClass}>Pays</span>
                   <input
-                    className="rounded border border-[#ccd0d8] bg-white px-3 py-2 outline-none focus:border-[#7f8696]"
+                    className={pastelSearchInputClass}
                     value={searchFilters.country}
                     onChange={handleSearchFilterChange("country")}
                     onKeyDown={handleSearchFiltersKeyDown}
@@ -1942,13 +1931,11 @@ const filteredFamilies = useMemo(() => {
                 </label>
               </div>
 
-              <div className="grid gap-3 md:grid-cols-[2fr_1fr]">
-                <label className="flex flex-col gap-1">
-                  <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[#5c606b]">
-                    Partenaire principal
-                  </span>
+              <div className="grid gap-4 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+                <label className="flex flex-col gap-2">
+                  <span className={pastelLabelClass}>Partenaire principal</span>
                   <input
-                    className="rounded border border-[#ccd0d8] bg-white px-3 py-2 outline-none focus:border-[#7f8696]"
+                    className={pastelSearchInputClass}
                     value={searchFilters.partner}
                     onChange={handleSearchFilterChange("partner")}
                     onKeyDown={handleSearchFiltersKeyDown}
@@ -1960,13 +1947,11 @@ const filteredFamilies = useMemo(() => {
                 <div />
               </div>
 
-              <div className="grid gap-3 md:grid-cols-3">
-                <label className="flex flex-col gap-1">
-                  <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[#5c606b]">
-                    Nom de l&apos;enfant
-                  </span>
+              <div className="grid gap-4 lg:grid-cols-3">
+                <label className="flex flex-col gap-2">
+                  <span className={pastelLabelClass}>Nom de l&apos;enfant</span>
                   <input
-                    className="rounded border border-[#ccd0d8] bg-white px-3 py-2 outline-none focus:border-[#7f8696]"
+                    className={pastelSearchInputClass}
                     value={searchFilters.childLastName}
                     onChange={handleSearchFilterChange("childLastName")}
                     onKeyDown={handleSearchFiltersKeyDown}
@@ -1975,12 +1960,10 @@ const filteredFamilies = useMemo(() => {
                     }}
                   />
                 </label>
-                <label className="flex flex-col gap-1">
-                  <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[#5c606b]">
-                    prenom de l&apos;enfant
-                  </span>
+                <label className="flex flex-col gap-2">
+                  <span className={pastelLabelClass}>Prénom de l&apos;enfant</span>
                   <input
-                    className="rounded border border-[#ccd0d8] bg-white px-3 py-2 outline-none focus:border-[#7f8696]"
+                    className={pastelSearchInputClass}
                     value={searchFilters.childFirstName}
                     onChange={handleSearchFilterChange("childFirstName")}
                     onKeyDown={handleSearchFiltersKeyDown}
@@ -1989,13 +1972,11 @@ const filteredFamilies = useMemo(() => {
                     }}
                   />
                 </label>
-                <label className="flex flex-col gap-1">
-                  <span className="text-xs font-semibold uppercase tracking-[0.12em] text-[#5c606b]">
-                    Date de naissance (enfant)
-                  </span>
+                <label className="flex flex-col gap-2">
+                  <span className={pastelLabelClass}>Date de naissance (enfant)</span>
                   <input
                     type="date"
-                    className="rounded border border-[#ccd0d8] bg-white px-3 py-2 outline-none focus:border-[#7f8696]"
+                    className={pastelSearchInputClass}
                     value={searchFilters.childBirthDate}
                     onChange={handleSearchFilterChange("childBirthDate")}
                     onKeyDown={handleSearchFiltersKeyDown}
@@ -2005,207 +1986,213 @@ const filteredFamilies = useMemo(() => {
                   />
                 </label>
               </div>
+
+              <div className="flex flex-wrap items-center gap-3 text-xs font-medium uppercase tracking-[0.18em] text-[#7b5869]">
+                <button
+                  type="button"
+                  onClick={() => setIsSearchPanelOpen(false)}
+                  className="inline-flex items-center justify-center rounded-full border border-transparent bg-[#f5dbe3] px-4 py-2 text-[#3b2331] transition hover:bg-[#f2c5d4]"
+                >
+                  Fermer
+                </button>
+                <button
+                  type="button"
+                  onClick={handleReset}
+                  className="inline-flex items-center justify-center rounded-full border border-[#f3d5df] bg-white px-4 py-2 text-[#3b2331] transition hover:bg-[#fff6f9]"
+                >
+                  Réinitialiser
+                </button>
+              </div>
             </div>
           ) : null}
-          {hasActiveSearch ? (
-            <div className="mx-auto mb-6 w-full max-w-5xl overflow-hidden rounded-2xl border border-[#e6e9f0] bg-red-200 shadow-sm">
-              <div
-                className="max-h-[300px] overflow-y-auto overscroll-y-contain touch-pan-y sm:max-h-[320px]"
-                style={{ WebkitOverflowScrolling: "touch" }}
-              >
-                <table className="w-full border-collapse bg-white text-sm text-[#2b2f36]">
-                  <thead className="sticky top-0 z-10 text-left text-xs font-semibold uppercase tracking-[0.18em] text-[#A56A57] shadow">
-                    <tr className="bg-[#F4E3DD]">
-                      <th className="px-5 py-3">ID client</th>
-                      <th className="px-5 py-3">Nom du client</th>
-                      <th className="px-5 py-3">Code postal</th>
-                      <th className="px-5 py-3">Ville</th>
+        </header>
+
+        {hasActiveSearch ? (
+          <section className="overflow-hidden rounded-3xl border border-[#f1d6e0] bg-white/95 shadow-[0_30px_70px_rgba(83,15,43,0.04)]">
+            <div className="max-h-[360px] overflow-y-auto">
+              <table className="w-full border-collapse text-sm text-[#2f1d28]">
+                <thead className="sticky top-0 z-10 border-b border-[#f3d8e1] bg-white/95 text-left text-xs font-semibold uppercase tracking-[0.3em] text-[#8E4865]">
+                  <tr>
+                    <th className="px-6 py-3">
+                      <span className="text-[#A53E69]">ID CLIENT</span>
+                    </th>
+                    <th className="px-6 py-3">
+                      <span className="text-[#A53E69]">CLIENT</span>
+                    </th>
+                    <th className="px-6 py-3">
+                      <span className="text-[#A53E69]">CODE POSTAL</span>
+                    </th>
+                    <th className="px-6 py-3">
+                      <span className="text-[#A53E69]">VILLE</span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {paddedFamilies.every((item) => item === null) ? (
+                    <tr>
+                      <td className="px-6 py-7 text-center text-sm text-[#9a7a8a]" colSpan={4}>
+                        Aucune famille enregistrée pour le moment.
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody className="bg-white">
-                    {paddedFamilies.every((item) => item === null) ? (
-                      <tr>
-                        <td
-                          className="px-5 py-6 text-center text-sm text-[#7f8696]"
-                          colSpan={4}
-                        >
-                          Aucune famille enregistree pour le moment.
-                        </td>
-                      </tr>
-                    ) : (
-                      paddedFamilies.map((item, index) => {
+                  ) : (
+                    paddedFamilies.map((item, index) => {
                       if (!item) {
                         return (
                           <tr
                             key={`placeholder-${index}`}
-                            className="border-t border-[#e3e6ed] bg-white/60 text-[#9aa0ad]"
+                            className="border-b border-[#f3d8e1] bg-white/60 text-[#b9a7b0]"
                           >
-                            <td className="px-5 py-3">-</td>
-                            <td className="px-5 py-3">-</td>
-                            <td className="px-5 py-3">-</td>
-                            <td className="px-5 py-3">-</td>
+                            <td className="px-6 py-3">-</td>
+                            <td className="px-6 py-3">-</td>
+                            <td className="px-6 py-3">-</td>
+                            <td className="px-6 py-3">-</td>
                           </tr>
                         );
                       }
 
-                        const isSelected = selectedFamilyId === item.id;
-                        return (
-                          <tr
-                            key={item.id}
-                            className={`cursor-pointer border-t border-[#e3e6ed] transition hover:bg-[#f7f8fb] focus:bg-[#f0f3f8] ${isSelected ? "bg-[#f0f3f8]" : ""}`}
-                            onClick={() => handleSelectFamily(item.id)}
-                            onKeyDown={handleRowKeyDown(item.id)}
-                            tabIndex={0}
-                            role="button"
-                            aria-pressed={isSelected}
-                          >
-                            <td className="px-5 py-3 font-semibold text-[#1f2330]">
-                              {item.id}
-                            </td>
-                            <td className="px-5 py-3 text-[#2b2f36]">
-                              {formatPrimaryAdultName(item)}
-                            </td>
-                            <td className="px-5 py-3 text-[#4d525d]">
-                              {item.postalCode}
-                            </td>
-                            <td className="px-5 py-3 text-[#2b2f36]">
-                              {item.city}
-                            </td>
-                          </tr>
-                        );
-                      })
-                    )}
-                  </tbody>
-                </table>
-              </div>
+                      const isSelected = selectedFamilyId === item.id;
+                      return (
+                        <tr
+                          key={item.id}
+                          className={`cursor-pointer border-b border-[#f3d8e1] transition hover:bg-[#fff6f9] focus:bg-[#f7ecf1] ${isSelected ? "bg-[#f7ecf1]" : ""}`}
+                          onClick={() => handleSelectFamily(item.id)}
+                          onKeyDown={handleRowKeyDown(item.id)}
+                          tabIndex={0}
+                          role="button"
+                          aria-pressed={isSelected}
+                        >
+                          <td className="px-6 py-3 font-semibold text-[#2d1826]">{item.id}</td>
+                          <td className="px-6 py-3 text-[#463140]">{formatPrimaryAdultName(item)}</td>
+                          <td className="px-6 py-3 text-[#463140]">{item.postalCode}</td>
+                          <td className="px-6 py-3 text-[#463140]">{item.city}</td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
             </div>
-          ) : (
-            <div className="mx-auto mb-6 w-full max-w-5xl rounded-2xl border border-dashed border-[#d4d7df] bg-white px-6 py-8 text-center text-sm text-[#5c606b] shadow-sm">
-              Lancez une recherche pour afficher les dossiers Parents.
-            </div>
-          )}
-        </header>
+          </section>
+        ) : (
+          <section className="rounded-3xl border border-dashed border-[#f3d5df] bg-white/60 px-6 py-10 text-center text-sm text-[#8e6d7d] shadow-[0_20px_50px_rgba(83,15,43,0.04)]">
+            Lancez une recherche pour afficher les dossiers Parents.
+          </section>
+        )}
 
-        <section className="mx-auto w-full max-w-6xl rounded-3xl border border-[#d4d7df] bg-[#F5DBE3] shadow-xl">
-          <header className="rounded-t-3xl bg-[#F4E3DD] px-8 py-5 text-white">
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-4">
-                <h2 className="text-2xl font-semibold tracking-tight text-[#A56A57]">
-                  Informations Client
-                </h2>
-                {selectedFamilyId ? (
-                  <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em]">
-                    <span className="text-[#A56A57]">ID client</span>
-                    <input
-                      className="h-8 w-28 rounded-md border border-[#A56A57] bg-transPerent px-3 text-sm text-[#A56A57] outline-none placeholder:text-[#A56A57]/70"
-                      value={familyForm.id}
-                      readOnly
-                    />
-                  </div>
-                ) : null}
-              </div>
-              <div className="flex flex-wrap items-center gap-2 text-xs uppercase tracking-[0.16em]">
+        <section className="rounded-3xl border border-[#f1d6e0] bg-white p-8 shadow-[0_30px_70px_rgba(83,15,43,0.03)]">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.5em] text-[#A53E69]">
+                Fiche client
+              </p>
+              <h2 className="mt-2 text-2xl font-semibold tracking-tight text-[#2d1826]">
+                Informations Client
+              </h2>
+              <p className="mt-2 text-sm text-[#806471]">
+                Consultez ou mettez à jour les détails du dossier sélectionné.
+              </p>
+            </div>
+            <div className="flex flex-col items-end gap-3 text-xs font-semibold uppercase tracking-[0.2em] text-[#7b4b60]">
+              {selectedFamilyId ? (
+                <div className="flex items-center gap-3 rounded-full border border-[#f0c9d7] bg-white/80 px-4 py-2 text-[#7b4b60]">
+                  <span>ID client</span>
+                  <input
+                    className="w-28 bg-transparent text-sm text-[#2d1826] outline-none"
+                    value={familyForm.id}
+                    readOnly
+                  />
+                </div>
+              ) : null}
+              <div className="flex flex-wrap items-center gap-2">
                 <button
                   type="button"
-                  className="group relative inline-flex size-9 items-center justify-center rounded-full border border-[#A56A57] bg-transPerent text-[#A56A57] transition hover:bg-transPerent cursor-pointer"
+                  className={pastelIconButtonClass}
                   onClick={handleCreateNewFamily}
                   title="Nouvelle famille"
                 >
                   <Plus className="size-4" />
                   <span className="sr-only">Ajouter</span>
-                  <span className="pointer-events-none absolute -bottom-9 left-1/2 -translate-x-1/2 rounded-md bg-[#1f2330] px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-white opacity-0 shadow-sm transition group-hover:opacity-100">
-                    Ajouter
-                  </span>
                 </button>
                 <button
                   type="button"
-                  className="group relative inline-flex size-9 items-center justify-center rounded-full border border-[#A56A57] bg-transPerent text-[#A56A57] transition hover:bg-transPerent disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                  className={pastelIconButtonClass}
                   onClick={handleDeleteFamily}
                   disabled={!canDeleteFamily || isDeleting || isSaving}
                   title="Supprimer la famille"
                 >
                   <Trash2 className="size-4" />
                   <span className="sr-only">Supprimer</span>
-                  <span className="pointer-events-none absolute -bottom-9 left-1/2 -translate-x-1/2 rounded-md bg-[#1f2330] px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-white opacity-0 shadow-sm transition group-hover:opacity-100">
-                    Supprimer
-                  </span>
                 </button>
                 <button
                   type="submit"
                   form="family-form"
-                  className="group relative inline-flex size-9 items-center justify-center rounded-full border border-[#A56A57] bg-transPerent text-[#A56A57] transition hover:bg-transPerent disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                  className={pastelIconButtonClass}
                   disabled={isSaving || isDeleting}
                   title="Enregistrer"
                 >
                   <Save className="size-4" />
                   <span className="sr-only">Enregistrer</span>
-                  <span className="pointer-events-none absolute -bottom-9 left-1/2 -translate-x-1/2 rounded-md bg-[#1f2330] px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-white opacity-0 shadow-sm transition group-hover:opacity-100">
-                    Enregistrer
-                  </span>
                 </button>
                 <button
                   type="button"
-                  className="group relative inline-flex size-9 items-center justify-center rounded-full border border-[#A56A57] bg-transPerent text-[#A56A57] transition hover:bg-transPerent disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                  className={pastelIconButtonClass}
                   onClick={resetFamilyForms}
                   disabled={isSaving || isDeleting}
                   title="Annuler"
                 >
                   <Undo2 className="size-4" />
                   <span className="sr-only">Annuler les modifications</span>
-                  <span className="pointer-events-none absolute -bottom-9 left-1/2 -translate-x-1/2 rounded-md bg-[#1f2330] px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-white opacity-0 shadow-sm transition group-hover:opacity-100">
-                    Annuler
-                  </span>
                 </button>
               </div>
             </div>
-          </header>
+          </div>
 
           {selectedFamilyId ? (
             <form
               id="family-form"
-              className="grid gap-8 rounded-b-3xl bg-white px-8 py-8 text-[#2b2f36]"
+              className="space-y-8 pt-6 text-[#2f1d28]"
               onSubmit={handleSaveFamily}
               noValidate
             >
               <div className="space-y-8">
-                <div className="rounded-2xl bg-[#1f2330] p-4 text-white shadow-md md:rounded-3xl md:p-5">
-                  <div className="grid gap-3 text-xs font-semibold uppercase tracking-[0.08em] leading-[1.4] sm:grid-cols-2 lg:grid-cols-[140px_1fr_1fr_1fr]">
-                    <label className="space-y-1">
-                      <span className="text-[11px] tracking-[0.08em]">Civilita</span>
+                <div className="rounded-2xl border border-[#f3d5df] bg-[#fdf7fa] p-6 text-[#2f1d28] shadow-sm md:rounded-3xl">
+                  <div className="grid gap-3 text-xs font-semibold uppercase tracking-[0.25em] leading-[1.4] text-[#b17f92] sm:grid-cols-2 lg:grid-cols-[140px_1fr_1fr_1fr]">
+                    <label className="space-y-2">
+                      <span className={pastelLabelClass}>Civilité</span>
                       <select
-                        className={`w-full max-w-[140px] rounded-lg border border-[#4b5163] px-3 py-2 text-sm font-medium text-[#1f2330] outline-none ${fieldBg}`}
+                        className={`${pastelFieldInputClass} ${fieldBg} max-w-[140px]`}
                         value={familyForm.civility}
                         onChange={handleFamilyFieldChange("civility")}
                       >
                         {CIVILITY_OPTIONS.map((option) => (
                           <option key={option} value={option}>
-                            {option ? option : "Salectionner"}
+                            {option ? option : "Sélectionner"}
                           </option>
                         ))}
                       </select>
                     </label>
-                    <label className="space-y-1">
-                      <span className="text-[11px] tracking-[0.08em]">Nom de famille</span>
+                    <label className="space-y-2">
+                      <span className={pastelLabelClass}>Nom de famille</span>
                       <input
-                        className={`w-full rounded-lg border border-[#4b5163] px-3 py-2 text-sm font-medium text-[#1f2330] outline-none ${fieldBg}`}
+                        className={`${pastelFieldInputClass} ${fieldBg}`}
                         value={familyForm.lastName}
                         onChange={handleFamilyFieldChange("lastName")}
                         placeholder="Nom"
                       />
                     </label>
-                    <label className="space-y-1">
-                      <span className="text-[11px] tracking-[0.08em]">prenom</span>
+                    <label className="space-y-2">
+                      <span className={pastelLabelClass}>Prénom</span>
                       <input
-                        className={`w-full rounded-lg border border-[#4b5163] px-3 py-2 text-sm font-medium text-[#1f2330] outline-none ${fieldBg}`}
+                        className={`${pastelFieldInputClass} ${fieldBg}`}
                         value={familyForm.firstName}
                         onChange={handleFamilyFieldChange("firstName")}
-                        placeholder="prenom"
+                        placeholder="Prénom"
                       />
                     </label>
-                    <label className="space-y-1">
-                      <span className="text-[11px] tracking-[0.08em]">Rale</span>
+                    <label className="space-y-2">
+                      <span className={pastelLabelClass}>Rôle</span>
                       <select
-                        className={`w-full rounded-lg border border-[#4b5163] px-3 py-2 text-sm font-medium text-[#1f2330] outline-none ${fieldBg}`}
+                        className={`${pastelFieldInputClass} ${fieldBg}`}
                         value={familyForm.primaryRole ?? ""}
                         onChange={(event) =>
                           setFamilyForm((prev) => ({
@@ -2216,13 +2203,13 @@ const filteredFamilies = useMemo(() => {
                       >
                         {PRIMARY_ROLE_OPTIONS.map((option) => (
                           <option key={option || "empty"} value={option}>
-                            {option || "Salectionner"}
+                            {option || "Sélectionner"}
                           </option>
                         ))}
                       </select>
                     </label>
                   </div>
-                  <p className="mt-4 text-[10px] font-medium uppercase tracking-[0.14em] text-[#cfd1d8]">
+                  <p className="mt-4 text-[10px] font-medium uppercase tracking-[0.2em] text-[#b8a2ad]">
                     Adulte principal du dossier famille
                   </p>
                 </div>
