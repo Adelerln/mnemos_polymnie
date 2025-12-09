@@ -157,7 +157,7 @@ function SejoursPageContent() {
               className="inline-flex items-center gap-3 rounded-full border border-[#CFE5FF] bg-white/70 px-5 py-2 text-sm font-medium text-[#204991] transition hover:border-[#B3D2FF] hover:bg-[#B3D2FF]"
               onClick={() => setIsSearchPanelOpen((open) => !open)}
             >
-              {isSearchPanelOpen ? "Fermer la recherche" : "Ouvrir la recherche"}
+              {isSearchPanelOpen ? "FERMER LA RECHERCHE" : "OUVRIR LA RECHERCHE"}
               <span className="rounded-full bg-[#CFE5FF] px-2 py-0.5 text-[10px] font-semibold text-[#204991]">
                 ⌘K
               </span>
