@@ -151,7 +151,7 @@ function InscriptionsPageContent() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-[#F5D4FF] py-12 text-[#204991]">
-      <div className="mx-auto flex min-h-[calc(100vh-6rem)] w-full max-w-6xl flex-col gap-8 px-4 text-[#204991] md:px-8 lg:px-12">
+      <div className="mx-auto flex min-h-[calc(100vh-6rem)] w-full max-w-6xl flex-col gap-8 px-5 text-[#204991] md:px-10">
         <header className="flex flex-col gap-6 rounded-3xl border border-[#F5D4FF] bg-white p-8 shadow-[0_25px_60px_rgba(32,73,145,0.08)]">
           <div className="flex flex-wrap items-center justify-between gap-6">
             <div className="space-y-1">
