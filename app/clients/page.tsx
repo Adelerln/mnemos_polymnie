@@ -1601,6 +1601,13 @@ const filteredFamilies = useMemo(() => {
     }
   };
 
+  const handleReset = () => {
+    setSearchFilters(createEmptySearchFilters());
+    setSearchTerm("");
+    setIsSearchPanelOpen(false);
+    searchFilterRefs.lastUsed.current = null;
+  };
+
   useEffect(() => {
     const handleGlobalShortcut = (event: globalThis.KeyboardEvent) => {
       const isCmdK =
