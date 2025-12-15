@@ -246,9 +246,9 @@ export default function CentresPage() {
   const formatPhone = (value: string | null) => (value ? formatFrenchPhoneNumber(value) : "—");
 
   const baseInputClasses =
-    "w-full rounded-lg border border-[#d4d7df] px-3 py-2 text-sm text-[#1f2330] focus:outline-none";
-  const activeInputClasses = `${baseInputClasses} bg-white focus:border-[#c77845]`;
-  const inactiveInputClasses = `${baseInputClasses} bg-[#f5f6f8] text-[#1f2330]`;
+    "w-full rounded-2xl border border-[#CFE5FF] px-4 py-2.5 text-sm text-[#204991] focus:outline-none transition";
+  const activeInputClasses = `${baseInputClasses} bg-white focus:border-[#B3D2FF]`;
+  const inactiveInputClasses = `${baseInputClasses} bg-white/70 text-[#204991]/80`;
 
   const handleFormChange =
     (field: keyof CentreForm) =>
@@ -420,24 +420,25 @@ export default function CentresPage() {
   }, [centres, filters]);
 
   return (
-    <div className="min-h-screen bg-[#dde1e7] py-10 text-[#1f2330]">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 md:px-8">
-        <header className="rounded-2xl border border-[#c9ccd5] bg-[#f6e8de] px-6 py-5 shadow-lg text-[#1f2330]">
+    <div className="min-h-screen bg-white py-12 text-[#204991]">
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-5 md:px-10">
+        <header className="rounded-3xl border border-[#CFE5FF] bg-white/95 px-8 py-7 text-[#204991] shadow-[0_25px_60px_rgba(83,15,43,0.05)]">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h1 className="text-3xl font-semibold tracking-tight">Centres</h1>
-              <p className="mt-1 text-sm text-[#4d5562]">
-                Recherchez un centre puis ouvrez sa fiche détaillée.
-              </p>
+              <p className="text-xs font-semibold uppercase tracking-[0.5em]">Centres</p>
+              <h1 className="mt-2 text-3xl font-semibold tracking-tight">Gestion des centres</h1>
+              <p className="mt-2 text-sm text-[#204991]">Recherchez un centre puis ouvrez sa fiche détaillée.</p>
             </div>
             <div className="flex flex-wrap items-center gap-3">
               <button
                 type="button"
                 onClick={() => setIsSearchOpen((open) => !open)}
-                className="inline-flex items-center gap-2 rounded-md border border-[#c7a486] bg-white/60 px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#3b2f28] transition hover:bg-white"
+                className="inline-flex items-center gap-3 rounded-full border border-[#CFE5FF] bg-white/70 px-5 py-2 text-sm font-medium uppercase tracking-[0.2em] text-[#204991] transition hover:border-[#B3D2FF] hover:bg-[#B3D2FF]"
               >
-                {isSearchOpen ? "Fermer la recherche" : "Ouvrir la recherche"}
-                <span className="rounded bg-white px-2 py-0.5 text-[10px] font-semibold text-[#3b2f28]">⌘K</span>
+                {isSearchOpen ? "FERMER LA RECHERCHE" : "OUVRIR LA RECHERCHE"}
+                <span className="rounded-full bg-[#CFE5FF] px-2 py-0.5 text-[10px] font-semibold text-[#204991]">
+                  ⌘K
+                </span>
               </button>
               <button
                 type="button"
@@ -453,93 +454,91 @@ export default function CentresPage() {
                   setDirty(true);
                   setIsEditing(true);
                 }}
-                className="inline-flex items-center gap-2 rounded-md border border-[#b96d3c] bg-[#c77845] px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-[#b45b12]"
+                className="inline-flex items-center gap-2 rounded-full border border-transparent bg-[#CFE5FF] px-5 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#204991] transition hover:bg-[#B3D2FF]"
               >
                 Nouveau centre
               </button>
             </div>
           </div>
-          <div className="mt-2 text-sm text-[#4d5562]">
+          <div className="mt-3 flex items-center gap-2 text-sm text-[#204991]">
+            <span className="inline-flex h-1 w-8 rounded-full bg-[#CFE5FF]" aria-hidden="true" />
             {loading
               ? "Chargement en cours…"
               : filteredCentres.length > 1
                 ? `${filteredCentres.length} centres`
                 : `${filteredCentres.length} centre`}
           </div>
-          {error ? <p className="mt-2 text-sm text-[#b42318]">{error}</p> : null}
+          {error ? <p className="mt-2 text-sm font-semibold text-[#c2410c]">{error}</p> : null}
         </header>
 
-        <section className="rounded-2xl border border-[#d0d4dc] bg-white shadow-xl">
-          <div className="flex items-center justify-between border-b border-[#e8ebf1] px-6 py-4">
-            <h2 className="text-sm font-semibold uppercase tracking-[0.18em] text-[#2b2f36]">Centres</h2>
-            <span className="text-sm text-[#5c606b]">
+        <section className="overflow-hidden rounded-3xl border border-[#CFE5FF] bg-white/95 shadow-[0_30px_70px_rgba(83,15,43,0.04)]">
+          <div className="flex items-center justify-between border-b border-[#CFE5FF] bg-white/80 px-6 py-4 text-sm">
+            <h2 className="text-xs font-semibold uppercase tracking-[0.3em] text-[#204991]">Centres</h2>
+            <span className="text-sm text-[#204991]">
               {filteredCentres.length} résultat{filteredCentres.length > 1 ? "s" : ""}
             </span>
           </div>
           {isSearchOpen ? (
-            <div className="mx-6 mt-4 mb-2 grid gap-3 rounded-xl border border-[#e3cfc1] bg-white/70 p-4 text-sm text-[#1f2330]">
+            <div className="mx-6 mt-4 mb-2 grid gap-3 rounded-2xl border border-[#CFE5FF] bg-[#CFE5FF] p-5 text-sm text-[#204991]">
               <div className="grid gap-3 md:grid-cols-4">
                 <input
-                  className="rounded border border-[#e3cfc1] bg-white px-3 py-2 text-sm text-[#1f2330] placeholder:text-[#8c8f99] focus:border-[#c77845] focus:outline-none"
+                  className="rounded-2xl border border-[#CFE5FF] bg-white px-4 py-2.5 text-sm text-[#204991] placeholder:text-[#204991] focus:border-[#B3D2FF] focus:outline-none"
                   placeholder="Nom du centre"
                   value={filters.name}
                   onChange={(e) => setFilters((prev) => ({ ...prev, name: e.target.value }))}
                 />
                 <input
-                  className="rounded border border-[#e3cfc1] bg-white px-3 py-2 text-sm text-[#1f2330] placeholder:text-[#8c8f99] focus:border-[#c77845] focus:outline-none"
+                  className="rounded-2xl border border-[#CFE5FF] bg-white px-4 py-2.5 text-sm text-[#204991] placeholder:text-[#204991] focus:border-[#B3D2FF] focus:outline-none"
                   placeholder="Ville"
                   value={filters.city}
                   onChange={(e) => setFilters((prev) => ({ ...prev, city: e.target.value }))}
                 />
                 <input
-                  className="rounded border border-[#e3cfc1] bg-white px-3 py-2 text-sm text-[#1f2330] placeholder:text-[#8c8f99] focus:border-[#c77845] focus:outline-none"
+                  className="rounded-2xl border border-[#CFE5FF] bg-white px-4 py-2.5 text-sm text-[#204991] placeholder:text-[#204991] focus:border-[#B3D2FF] focus:outline-none"
                   placeholder="Code postal"
                   value={filters.postalCode}
                   onChange={(e) => setFilters((prev) => ({ ...prev, postalCode: e.target.value }))}
                 />
                 <input
-                  className="rounded border border-[#e3cfc1] bg-white px-3 py-2 text-sm text-[#1f2330] placeholder:text-[#8c8f99] focus:border-[#c77845] focus:outline-none"
+                  className="rounded-2xl border border-[#CFE5FF] bg-white px-4 py-2.5 text-sm text-[#204991] placeholder:text-[#204991] focus:border-[#B3D2FF] focus:outline-none"
                   placeholder="Téléphone"
                   value={filters.phone}
                   onChange={(e) => setFilters((prev) => ({ ...prev, phone: e.target.value }))}
                 />
               </div>
-              <div className="flex flex-wrap items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em]">
                 <button
                   type="button"
                   onClick={() => setFilters({ name: "", city: "", postalCode: "", phone: "" })}
-                  className="inline-flex items-center justify-center rounded-md border border-[#e3cfc1] bg-white px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#3b2f28] transition hover:bg-[#f9efe6]"
+                  className="inline-flex items-center justify-center rounded-full border border-[#CFE5FF] bg-white px-4 py-2 text-[#204991] transition hover:bg-[#B3D2FF]"
                 >
                   Réinitialiser
                 </button>
               </div>
             </div>
           ) : null}
-          <div
-            className="max-h-[260px] overflow-y-auto overscroll-y-contain touch-pan-y sm:max-h-[280px]"
-            style={{ WebkitOverflowScrolling: "touch" }}
-          >
-            <table className="w-full border-collapse text-sm text-[#2b2f36]">
-              <thead className="sticky top-0 z-10 bg-[#f3f5f8] text-xs uppercase tracking-[0.14em] text-[#5c606b] shadow">
+          <div className="max-h-[280px] overflow-y-auto overscroll-y-contain touch-pan-y" style={{ WebkitOverflowScrolling: "touch" }}>
+            <table className="w-full border-collapse text-sm text-[#204991]">
+              <thead className="sticky top-0 z-10 border-b border-[#CFE5FF] bg-white text-left text-[11px] font-semibold uppercase tracking-[0.3em] text-[#204991]">
                 <tr>
-                  <th className="px-4 py-3 text-left">Nom du centre</th>
-                  <th className="px-4 py-3 text-left">En activité ?</th>
-                  <th className="px-4 py-3 text-left">Ville</th>
-                  <th className="px-4 py-3 text-left">Code postal</th>
-                  <th className="px-4 py-3 text-left">Téléphone fixe</th>
-                  <th className="px-4 py-3 text-left">Péremption commission</th>
+                  <th className="px-5 py-3 text-left">Nom du centre</th>
+                  <th className="px-5 py-3 text-left">En activité ?</th>
+                  <th className="px-5 py-3 text-left">Ville</th>
+                  <th className="px-5 py-3 text-left">Code postal</th>
+                  <th className="px-5 py-3 text-left">Téléphone fixe</th>
+                  <th className="px-5 py-3 text-left">Péremption commission</th>
                 </tr>
               </thead>
               <tbody>
                 {loading ? (
                   <tr>
-                    <td className="px-4 py-4 text-center text-sm text-[#5c606b]" colSpan={6}>
+                    <td className="px-5 py-5 text-center text-sm text-[#204991]" colSpan={6}>
                       Chargement…
                     </td>
                   </tr>
                 ) : filteredCentres.length === 0 ? (
                   <tr>
-                    <td className="px-4 py-6 text-center text-sm text-[#5c606b]" colSpan={6}>
+                    <td className="px-5 py-6 text-center text-sm text-[#204991]" colSpan={6}>
                       Aucun centre pour le moment.
                     </td>
                   </tr>
@@ -547,7 +546,7 @@ export default function CentresPage() {
                   filteredCentres.map((centre) => (
                     <tr
                       key={centre.id}
-                      className="cursor-pointer border-t border-[#eceff3] transition hover:bg-[#f7f8fb]"
+                      className="border-b border-[#CFE5FF] transition hover:bg-[#B3D2FF]/40"
                       onClick={() => {
                         if (dirty) {
                           alert("Enregistrez ou annulez les modifications avant de changer de centre.");
@@ -556,29 +555,29 @@ export default function CentresPage() {
                         setSelectedCentreId(centre.id);
                       }}
                     >
-                      <td className="px-4 py-3 font-semibold text-[#1f2330]">{centre.name}</td>
-                      <td className="px-4 py-3">
+                      <td className="px-5 py-3 font-semibold">{centre.name}</td>
+                      <td className="px-5 py-3">
                         {centre.is_active === false ? (
-                          <span className="rounded-full bg-[#fef2f2] px-2 py-1 text-xs font-semibold text-[#b42318]">
+                          <span className="rounded-full bg-[#fee2e2] px-2 py-1 text-xs font-semibold text-[#c2410c]">
                             Non
                           </span>
                         ) : (
-                          <span className="rounded-full bg-[#ecfdf3] px-2 py-1 text-xs font-semibold text-[#027a48]">
+                          <span className="rounded-full bg-[#CFE5FF] px-2 py-1 text-xs font-semibold text-[#204991]">
                             Oui
                           </span>
                         )}
                       </td>
-                      <td className="px-4 py-3">{centre.city || "—"}</td>
-                      <td className="px-4 py-3">{centre.postal_code || "—"}</td>
-                      <td className="px-4 py-3">{formatPhone(centre.phone_landline)}</td>
-                      <td className="px-4 py-3">
+                      <td className="px-5 py-3">{centre.city || "—"}</td>
+                      <td className="px-5 py-3">{centre.postal_code || "—"}</td>
+                      <td className="px-5 py-3">{formatPhone(centre.phone_landline)}</td>
+                      <td className="px-5 py-3">
                         <div className="flex items-center gap-2">
                           <span>{formatDate(centre.commission_expiry_date)}</span>
                           {centre.commission_expiry_date &&
                           !Number.isNaN(new Date(centre.commission_expiry_date).getTime()) &&
                           new Date(centre.commission_expiry_date) < new Date() ? (
                             <span
-                              className="flex h-6 w-6 items-center justify-center rounded-full bg-[#fee2e2] shadow-sm ring-1 ring-[#f8b4b4]"
+                              className="flex h-6 w-6 items-center justify-center rounded-full bg-[#FDE5E6] shadow-sm ring-1 ring-[#F8B4B4]"
                               title="Commission périmée"
                             >
                               <AlertTriangle className="h-4 w-4 text-[#c2410c]" />
@@ -594,16 +593,14 @@ export default function CentresPage() {
           </div>
         </section>
 
-        <section className="rounded-2xl border border-[#d0d4dc] bg-white shadow-xl">
-          <div className="flex items-center justify-between border-b border-[#e8ebf1] px-6 py-4">
-            <h2 className="text-sm font-semibold uppercase tracking-[0.18em] text-[#2b2f36]">
-              Informations Centres
-            </h2>
+        <section className="space-y-6 rounded-3xl border border-[#CFE5FF] bg-white p-8 text-[#204991] shadow-[0_30px_70px_rgba(83,15,43,0.03)]">
+          <div className="flex items-center justify-between border-b border-[#CFE5FF]/60 pb-4">
+            <h2 className="text-xs font-semibold uppercase tracking-[0.3em] text-[#204991]">Informations centres</h2>
             <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={handleAddNew}
-                className="flex h-8 w-8 items-center justify-center rounded-full border border-[#b96d3c] text-[#b96d3c] transition hover:bg-[#f8ede5]"
+                className="flex h-8 w-8 items-center justify-center rounded-full border border-[#CFE5FF] text-sm text-[#204991] transition hover:bg-[#B3D2FF]"
                 title="Ajouter"
               >
                 <PlusCircle className="h-3.5 w-3.5" />
@@ -616,7 +613,7 @@ export default function CentresPage() {
                   handleDeleteCentre();
                 }}
                 disabled={!selectedCentre?.id}
-                className="flex h-8 w-8 items-center justify-center rounded-full border border-[#b96d3c] text-[#b96d3c] transition hover:bg-[#f8ede5] disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex h-8 w-8 items-center justify-center rounded-full border border-[#CFE5FF] text-sm text-[#204991] transition hover:bg-[#B3D2FF] disabled:cursor-not-allowed disabled:opacity-50"
                 title="Supprimer"
               >
                 <Trash2 className="h-3.5 w-3.5" />
@@ -625,7 +622,7 @@ export default function CentresPage() {
                 type="button"
                 onClick={handleSaveForm}
                 disabled={saving || !isEditing}
-                className="flex h-8 w-8 items-center justify-center rounded-full border border-[#b96d3c] text-[#b96d3c] transition hover:bg-[#f8ede5] disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex h-8 w-8 items-center justify-center rounded-full border border-[#CFE5FF] text-sm text-[#204991] transition hover:bg-[#B3D2FF] disabled:cursor-not-allowed disabled:opacity-50"
                 title="Enregistrer"
               >
                 <Save className="h-3.5 w-3.5" />
@@ -633,26 +630,26 @@ export default function CentresPage() {
               <button
                 type="button"
                 onClick={handleResetForm}
-                className="flex h-8 w-8 items-center justify-center rounded-full border border-[#b96d3c] text-[#b96d3c] transition hover:bg-[#f8ede5]"
+                className="flex h-8 w-8 items-center justify-center rounded-full border border-[#CFE5FF] text-sm text-[#204991] transition hover:bg-[#B3D2FF]"
                 title="Annuler les modifications"
               >
                 <ArrowLeftCircle className="h-3.5 w-3.5" />
               </button>
             </div>
           </div>
-          <div className="px-6 py-5">
+          <div>
             {detailLoading ? (
-              <p className="text-sm text-[#5c606b]">Chargement…</p>
+              <p className="text-sm text-[#204991]/80">Chargement…</p>
             ) : detailError ? (
-              <p className="text-sm text-[#b42318]">{detailError}</p>
+              <p className="text-sm font-semibold text-[#c2410c]">{detailError}</p>
             ) : !form ? (
-              <p className="text-sm text-[#5c606b]">Sélectionnez un centre dans la liste ou créez-en un nouveau.</p>
+              <p className="text-sm text-[#204991]/80">Sélectionnez un centre dans la liste ou créez-en un nouveau.</p>
             ) : (
-              <div className="mt-2 grid gap-4 rounded-xl border border-[#e4e7ef] bg-[#f9fafb] p-4 shadow-sm lg:grid-cols-[2fr_1fr]">
-                <div className="space-y-4">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="mt-2 grid gap-5 rounded-2xl border border-[#CFE5FF] bg-[#CFE5FF] p-6 shadow-[0_20px_50px_rgba(83,15,43,0.04)] lg:grid-cols-[2fr_1fr]">
+                <div className="space-y-5 text-sm">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
                     <div className="space-y-1">
-                      <label className="text-xs font-semibold uppercase tracking-[0.12em] text-[#5c606b]">
+                      <label className="text-xs font-semibold uppercase tracking-[0.25em] text-[#204991]">
                         Nom du centre
                       </label>
                       <input
@@ -662,20 +659,20 @@ export default function CentresPage() {
                         onFocus={() => setIsEditing(true)}
                       />
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 text-[#204991]">
                       <span
-                        className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] ${
-                          form.is_active ? "bg-[#ecfdf3] text-[#027a48]" : "bg-[#fef2f2] text-[#b42318]"
+                        className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.25em] ${
+                          form.is_active ? "bg-white text-[#204991]" : "bg-white text-[#c2410c]"
                         }`}
                       >
                         {form.is_active ? "Actif" : "Inactif"}
                       </span>
-                      <label className="inline-flex items-center gap-2 text-sm text-[#2b2f36]">
+                      <label className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em]">
                         <input
                           type="checkbox"
                           checked={form.is_active}
                           onChange={handleFormChange("is_active")}
-                          className="h-4 w-4 rounded border-[#c9ccd5] text-[#c77845] focus:ring-[#c77845]"
+                          className="size-4 accent-[#CFE5FF]"
                           onFocus={() => setIsEditing(true)}
                         />
                         En activité
@@ -683,9 +680,9 @@ export default function CentresPage() {
                     </div>
                   </div>
 
-                  <div className="grid gap-3 md:grid-cols-2">
+                  <div className="grid gap-4 md:grid-cols-2">
                     <div className="space-y-2">
-                      <label className="text-xs font-semibold uppercase tracking-[0.12em] text-[#5c606b]">
+                      <label className="text-xs font-semibold uppercase tracking-[0.25em] text-[#204991]">
                         Adresse
                       </label>
                       <input
@@ -720,127 +717,96 @@ export default function CentresPage() {
                     </div>
 
                     <div className="space-y-3">
-                      <div className="space-y-1">
-                        <label className="text-xs font-semibold uppercase tracking-[0.12em] text-[#5c606b]">
-                          Téléphone fixe
-                        </label>
-                        <input
-                          className={isEditing ? activeInputClasses : inactiveInputClasses}
-                          value={form.phone_landline}
-                          onChange={handleFormChange("phone_landline")}
-                          onFocus={() => setIsEditing(true)}
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-xs font-semibold uppercase tracking-[0.12em] text-[#5c606b]">
-                          Mail générique
-                        </label>
-                        <input
-                          className={isEditing ? activeInputClasses : inactiveInputClasses}
-                          value={form.generic_email}
-                          onChange={handleFormChange("generic_email")}
-                          onFocus={() => setIsEditing(true)}
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-xs font-semibold uppercase tracking-[0.12em] text-[#5c606b]">
-                          N° DDCS
-                        </label>
-                        <input
-                          className={isEditing ? activeInputClasses : inactiveInputClasses}
-                          value={form.ddcs_number}
-                          onChange={handleFormChange("ddcs_number")}
-                          onFocus={() => setIsEditing(true)}
-                        />
-                      </div>
+                      {[
+                        { label: "Téléphone fixe", field: "phone_landline" as const },
+                        { label: "Mail générique", field: "generic_email" as const },
+                        { label: "N° DDCS", field: "ddcs_number" as const },
+                      ].map(({ label, field }) => (
+                        <div className="space-y-1" key={field}>
+                          <label className="text-xs font-semibold uppercase tracking-[0.25em] text-[#204991]">
+                            {label}
+                          </label>
+                          <input
+                            className={isEditing ? activeInputClasses : inactiveInputClasses}
+                            value={form[field]}
+                            onChange={handleFormChange(field)}
+                            onFocus={() => setIsEditing(true)}
+                          />
+                        </div>
+                      ))}
                     </div>
                   </div>
 
-                  <div className="grid gap-3 md:grid-cols-2">
-                    <div className="space-y-1">
-                      <label className="text-xs font-semibold uppercase tracking-[0.12em] text-[#5c606b]">
-                        Commission (PV)
-                      </label>
-                      <input
-                        type="date"
-                        className={isEditing ? activeInputClasses : inactiveInputClasses}
-                        value={form.commission_pv_date}
-                        onChange={handleFormChange("commission_pv_date")}
-                        onFocus={() => setIsEditing(true)}
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-xs font-semibold uppercase tracking-[0.12em] text-[#5c606b]">
-                        Péremption commission
-                      </label>
-                      <input
-                        type="date"
-                        className={isEditing ? activeInputClasses : inactiveInputClasses}
-                        value={form.commission_expiry_date}
-                        onChange={handleFormChange("commission_expiry_date")}
-                        onFocus={() => setIsEditing(true)}
-                      />
-                    </div>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    {[
+                      { label: "Commission (PV)", field: "commission_pv_date" as const },
+                      { label: "Péremption commission", field: "commission_expiry_date" as const },
+                    ].map(({ label, field }) => (
+                      <div className="space-y-1" key={field}>
+                        <label className="text-xs font-semibold uppercase tracking-[0.25em] text-[#204991]">
+                          {label}
+                        </label>
+                        <input
+                          type="date"
+                          className={isEditing ? activeInputClasses : inactiveInputClasses}
+                          value={form[field]}
+                          onChange={handleFormChange(field)}
+                          onFocus={() => setIsEditing(true)}
+                        />
+                      </div>
+                    ))}
                   </div>
 
-                  <div className="grid gap-3 md:grid-cols-2">
-                    <div className="space-y-1">
-                      <label className="text-xs font-semibold uppercase tracking-[0.12em] text-[#5c606b]">
-                        Latitude
-                      </label>
-                      <input
-                        className={isEditing ? activeInputClasses : inactiveInputClasses}
-                        value={form.gps_latitude}
-                        onChange={handleFormChange("gps_latitude")}
-                        onFocus={() => setIsEditing(true)}
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-xs font-semibold uppercase tracking-[0.12em] text-[#5c606b]">
-                        Longitude
-                      </label>
-                      <input
-                        className={isEditing ? activeInputClasses : inactiveInputClasses}
-                        value={form.gps_longitude}
-                        onChange={handleFormChange("gps_longitude")}
-                        onFocus={() => setIsEditing(true)}
-                      />
-                    </div>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    {[
+                      { label: "Latitude", field: "gps_latitude" as const },
+                      { label: "Longitude", field: "gps_longitude" as const },
+                    ].map(({ label, field }) => (
+                      <div className="space-y-1" key={field}>
+                        <label className="text-xs font-semibold uppercase tracking-[0.25em] text-[#204991]">
+                          {label}
+                        </label>
+                        <input
+                          className={isEditing ? activeInputClasses : inactiveInputClasses}
+                          value={form[field]}
+                          onChange={handleFormChange(field)}
+                          onFocus={() => setIsEditing(true)}
+                        />
+                      </div>
+                    ))}
                   </div>
-
-                  <div className="flex flex-wrap items-center gap-3" />
                 </div>
 
                 <div className="space-y-3">
-                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#5c606b]">
+                  <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#204991]">
                     Contacts du centre
                   </p>
                   {selectedCentre?.id ? (
                     <button
                       type="button"
                       onClick={() => router.push(`/centres/${selectedCentre.id}`)}
-                      className="inline-flex items-center justify-center rounded-md border border-[#ccd0d8] bg-white px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-[#2b2f36] transition hover:bg-[#f7f8fb]"
+                      className="inline-flex items-center justify-center rounded-full border border-[#CFE5FF] bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#204991] transition hover:bg-[#B3D2FF]"
                     >
                       Ajouter un contact
                     </button>
                   ) : (
-                    <p className="text-sm text-[#5c606b]">Enregistrez le centre pour ajouter des contacts.</p>
+                    <p className="text-sm text-[#204991]/80">Enregistrez le centre pour ajouter des contacts.</p>
                   )}
                   {selectedCentre?.id ? (
                     contacts.length === 0 ? (
-                      <p className="text-sm text-[#5c606b]">Aucun contact pour ce centre.</p>
+                      <p className="text-sm text-[#204991]/80">Aucun contact pour ce centre.</p>
                     ) : (
                       <div className="space-y-3">
                         {contacts.map((contact) => (
                           <div
                             key={contact.id}
-                            className="rounded-lg border border-[#e4e7ef] bg-white px-3 py-2 text-sm text-[#2b2f36] shadow-sm"
+                            className="rounded-2xl border border-[#CFE5FF] bg-white px-4 py-3 text-sm text-[#204991] shadow-sm"
                           >
                             <p className="font-semibold">
                               {[contact.civility, contact.first_name, contact.last_name].filter(Boolean).join(" ")}
                             </p>
                             {contact.role ? (
-                              <p className="text-xs uppercase tracking-[0.12em] text-[#5c606b]">{contact.role}</p>
+                              <p className="text-xs uppercase tracking-[0.25em] text-[#204991]/70">{contact.role}</p>
                             ) : null}
                             <p>{contact.phone_1 ? formatPhone(contact.phone_1) : "—"}</p>
                             {contact.email ? <p>{contact.email}</p> : null}
@@ -849,7 +815,7 @@ export default function CentresPage() {
                       </div>
                     )
                   ) : (
-                    <p className="text-sm text-[#5c606b]">Enregistrez le centre pour ajouter des contacts.</p>
+                    <p className="text-sm text-[#204991]/80">Enregistrez le centre pour ajouter des contacts.</p>
                   )}
                 </div>
               </div>

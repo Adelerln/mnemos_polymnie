@@ -1760,7 +1760,7 @@ const filteredFamilies = useMemo(() => {
     "inline-flex size-9 items-center justify-center rounded-full border border-[#f0c9d7] bg-white/70 text-[#7b4b60] transition hover:bg-[#f5dbe3]/80 disabled:cursor-not-allowed disabled:opacity-40";
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white via-[#fef9fb] to-[#f7eef2] py-12 text-[#2f1d28]">
+    <div className="min-h-screen bg-white py-12 text-[#2f1d28]">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-5 md:px-10">
         <header className="rounded-3xl border border-[#f2d4de] bg-white/95 px-8 py-7 shadow-[0_25px_60px_rgba(83,15,43,0.05)]">
           <div className="flex flex-wrap items-start justify-between gap-4">

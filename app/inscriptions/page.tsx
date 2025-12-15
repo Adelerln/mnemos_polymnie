@@ -72,7 +72,7 @@ export default function InscriptionsPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-white to-[#F5D4FF] px-4 text-[#7D498C]">
+        <div className="flex min-h-screen items-center justify-center bg-white px-4 text-[#7D498C]">
           Chargement des inscriptions…
         </div>
       }
@@ -150,7 +150,7 @@ function InscriptionsPageContent() {
   const totalInscriptions = inscriptions.length;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-[#F5D4FF] py-12 text-[#7D498C]">
+    <div className="min-h-screen bg-white py-12 text-[#7D498C]">
       <div className="mx-auto flex min-h-[calc(100vh-6rem)] w-full max-w-6xl flex-col gap-8 px-5 text-[#7D498C] md:px-10">
         <header className="flex flex-col gap-6 rounded-3xl border border-[#F5D4FF] bg-white p-8 shadow-[0_25px_60px_rgba(32,73,145,0.08)]">
           <div className="flex flex-wrap items-center justify-between gap-6">

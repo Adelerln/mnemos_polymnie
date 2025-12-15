@@ -139,7 +139,7 @@ function SejoursPageContent() {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white via-[#CFE5FF] to-[#CFE5FF] py-12 text-[#204991]">
+    <div className="min-h-screen bg-white py-12 text-[#204991]">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-5 md:px-10">
         <header className="rounded-3xl border border-[#CFE5FF] bg-white/95 px-8 py-7 shadow-[0_25px_60px_rgba(83,15,43,0.05)]">
           <div className="flex flex-wrap items-start justify-between gap-4">
@@ -463,7 +463,7 @@ function SejoursPageContent() {
                   +
                 </button>
               </div>
-              <div className="overflow-hidden rounded-xl border border-dashed border-[#CFE5FF] bg-white/90">
+              <div className="overflow-hidden rounded-xl border border-white bg-white/90">
                 <table className="w-full border-collapse text-xs font-medium uppercase tracking-[0.2em] text-[#204991]">
                   <thead className="bg-[#CFE5FF] text-[#204991]">
                     <tr>
@@ -500,7 +500,7 @@ function SejoursPageContent() {
                   +
                 </button>
               </div>
-              <div className="overflow-hidden rounded-xl border border-dashed border-[#CFE5FF] bg-white/90">
+              <div className="overflow-hidden rounded-xl border border-white bg-white/90">
                 <table className="w-full border-collapse text-xs font-medium uppercase tracking-[0.2em] text-[#204991]">
                   <thead className="bg-[#CFE5FF] text-[#204991]">
                     <tr>
@@ -539,7 +539,7 @@ function SejoursPageContent() {
                   +
                 </button>
               </div>
-              <ul className="min-h-[120px] rounded-2xl border border-dashed border-[#CFE5FF] bg-white/90 px-4 py-3 text-sm text-[#204991]">
+              <ul className="min-h-[120px] rounded-2xl border border-white bg-white/90 px-4 py-3 text-sm text-[#204991]">
                 {entryDates.length === 0 ? (
                   <li className="py-4 text-center text-xs font-medium text-[#204991]">
                     Aucune date d&apos;entrée.
@@ -560,7 +560,7 @@ function SejoursPageContent() {
                   +
                 </button>
               </div>
-              <ul className="min-h-[120px] rounded-2xl border border-dashed border-[#CFE5FF] bg-white/90 px-4 py-3 text-sm text-[#204991]">
+              <ul className="min-h-[120px] rounded-2xl border border-white bg-white/90 px-4 py-3 text-sm text-[#204991]">
                 {exitDates.length === 0 ? (
                   <li className="py-4 text-center text-xs font-medium text-[#204991]">
                     Aucune date de sortie.
@@ -584,7 +584,7 @@ function SejoursPageContent() {
                   +
                 </button>
               </div>
-              <div className="overflow-hidden rounded-xl border border-dashed border-[#CFE5FF] bg-white/90">
+              <div className="overflow-hidden rounded-xl border border-white bg-white/90">
                 <table className="w-full border-collapse text-xs font-medium uppercase tracking-[0.2em] text-[#204991]">
                   <thead className="bg-[#CFE5FF] text-[#204991]">
                     <tr>
@@ -619,7 +619,7 @@ function SejoursPageContent() {
                   +
                 </button>
               </div>
-              <div className="overflow-hidden rounded-xl border border-dashed border-[#CFE5FF] bg-white/90">
+              <div className="overflow-hidden rounded-xl border border-white bg-white/90">
                 <table className="w-full border-collapse text-xs font-medium uppercase tracking-[0.2em] text-[#204991]">
                   <thead className="bg-[#CFE5FF] text-[#204991]">
                     <tr>
@@ -655,7 +655,7 @@ function SejoursPageContent() {
                 +
               </button>
             </div>
-            <div className="overflow-hidden rounded-xl border border-dashed border-[#CFE5FF] bg-white/90">
+            <div className="overflow-hidden rounded-xl border border-white bg-white/90">
               <table className="w-full border-collapse text-xs font-medium uppercase tracking-[0.2em] text-[#204991]">
                 <thead className="bg-[#CFE5FF] text-[#204991]">
                   <tr>
@@ -683,10 +683,10 @@ function SejoursPageContent() {
             </div>
           </div>
 
-          <div className="grid gap-8 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1.4fr)_minmax(0,1fr)]">
+          <div className="space-y-8">
             <div className="space-y-4 rounded-2xl border border-[#CFE5FF] bg-[#CFE5FF] p-5 shadow-sm">
               <h3 className="text-base font-semibold tracking-tight text-[#204991]">Partenariats</h3>
-              <div className="overflow-hidden rounded-xl border border-dashed border-[#CFE5FF] bg-white/90">
+              <div className="overflow-hidden rounded-xl border border-white bg-white/90">
                 <table className="w-full border-collapse text-xs font-medium uppercase tracking-[0.2em] text-[#204991]">
                   <thead className="bg-[#CFE5FF] text-[#204991]">
                     <tr>
@@ -716,72 +716,74 @@ function SejoursPageContent() {
               </div>
             </div>
 
-            <div className="space-y-4 rounded-2xl border border-[#CFE5FF] bg-[#CFE5FF] p-5 shadow-sm">
-              <div className="flex items-center justify-between">
-                <h3 className="text-base font-semibold tracking-tight text-[#204991]">Tâches associées</h3>
-                <button className="inline-flex size-8 items-center justify-center rounded-full border border-[#CFE5FF] text-sm text-[#204991] transition hover:bg-[#B3D2FF]/80">
-                  +
-                </button>
-              </div>
-              <div className="overflow-hidden rounded-xl border border-dashed border-[#CFE5FF] bg-white/90">
-                <table className="w-full border-collapse text-xs font-medium uppercase tracking-[0.2em] text-[#204991]">
-                  <thead className="bg-[#CFE5FF] text-[#204991]">
-                    <tr>
-                      <th className="px-4 py-2 text-left">Catégorie de tâche</th>
-                      <th className="px-4 py-2 text-left">Tâches associées</th>
-                      <th className="px-4 py-2 text-left">Nb de jours avant</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {taskCategories.length === 0 ? (
+            <div className="grid gap-8 md:grid-cols-2">
+              <div className="space-y-4 rounded-2xl border border-[#CFE5FF] bg-[#CFE5FF] p-5 shadow-sm">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-base font-semibold tracking-tight text-[#204991]">Tâches associées</h3>
+                  <button className="inline-flex size-8 items-center justify-center rounded-full border border-[#CFE5FF] text-sm text-[#204991] transition hover:bg-[#B3D2FF]/80">
+                    +
+                  </button>
+                </div>
+                <div className="overflow-hidden rounded-xl border border-white bg-white/90">
+                  <table className="w-full border-collapse text-xs font-medium uppercase tracking-[0.2em] text-[#204991]">
+                    <thead className="bg-[#CFE5FF] text-[#204991]">
                       <tr>
-                        <td colSpan={3} className="px-4 py-5 text-center text-xs font-medium text-[#204991]">
-                          Aucune tâche planifiée.
-                        </td>
+                        <th className="px-4 py-2 text-left">Catégorie de tâche</th>
+                        <th className="px-4 py-2 text-left">Tâches associées</th>
+                        <th className="px-4 py-2 text-left">Nb de jours avant</th>
                       </tr>
-                    ) : (
-                      taskCategories.map((row) => (
-                        <tr key={row.id} className="border-t border-[#CFE5FF] odd:bg-white even:bg-[#CFE5FF]/30">
-                          <td className="px-4 py-2 text-sm text-[#204991]">{row.category}</td>
-                          <td className="px-4 py-2 text-sm text-[#204991]">{row.tasks}</td>
-                          <td className="px-4 py-2 text-sm text-[#204991]">{row.daysBefore}</td>
+                    </thead>
+                    <tbody>
+                      {taskCategories.length === 0 ? (
+                        <tr>
+                          <td colSpan={3} className="px-4 py-5 text-center text-xs font-medium text-[#204991]">
+                            Aucune tâche planifiée.
+                          </td>
                         </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
+                      ) : (
+                        taskCategories.map((row) => (
+                          <tr key={row.id} className="border-t border-[#CFE5FF] odd:bg-white even:bg-[#CFE5FF]/30">
+                            <td className="px-4 py-2 text-sm text-[#204991]">{row.category}</td>
+                            <td className="px-4 py-2 text-sm text-[#204991]">{row.tasks}</td>
+                            <td className="px-4 py-2 text-sm text-[#204991]">{row.daysBefore}</td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
               </div>
-            </div>
 
-            <div className="space-y-4 rounded-2xl border border-[#CFE5FF] bg-[#CFE5FF] p-5 shadow-sm">
-              <h3 className="text-base font-semibold tracking-tight text-[#204991]">Encadrement associé</h3>
-              <div className="overflow-hidden rounded-xl border border-dashed border-[#CFE5FF] bg-white/90">
-                <table className="w-full border-collapse text-xs font-medium uppercase tracking-[0.2em] text-[#204991]">
-                  <thead className="bg-[#CFE5FF] text-[#204991]">
-                    <tr>
-                      <th className="px-4 py-2 text-left">Nom</th>
-                      <th className="px-4 py-2 text-left">Prénom</th>
-                      <th className="px-4 py-2 text-left">Fonction</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {staffMembers.length === 0 ? (
+              <div className="space-y-4 rounded-2xl border border-[#CFE5FF] bg-[#CFE5FF] p-5 shadow-sm">
+                <h3 className="text-base font-semibold tracking-tight text-[#204991]">Encadrement associé</h3>
+                <div className="overflow-hidden rounded-xl border border-white bg-white/90">
+                  <table className="w-full border-collapse text-xs font-medium uppercase tracking-[0.2em] text-[#204991]">
+                    <thead className="bg-[#CFE5FF] text-[#204991]">
                       <tr>
-                        <td colSpan={3} className="px-4 py-5 text-center text-xs font-medium text-[#204991]">
-                          Aucun membre associé.
-                        </td>
+                        <th className="px-4 py-2 text-left">Nom</th>
+                        <th className="px-4 py-2 text-left">Prénom</th>
+                        <th className="px-4 py-2 text-left">Fonction</th>
                       </tr>
-                    ) : (
-                      staffMembers.map((row) => (
-                        <tr key={row.id} className="border-t border-[#CFE5FF] odd:bg-white even:bg-[#CFE5FF]/30">
-                          <td className="px-4 py-2 text-sm text-[#204991]">{row.name}</td>
-                          <td className="px-4 py-2 text-sm text-[#204991]">{row.firstName}</td>
-                          <td className="px-4 py-2 text-sm text-[#204991]">{row.role}</td>
+                    </thead>
+                    <tbody>
+                      {staffMembers.length === 0 ? (
+                        <tr>
+                          <td colSpan={3} className="px-4 py-5 text-center text-xs font-medium text-[#204991]">
+                            Aucun membre associé.
+                          </td>
                         </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
+                      ) : (
+                        staffMembers.map((row) => (
+                          <tr key={row.id} className="border-t border-[#CFE5FF] odd:bg-white even:bg-[#CFE5FF]/30">
+                            <td className="px-4 py-2 text-sm text-[#204991]">{row.name}</td>
+                            <td className="px-4 py-2 text-sm text-[#204991]">{row.firstName}</td>
+                            <td className="px-4 py-2 text-sm text-[#204991]">{row.role}</td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           </div>
