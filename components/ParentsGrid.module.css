@@ -1,0 +1,40 @@
+.parentCard {
+  position: relative;
+  isolation: isolate;
+}
+
+.cardBorder {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #f7dfe9, #eed3e0);
+  border-radius: 18px;
+  z-index: 0;
+}
+
+.cardInner {
+  position: relative;
+  margin: 1px;
+  padding: 18px 18px 20px 20px;
+  border-radius: 17px;
+  box-shadow: 0 12px 30px rgba(83, 15, 43, 0.06);
+  z-index: 1;
+  background: #fff;
+  border: 1px solid #f0c9d7;
+}
+
+.roleTab {
+  position: absolute;
+  top: -34px;
+  left: 20px;
+  padding: 10px 12px 12px;
+  min-width: 170px;
+  max-width: 240px;
+  background: #fff7fa;
+  border: 1px solid #f0c9d7;
+  border-radius: 12px;
+  box-shadow: 0 8px 16px rgba(83, 15, 43, 0.05);
+  z-index: 2;
+  display: inline-flex;
+  flex-direction: column;
+  gap: 6px;
+}

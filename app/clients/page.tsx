@@ -36,6 +36,7 @@ import {
   type HealthFormState,
 } from "@/services/api";
 import { useProjectLogger } from "@/hooks/useProjectLogger";
+import { ParentsGrid, type ParentCardData } from "@/components/ParentsGrid";
 
 type ChildFormState = {
   lastName: string;
@@ -325,6 +326,7 @@ const createEmptySearchFilters = () => ({
   childFirstName: "",
   childBirthDate: "",
 });
+const SEARCH_STATE_STORAGE_KEY = "mnemos-clients-search-state";
 
 const normalizePostalCode = (input: string) =>
   input.replace(/\D/g, "").slice(0, 5);
@@ -445,6 +447,30 @@ export default function ClientsPage() {
   const [adultFeedback, setAdultFeedback] = useState<string | null>(null);
   const [searchFilters, setSearchFilters] = useState(createEmptySearchFilters);
   const [isSearchPanelOpen, setIsSearchPanelOpen] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const raw = localStorage.getItem(SEARCH_STATE_STORAGE_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as {
+        filters?: ReturnType<typeof createEmptySearchFilters>;
+        term?: string;
+        isPanelOpen?: boolean;
+      };
+      if (parsed.filters) {
+        setSearchFilters({ ...createEmptySearchFilters(), ...parsed.filters });
+      }
+      if (typeof parsed.term === "string") {
+        setSearchTerm(parsed.term);
+      }
+      if (typeof parsed.isPanelOpen === "boolean") {
+        setIsSearchPanelOpen(parsed.isPanelOpen);
+      }
+    } catch (error) {
+      console.error("Impossible de restaurer l'état de recherche:", error);
+    }
+  }, []);
 
   // Charger les familles au montage du composant
   useEffect(() => {
@@ -723,6 +749,20 @@ export default function ClientsPage() {
     return hasFilters || term !== "";
   }, [searchFilters, searchTerm]);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const payload = {
+        filters: searchFilters,
+        term: searchTerm,
+        isPanelOpen: isSearchPanelOpen,
+      };
+      localStorage.setItem(SEARCH_STATE_STORAGE_KEY, JSON.stringify(payload));
+    } catch (error) {
+      console.error("Impossible d'enregistrer l'état de recherche:", error);
+    }
+  }, [searchFilters, searchTerm, isSearchPanelOpen]);
+
 const normalizeText = (value: string) =>
   value ? value.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase() : "";
 
@@ -896,17 +936,62 @@ const filteredFamilies = useMemo(() => {
     );
   }, [healthModalChildId, familyForm.children]);
 
-  const secondaryContactInfo = familyForm.secondaryContact;
-  const hasSecondaryContactInfo = !isSecondaryContactEmpty(
-    secondaryContactInfo,
-  );
-  const secondaryContactFullName = [
-    secondaryContactInfo.firstName.trim(),
-    secondaryContactInfo.lastName.trim(),
-  ]
-    .filter(Boolean)
-    .join(" ");
   const secondaryAdultEntries = familyForm.secondaryAdults ?? [];
+  const parentCards = useMemo(
+    () =>
+      [
+        {
+          id: "primary",
+          kind: "primary" as const,
+          role: familyForm.primaryRole ?? "",
+          civility: familyForm.civility,
+          firstName: familyForm.firstName,
+          lastName: familyForm.lastName,
+          phone1: familyForm.phone1,
+          phone2: familyForm.phone2,
+          email: familyForm.email,
+          address: familyForm.address,
+          complement: familyForm.complement,
+          postalCode: familyForm.postalCode,
+          city: familyForm.city,
+          country: familyForm.country,
+          partner: familyForm.partner,
+        },
+        ...secondaryAdultEntries.map((adult, index) => ({
+          id: `secondary-${index}`,
+          kind: "secondary" as const,
+          role: adult.role ?? "",
+          civility: adult.civility ?? "",
+          firstName: adult.firstName ?? "",
+          lastName: adult.lastName ?? "",
+          phone1: adult.phone ?? "",
+          phone2: adult.phone2 ?? "",
+          email: adult.email ?? "",
+          address: adult.address ?? "",
+          complement: adult.complement ?? "",
+          postalCode: adult.postalCode ?? "",
+          city: adult.city ?? "",
+          country: adult.country ?? "",
+          partner: adult.partner ?? "",
+        })),
+      ] satisfies ParentCardData[],
+    [
+      familyForm.address,
+      familyForm.city,
+      familyForm.complement,
+      familyForm.country,
+      familyForm.civility,
+      familyForm.email,
+      familyForm.firstName,
+      familyForm.lastName,
+      familyForm.partner,
+      familyForm.phone1,
+      familyForm.phone2,
+      familyForm.postalCode,
+      familyForm.primaryRole,
+      secondaryAdultEntries,
+    ],
+  );
   const canDeleteFamily = Boolean(selectedFamilyId || familyForm.rowId);
 
   const handleFamilyFieldChange =
@@ -919,6 +1004,126 @@ const filteredFamilies = useMemo(() => {
       }));
       setIsDirty(true);
     };
+
+  const handleParentFieldChange = (
+    parentId: string,
+    field:
+      | "role"
+      | "civility"
+      | "firstName"
+      | "lastName"
+      | "phone1"
+      | "phone2"
+      | "email"
+      | "address"
+      | "complement"
+      | "postalCode"
+      | "city"
+      | "country"
+      | "partner",
+    value: string,
+  ) => {
+    if (parentId === "primary") {
+      const updates: Partial<FamilyFormState> = {};
+      if (field === "role") updates.primaryRole = value;
+      if (field === "civility") updates.civility = value;
+      if (field === "firstName") updates.firstName = value;
+      if (field === "lastName") updates.lastName = value;
+      if (field === "phone1") updates.phone1 = formatPhoneFR(value);
+      if (field === "phone2") updates.phone2 = formatPhoneFR(value);
+      if (field === "email") updates.email = value;
+      if (field === "address") updates.address = value;
+      if (field === "complement") updates.complement = value;
+      if (field === "postalCode") updates.postalCode = normalizePostalCode(value);
+      if (field === "city") updates.city = value;
+      if (field === "country") updates.country = value;
+      if (field === "partner") updates.partner = value;
+      if (Object.keys(updates).length > 0) {
+        setFamilyForm((prev) => ({
+          ...prev,
+          ...updates,
+        }));
+        setIsDirty(true);
+      }
+      return;
+    }
+
+    const index = Number(parentId.replace("secondary-", ""));
+    if (Number.isNaN(index)) {
+      return;
+    }
+
+    setFamilyForm((prev) => {
+      const nextAdults = [...(prev.secondaryAdults ?? [])];
+      const current = nextAdults[index] ?? createEmptySecondaryContact();
+      let mappedField: keyof SecondaryContact = "role";
+
+      switch (field) {
+        case "role":
+          mappedField = "role";
+          break;
+        case "civility":
+          mappedField = "civility";
+          break;
+        case "firstName":
+          mappedField = "firstName";
+          break;
+        case "lastName":
+          mappedField = "lastName";
+          break;
+        case "phone1":
+          mappedField = "phone";
+          break;
+        case "phone2":
+          mappedField = "phone2";
+          break;
+        case "email":
+          mappedField = "email";
+          break;
+        case "address":
+          mappedField = "address";
+          break;
+        case "complement":
+          mappedField = "complement";
+          break;
+        case "postalCode":
+          mappedField = "postalCode";
+          break;
+        case "city":
+          mappedField = "city";
+          break;
+        case "country":
+          mappedField = "country";
+          break;
+        case "partner":
+          mappedField = "partner";
+          break;
+        default:
+          mappedField = "role";
+      }
+
+      let nextValue = value;
+      if (mappedField === "phone" || mappedField === "phone2") {
+        nextValue = formatPhoneFR(value);
+      }
+      if (mappedField === "postalCode") {
+        nextValue = normalizePostalCode(value);
+      }
+
+      nextAdults[index] = {
+        ...createEmptySecondaryContact(),
+        ...current,
+        [mappedField]: nextValue,
+      };
+      return {
+        ...prev,
+        secondaryAdults: nextAdults,
+      };
+    });
+
+    setSecondaryContactEnabled(true);
+    setIsDirty(true);
+  };
 
   const [isAdultModalOpen, setIsAdultModalOpen] = useState(false);
   const [editingAdultIndex, setEditingAdultIndex] = useState<number | null>(null);
@@ -1738,6 +1943,30 @@ const filteredFamilies = useMemo(() => {
     setSecondaryAddressError(null);
   };
 
+  const handleEditParentCard = (parentId: string) => {
+    if (parentId === "primary") {
+      return;
+    }
+    const index = Number(parentId.replace("secondary-", ""));
+    if (Number.isNaN(index)) {
+      return;
+    }
+    handleOpenSecondaryContactModal(index);
+  };
+
+  const handleCreateParentCard = () => {
+    const nextIndex = secondaryAdultEntries.length;
+    setFamilyForm((prev) => ({
+      ...prev,
+      secondaryAdults: [...(prev.secondaryAdults ?? []), createEmptySecondaryContact()],
+    }));
+    setSecondaryContactEnabled(true);
+    setAdultForm(createEmptySecondaryContact());
+    setEditingAdultIndex(nextIndex);
+    setIsSecondaryContactModalOpen(true);
+    setIsDirty(true);
+  };
+
   const formatPrimaryAdultName = (family: FamilyRecord) => {
     if (family.civility || family.firstName || family.lastName) {
       const civ = family.civility ? `${family.civility} ` : "";
@@ -2162,92 +2391,16 @@ const filteredFamilies = useMemo(() => {
               noValidate
             >
               <div className="space-y-8">
-                <div className="rounded-2xl border border-[#f3d5df] bg-[#fdf7fa] p-6 text-[#2f1d28] shadow-sm md:rounded-3xl">
-                  <div className="grid gap-3 text-xs font-semibold uppercase tracking-[0.25em] leading-[1.4] text-[#b17f92] sm:grid-cols-2 lg:grid-cols-[140px_1fr_1fr_1fr]">
-                    <label className="space-y-2">
-                      <span className={pastelLabelClass}>Civilité</span>
-                      <select
-                        className={`${pastelFieldInputClass} ${fieldBg} max-w-[140px]`}
-                        value={familyForm.civility}
-                        onChange={handleFamilyFieldChange("civility")}
-                      >
-                        {CIVILITY_OPTIONS.map((option) => (
-                          <option key={option} value={option}>
-                            {option ? option : "Sélectionner"}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                    <label className="space-y-2">
-                      <span className={pastelLabelClass}>Nom de famille</span>
-                      <input
-                        className={`${pastelFieldInputClass} ${fieldBg}`}
-                        value={familyForm.lastName}
-                        onChange={handleFamilyFieldChange("lastName")}
-                        placeholder="Nom"
-                      />
-                    </label>
-                    <label className="space-y-2">
-                      <span className={pastelLabelClass}>Prénom</span>
-                      <input
-                        className={`${pastelFieldInputClass} ${fieldBg}`}
-                        value={familyForm.firstName}
-                        onChange={handleFamilyFieldChange("firstName")}
-                        placeholder="Prénom"
-                      />
-                    </label>
-                    <label className="space-y-2">
-                      <span className={pastelLabelClass}>Rôle</span>
-                      <select
-                        className={`${pastelFieldInputClass} ${fieldBg}`}
-                        value={familyForm.primaryRole ?? ""}
-                        onChange={(event) =>
-                          setFamilyForm((prev) => ({
-                            ...prev,
-                            primaryRole: event.target.value,
-                          }))
-                        }
-                      >
-                        {PRIMARY_ROLE_OPTIONS.map((option) => (
-                          <option key={option || "empty"} value={option}>
-                            {option || "Sélectionner"}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                  </div>
-                  <p className="mt-4 text-[10px] font-medium uppercase tracking-[0.2em] text-[#b8a2ad]">
-                    Adulte principal du dossier famille
-                  </p>
-                </div>
+                <ParentsGrid
+                  parents={parentCards}
+                  roleOptions={PRIMARY_ROLE_OPTIONS}
+                  onFieldChange={handleParentFieldChange}
+                  onEditParent={handleEditParentCard}
+                  onCreateParent={handleCreateParentCard}
+                />
 
-                <div className="grid gap-6 lg:grid-cols-[360px_1fr] items-start">
-                  <aside className="space-y-5 text-sm lg:row-span-2">
-                    <div className="space-y-4 rounded-3xl border border-[#e8dcd1] bg-[#fdf8f4] p-6 shadow-lg">
-                      <h3 className="text-xs font-semibold uppercase tracking-[0.16em] text-[#5c606b]">
-                        Autres adultes du dossier
-                      </h3>
-                      <p className="text-[11px] text-[#7a7f8c]">
-                        Ajouter un responsable secondaire au dossier famille.
-                      </p>
-                      <div className="space-y-3">
-                        <button
-                          type="button"
-                          className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-[#c77845] bg-[#c77845] px-4 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-white transition hover:shadow-md hover:-translate-y-[1px]"
-                          onClick={handleOpenSecondaryContactModal}
-                        >
-                          {secondaryContactEnabled ? (
-                            <>
-                              <NotebookPen className="size-5" />
-                              Modifier un adulte
-                            </>
-                          ) : (
-                            <>
-                              <UserRoundPlus className="size-5" />
-                          Ajouter un adulte
-                        </>
-                      )}
-                    </button>
+                <div className="flex flex-wrap items-center justify-end gap-3 pt-2 text-sm">
+                  <div className="flex flex-col items-end gap-1">
                     {adultError ? (
                       <p className="text-sm font-medium text-red-600">
                         {adultError}
@@ -2258,308 +2411,20 @@ const filteredFamilies = useMemo(() => {
                         {adultFeedback}
                       </p>
                     ) : null}
-                    {secondaryAdultEntries.length > 0 ? (
-                      <>
-                        <div className="space-y-3">
-                          {secondaryAdultEntries.filter(Boolean).map((adult, index) => {
-                            const fullName = [adult.firstName, adult.lastName]
-                              .filter(Boolean)
-                              .join(" ")
-                              .trim();
-                            const hasInfo =
-                              adult.phone ||
-                              adult.phone2 ||
-                              adult.email ||
-                              adult.address ||
-                              adult.city;
-                            return (
-                              <div
-                                key={`${adult.adultId ?? adult.email ?? "adult"}-${index}`}
-                                className="rounded-2xl border border-[#e5d5c5] bg-white/90 px-4 py-4 text-xs text-[#2b2f36] shadow-md"
-                              >
-                                <div className="flex items-start justify-between gap-3">
-                                  <div className="space-y-1">
-                                    <p className="text-base font-semibold text-[#1f2330]">
-                                      {fullName || "Informations a complater"}
-                                    </p>
-                                    <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#b45b12]">
-                                      {adult.role || "Rale non renseigna"}
-                                    </p>
-                                    {adult.partner ? (
-                                      <p className="text-[11px] text-[#6d7280]">
-                                        Partenaire : {adult.partner}
-                                      </p>
-                                    ) : null}
-                                  </div>
-                                  <button
-                                    type="button"
-                                    className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#b45b12] transition hover:text-[#8f4104]"
-                                    onClick={() => handleOpenSecondaryContactModal(index)}
-                                  >
-                                    Modifier
-                                  </button>
-                                </div>
-                                <div className="mt-2 space-y-1 text-sm">
-                                  {adult.phone ? (
-                                    <p className="text-[#2b2f36]">
-                                      Telephone : {adult.phone}
-                                    </p>
-                                  ) : null}
-                                  {adult.phone2 ? (
-                                    <p className="text-[#2b2f36]">
-                                      Telephone 2 : {adult.phone2}
-                                    </p>
-                                  ) : null}
-                                  {adult.email ? (
-                                    <p className="text-[#2b2f36]">Email : {adult.email}</p>
-                                  ) : null}
-                                  {adult.address || adult.city ? (
-                                    <p className="text-[#4b4f5a]">
-                                      {[adult.address, adult.complement].filter(Boolean).join(" ")}
-                                      <br />
-                                      {[adult.postalCode, adult.city, adult.country]
-                                        .filter(Boolean)
-                                        .join(" ")}
-                                    </p>
-                                  ) : null}
-                                  {!hasInfo ? (
-                                    <p className="text-[#6d7280]">
-                                      Aucun datail renseigna pour l&apos;instant.
-                                    </p>
-                                  ) : null}
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                        <button
-                          type="button"
-                          className="inline-flex w-full items-center justify-center gap-2 rounded-md border border-[#d4d7df] bg-white px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#2b2f36] transition hover:bg-[#f0f3f8] cursor-pointer"
-                          onClick={handleRemoveSecondaryContact}
-                        >
-                          Retirer
-                        </button>
-                      </>
+                    {saveError ? (
+                      <p className="text-sm font-medium text-red-600">
+                        {saveError}
+                      </p>
+                    ) : feedback ? (
+                      <p className="text-sm font-medium text-[#2f7a57]">
+                        {feedback}
+                      </p>
                     ) : null}
-                  </div>
-                </div>
-                  </aside>
-
-                  <div className="space-y-4 text-sm text-[#2b2f36]">
-                    <div className="rounded-3xl border border-[#e8dcd1] bg-[#fdf8f4] p-6 shadow-lg md:p-7">
-                      <div className="mb-4 flex items-center justify-between">
-                        <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-[#1f2330]">
-                          Coordonnees de l&apos;adulte principal
-                        </h3>
-                      </div>
-                      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                        {/* Ligne 1 */}
-                        <div className="space-y-2">
-                          <label className="flex flex-col gap-1">
-                            <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
-                              Adresse
-                            </span>
-                            <input
-                              className={`rounded border border-[#d4d7df] px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none ${fieldBg}`}
-                              value={familyForm.address}
-                              onChange={handleAddressChange}
-                              placeholder="NAo et rue"
-                            />
-                            {addressError ? (
-                              <p className="mt-1 text-xs font-semibold text-red-600">
-                                {addressError}
-                              </p>
-                            ) : null}
-                            {isAddressLoading ? (
-                              <p className="mt-1 text-xs text-[#5c606b]">
-                                Recherche d&apos;adresses...
-                              </p>
-                            ) : null}
-                            {addressSuggestions.length > 0 ? (
-                              <div className="mt-2 space-y-2">
-                                <div className="rounded-lg border border-[#ccd0d8] bg-white shadow-lg">
-                                  <ul className="divide-y divide-[#e7e9ef]">
-                                    {addressSuggestions.map((suggestion, index) => (
-                                      <li
-                                        key={`${suggestion.label}-${index}`}
-                                        className="cursor-pointer px-3 py-2 text-sm hover:bg-[#f7f8fb]"
-                                        onClick={() => handleSelectAddressSuggestion(suggestion)}
-                                      >
-                                        <p className="font-semibold text-[#1f2330]">
-                                          {suggestion.label}
-                                        </p>
-                                        <p className="text-xs text-[#5c606b]">
-                                          {suggestion.postcode} {suggestion.city}
-                                        </p>
-                                      </li>
-                                    ))}
-                                  </ul>
-                                </div>
-                                <button
-                                  type="button"
-                                  className="text-xs font-semibold uppercase tracking-[0.12em] text-[#b45b12] transition hover:text-[#8f4104]"
-                                  onClick={handleConfirmManualAddress}
-                                >
-                                  Utiliser l&apos;adresse saisie
-                                </button>
-                              </div>
-                            ) : null}
-                          </label>
-                        </div>
-                        <div className="space-y-2">
-                          <label className="flex flex-col gap-1">
-                            <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
-                              Telephone 1
-                            </span>
-                            <input
-                              className={`rounded border border-[#d4d7df] px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none ${fieldBg}`}
-                              value={familyForm.phone1}
-                              onChange={handlePhoneChange("phone1")}
-                              placeholder="07 71 07 26 55"
-                              inputMode="tel"
-                              maxLength={14}
-                            />
-                          </label>
-                        </div>
-
-                        {/* Ligne 2 */}
-                        <div className="space-y-2">
-                          <label className="flex flex-col gap-1">
-                            <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
-                              Complament
-                            </span>
-                            <input
-                              className={`rounded border border-[#d4d7df] px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none ${fieldBg}`}
-                              value={familyForm.complement}
-                              onChange={handleFamilyFieldChange("complement")}
-                              placeholder="Batiment, atage..."
-                            />
-                          </label>
-                        </div>
-                        <div className="space-y-2">
-                          <label className="flex flex-col gap-1">
-                            <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
-                              Telephone 2
-                            </span>
-                            <input
-                              className="rounded border border-[#d4d7df] bg-white px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none"
-                              value={familyForm.phone2}
-                              onChange={handlePhoneChange("phone2")}
-                              placeholder="07 00 00 00 00"
-                              inputMode="tel"
-                              maxLength={14}
-                            />
-                          </label>
-                        </div>
-
-                        {/* Ligne 3 */}
-                        <div className="space-y-2">
-                          <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
-                            Code postal et ville
-                          </span>
-                          <div className="grid grid-cols-[140px_1fr] gap-3">
-                            <input
-                              className={`rounded border border-[#d4d7df] px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none ${fieldBg}`}
-                              value={familyForm.postalCode}
-                              onChange={handlePostalCodeChange}
-                              placeholder="75017"
-                              inputMode="numeric"
-                            />
-                            {cityOptions.length > 1 ? (
-                              <select
-                                className={`rounded border border-[#d4d7df] px-3 py-2 text-sm text-[#2b2f36] focus:border-[#7f8696] focus:outline-none ${fieldBg}`}
-                                value={familyForm.city}
-                                onChange={handleCityManualChange}
-                              >
-                                {cityOptions.map((city) => (
-                                  <option key={city} value={city}>
-                                    {city}
-                                  </option>
-                                ))}
-                              </select>
-                            ) : (
-                              <input
-                                className={`rounded border border-[#d4d7df] px-3 py-2 text-sm text-[#2b2f36] focus:border-[#7f8696] focus:outline-none ${fieldBg}`}
-                                value={familyForm.city}
-                                onChange={handleCityManualChange}
-                                placeholder="Ville"
-                              />
-                            )}
-                          </div>
-                        </div>
-                        <div className="space-y-2">
-                          <label className="flex flex-col gap-1">
-                            <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
-                              Mail
-                            </span>
-                            <input
-                              className={`rounded border border-[#d4d7df] px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none ${fieldBg}`}
-                              value={familyForm.email}
-                              onChange={handleFamilyFieldChange("email")}
-                              placeholder="famille@example.com"
-                            />
-                          </label>
-                        </div>
-
-                        {/* Ligne 4 */}
-                        <div className="space-y-2">
-                          <label className="flex flex-col gap-1">
-                            <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
-                              Pays
-                            </span>
-                            <input
-                              className={`rounded border border-[#d4d7df] px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none ${fieldBg}`}
-                              value={familyForm.country}
-                              onChange={handleFamilyFieldChange("country")}
-                              placeholder="France"
-                            />
-                          </label>
-                        </div>
-                        <div className="space-y-2">
-                          <label className="flex flex-col gap-1">
-                            <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
-                              Partenaire principal
-                            </span>
-                          <input
-                              className={`rounded border border-[#d4d7df] px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none ${fieldBg}`}
-                              value={familyForm.partner}
-                              onChange={handleFamilyFieldChange("partner")}
-                              placeholder="Nom du partenaire"
-                            />
-                          </label>
-                        </div>
-
-                        {cityLookupState === "loading" ? (
-                          <p className="pt-1 text-[11px] font-medium uppercase tracking-[0.16em] text-[#7f8696]">
-                            Recherche de la commune
-                          </p>
-                        ) : null}
-                        {cityLookupState === "error" && cityLookupError ? (
-                          <p className="pt-1 text-[11px] font-medium uppercase tracking-[0.16em] text-red-600">
-                            {cityLookupError}
-                          </p>
-                        ) : null}
-                      </div>
-                    </div>
-
-                    <div className="flex flex-wrap items-center justify-end gap-2 pt-2">
-                      <div className="flex flex-col items-end gap-1">
-                        {saveError ? (
-                          <p className="text-sm font-medium text-red-600">
-                            {saveError}
-                          </p>
-                        ) : feedback ? (
-                          <p className="text-sm font-medium text-[#2f7a57]">
-                            {feedback}
-                          </p>
-                        ) : null}
-                        {logError ? (
-                          <p className="text-xs font-medium uppercase tracking-[0.14em] text-amber-600">
-                            Journalisation indisponible : {logError}
-                          </p>
-                        ) : null}
-                      </div>
-                    </div>
+                    {logError ? (
+                      <p className="text-xs font-medium uppercase tracking-[0.14em] text-amber-600">
+                        Journalisation indisponible : {logError}
+                      </p>
+                    ) : null}
                   </div>
                 </div>
 
