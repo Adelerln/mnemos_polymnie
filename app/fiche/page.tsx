@@ -439,6 +439,17 @@ function FichePageContent() {
         [field]: field === "withFees" ? Boolean(value) : (value as string),
       }));
     };
+  return (
+    <div className="bg-[#f9f9fb]">
+      <div className="mx-auto max-w-7xl px-4 py-8">
+        <form onSubmit={handleSave} className="space-y-6">
+          <section className="grid gap-6 rounded-xl border border-[#d4d7df] bg-[#f3f4f8] p-6 xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
+            <div className="space-y-4">
+              <div className="space-y-3 rounded-xl border border-[#d4d7df] bg-white p-4 shadow-sm">
+                <h4 className="text-sm font-semibold uppercase tracking-[0.16em] text-[#1f2330]">
+                  Famille & tarifs
+                </h4>
+                <dl className="grid gap-3 text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
                   <div>
                     <dt>Réductions</dt>
                     <dd className="text-sm font-semibold text-[#1f2330]">
