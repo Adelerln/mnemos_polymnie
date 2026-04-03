@@ -41,5 +41,3 @@ types/               # Types partagés (famille, navigation, etc.)
 - Ajouter l’authentification & la gestion des rôles
 - Compléter les modules des routes (`/familles`, `/partenaires`, …)
 - Ecrire des tests (Playwright, Vitest ou Jest) selon les besoins
-
-adele
