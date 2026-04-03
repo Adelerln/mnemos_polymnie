@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Guide Équipe — Git, Code & IA</title>
+  <style>
+    /* ── Reset & Base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 18px; }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      line-height: 1.6;
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+    }
+
+    /* ── Slideshow engine ── */
+    .slideshow {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+    }
+    .slide {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 2.5rem 5rem 4.5rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+      overflow-y: auto;
+    }
+    .slide.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .slide::before {
+      content: attr(data-section);
+      position: absolute;
+      top: 1.5rem;
+      right: 2rem;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: #475569;
+    }
+
+    /* ── Section colors (left accent bar) ── */
+    .slide.git    { border-left: 5px solid #f97316; }
+    .slide.code   { border-left: 5px solid #22d3ee; }
+    .slide.ia     { border-left: 5px solid #a78bfa; }
+    .slide.intro  { border-left: 5px solid #64748b; }
+
+    /* ── Typography ── */
+    h1 {
+      font-size: 2.8rem;
+      font-weight: 800;
+      line-height: 1.15;
+      margin-bottom: 1rem;
+    }
+    h2 {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 0.75rem;
+    }
+    h3 {
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: #94a3b8;
+    }
+    p, li { font-size: 1.05rem; }
+    .subtitle {
+      font-size: 1.2rem;
+      color: #94a3b8;
+      margin-bottom: 2rem;
+    }
+    .highlight-orange { color: #f97316; }
+    .highlight-cyan   { color: #22d3ee; }
+    .highlight-purple { color: #a78bfa; }
+    .highlight-red    { color: #f87171; }
+    .highlight-green  { color: #4ade80; }
+
+    /* ── Lists ── */
+    ul, ol { padding-left: 1.5rem; margin: 0.75rem 0; }
+    li { margin-bottom: 0.5rem; }
+    li::marker { color: #64748b; }
+
+    /* ── Boxes ── */
+    .box {
+      background: #1e293b;
+      border-radius: 12px;
+      padding: 1.5rem 2rem;
+      margin: 1rem 0;
+    }
+    .box.warning {
+      border-left: 4px solid #f87171;
+      background: #1c1517;
+    }
+    .box.tip {
+      border-left: 4px solid #4ade80;
+      background: #111c18;
+    }
+    .box.info {
+      border-left: 4px solid #60a5fa;
+      background: #111827;
+    }
+
+    /* ── Code ── */
+    code {
+      font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+      background: #1e293b;
+      padding: 0.15em 0.45em;
+      border-radius: 5px;
+      font-size: 0.92em;
+      color: #fbbf24;
+    }
+    pre {
+      background: #1e293b;
+      border-radius: 12px;
+      padding: 1.25rem 1.75rem;
+      overflow-x: auto;
+      margin: 1rem 0;
+      line-height: 1.7;
+    }
+    pre code {
+      background: none;
+      padding: 0;
+      font-size: 0.95rem;
+      color: #e2e8f0;
+    }
+
+    /* ── Tables ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+    }
+    th, td {
+      text-align: left;
+      padding: 0.6rem 1rem;
+      border-bottom: 1px solid #1e293b;
+    }
+    th {
+      color: #94a3b8;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    /* ── Grid layouts ── */
+    .two-cols {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      margin-top: 1rem;
+    }
+    .three-cols {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 1.5rem;
+      margin-top: 1rem;
+    }
+
+    /* ── Diagram / Flow ── */
+    .flow {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin: 1.5rem 0;
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+    .flow .step {
+      background: #1e293b;
+      padding: 0.6rem 1.2rem;
+      border-radius: 8px;
+    }
+    .flow .arrow { color: #64748b; font-size: 1.4rem; }
+
+    /* ── Controls bar ── */
+    .controls {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #0f172ae6;
+      backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.6rem 2rem;
+      z-index: 100;
+      border-top: 1px solid #1e293b;
+    }
+    .controls .section-label {
+      color: #64748b;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      min-width: 180px;
+    }
+    .controls .center-group {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .controls button {
+      background: #1e293b;
+      color: #e2e8f0;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 0.45rem 1rem;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+    .controls button:hover { background: #334155; }
+    .controls button:disabled { opacity: 0.3; cursor: default; }
+    .controls .counter {
+      color: #94a3b8;
+      font-size: 0.9rem;
+      font-variant-numeric: tabular-nums;
+      min-width: 60px;
+      text-align: center;
+    }
+    .controls .progress-dots {
+      display: flex;
+      gap: 4px;
+      min-width: 180px;
+      justify-content: flex-end;
+    }
+    .controls .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #334155;
+      transition: all 0.3s;
+      cursor: pointer;
+    }
+    .controls .dot.active { background: #e2e8f0; transform: scale(1.3); }
+    .controls .dot.git    { background: #f9731644; }
+    .controls .dot.git.active    { background: #f97316; }
+    .controls .dot.code   { background: #22d3ee44; }
+    .controls .dot.code.active   { background: #22d3ee; }
+    .controls .dot.ia     { background: #a78bfa44; }
+    .controls .dot.ia.active     { background: #a78bfa; }
+
+    /* ── Slide number ── */
+    .slide-num {
+      position: absolute;
+      bottom: 4rem;
+      right: 2rem;
+      font-size: 0.8rem;
+      color: #334155;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 900px) {
+      .slide { padding: 2rem 1.5rem; }
+      h1 { font-size: 2rem; }
+      .two-cols, .three-cols { grid-template-columns: 1fr; }
+      .controls .progress-dots { display: none; }
+      .controls .section-label { display: none; }
+    }
+
+    /* ── Keyboard hint ── */
+    kbd {
+      display: inline-block;
+      background: #334155;
+      border-radius: 4px;
+      padding: 0.1em 0.5em;
+      font-size: 0.8em;
+      font-family: inherit;
+      border: 1px solid #475569;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- CONTROLS BAR                                            -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="controls">
+  <span class="section-label" id="sectionLabel"></span>
+  <div class="center-group">
+    <button id="btnPrev" onclick="prev()">◀ Préc.</button>
+    <span class="counter" id="counter">1 / 8</span>
+    <button id="btnNext" onclick="next()">Suiv. ▶</button>
+  </div>
+  <div class="progress-dots" id="dots"></div>
+</div>
+
+<div class="slideshow">
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SLIDE 1 — TITRE                                         -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<section class="slide intro" id="titre" data-section="">
+  <h1>🛠️ Guide de l'équipe<br><span class="highlight-orange">Git</span>, <span class="highlight-cyan">Code</span> & <span class="highlight-purple">IA</span></h1>
+  <p class="subtitle">Projet Mnemos Polymnie — Avril 2026</p>
+  <div class="three-cols" style="margin-top:2rem;">
+    <div class="box" style="border-top:3px solid #f97316; text-align:center;">
+      <h3 style="color:#f97316;">Partie 1</h3>
+      <p>Les bases de<br><strong>Git & GitHub</strong></p>
+    </div>
+    <div class="box" style="border-top:3px solid #22d3ee; text-align:center;">
+      <h3 style="color:#22d3ee;">Partie 2</h3>
+      <p>Bonnes pratiques<br><strong>de code</strong></p>
+    </div>
+    <div class="box" style="border-top:3px solid #a78bfa; text-align:center;">
+      <h3 style="color:#a78bfa;">Partie 3</h3>
+      <p>Bien utiliser<br><strong>l'IA</strong></p>
+    </div>
+  </div>
+  <p style="margin-top:2rem; color:#475569; font-size:0.9rem;">Utilise <kbd>←</kbd> <kbd>→</kbd> ou les boutons en bas pour naviguer</p>
+  <span class="slide-num">1</span>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- PARTIE 1 — GIT & GITHUB                                 -->
+<!-- ═══════════════════════════════════════════════════════ -->
+
+<!-- SLIDE 2 — POURQUOI GIT ? -->
+<section class="slide git" id="pourquoi-git" data-section="Partie 1 — Git">
+  <h2>Pourquoi utiliser Git ?</h2>
+  <p class="subtitle">Ce que Git apporte à l'équipe</p>
+
+  <div class="box tip">
+    <h3 class="highlight-green">Ce que Git permet :</h3>
+    <ul>
+      <li><strong>Branches isolées</strong> — chacun travaille sans gêner les autres</li>
+      <li><strong>Relecture obligatoire</strong> — tout code est vérifié avant fusion</li>
+      <li><strong>Historique complet</strong> — qui a changé quoi, quand, pourquoi</li>
+      <li><strong>Retour en arrière</strong> — en une commande si quelque chose casse</li>
+      <li><strong>Détection de conflits</strong> — Git prévient quand deux personnes modifient le même fichier</li>
+    </ul>
+  </div>
+
+  <div class="two-cols" style="margin-top:1rem;">
+    <div class="box info">
+      <strong>💡 Git</strong> = le système de versioning (local, sur ton ordi).
+    </div>
+    <div class="box info">
+      <strong>💡 GitHub</strong> = la plateforme en ligne qui héberge le dépôt et ajoute PR, issues, CI…
+    </div>
+  </div>
+  <span class="slide-num">2</span>
+</section>
+
+<!-- SLIDE 3 — VOCABULAIRE -->
+<section class="slide git" id="vocabulaire" data-section="Partie 1 — Git">
+  <h2>Vocabulaire essentiel</h2>
+  <p class="subtitle">Les 8 mots à connaître</p>
+
+  <table>
+    <thead>
+      <tr><th>Terme</th><th>En simple</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>Repository (repo)</strong></td><td>Le dossier du projet, avec tout son historique.</td></tr>
+      <tr><td><strong>Commit</strong></td><td>Une « photo » du code à un instant donné, avec un message.</td></tr>
+      <tr><td><strong>Branche</strong></td><td>Une copie parallèle pour travailler sans toucher au code principal.</td></tr>
+      <tr><td><strong>Merge</strong></td><td>Fusionner une branche dans une autre (intégrer son travail).</td></tr>
+      <tr><td><strong>Pull Request (PR)</strong></td><td>Demande de relecture : « j'ai fini, quelqu'un vérifie ? »</td></tr>
+      <tr><td><strong>Clone</strong></td><td>Télécharger le repo sur ton ordi pour la première fois.</td></tr>
+      <tr><td><strong>Push</strong></td><td>Envoyer tes commits locaux vers GitHub.</td></tr>
+      <tr><td><strong>Pull</strong></td><td>Récupérer les dernières modifications depuis GitHub.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="box tip" style="margin-top:1rem;">
+    <strong>🔑 Retiens :</strong> Commit = sauvegarder · Push = envoyer · Pull = récupérer · PR = demander une relecture
+  </div>
+  <span class="slide-num">3</span>
+</section>
+
+<!-- SLIDE 4 — WORKFLOW PAR MODULES -->
+<section class="slide git" id="workflow" data-section="Partie 1 — Git">
+  <h2>Notre circuit de travail</h2>
+  <p class="subtitle">Branches organisées par module du projet</p>
+
+  <div class="flow">
+    <span class="step" style="border:2px solid #f87171;"><strong>main</strong><br><small>production</small></span>
+    <span class="arrow">←</span>
+    <span class="step" style="border:2px solid #fbbf24;"><strong>develop</strong><br><small>assemblage</small></span>
+    <span class="arrow">←</span>
+    <span class="step" style="border:2px solid #4ade80;"><strong>module/…</strong><br><small>ta branche</small></span>
+  </div>
+
+  <div class="box" style="margin-top:1rem;">
+    <h3>Nos modules = nos branches</h3>
+    <p style="color:#94a3b8; margin-bottom:0.5rem;">Chaque grande partie du logiciel a son propre préfixe de branche :</p>
+    <table style="margin:0;">
+      <thead><tr><th>Module</th><th>Préfixe de branche</th><th>Contenu</th></tr></thead>
+      <tbody>
+        <tr><td>👨‍👩‍👧 Familles</td><td><code>familles/…</code></td><td>Gestion familles, adultes, enfants, fiche sanitaire</td></tr>
+        <tr><td>📋 Inscriptions</td><td><code>inscriptions/…</code></td><td>Inscription aux séjours, validation, convocations</td></tr>
+        <tr><td>🏕️ Séjours</td><td><code>sejours/…</code></td><td>Création séjours, lieux, dates, encadrants</td></tr>
+        <tr><td>🏢 Centres</td><td><code>centres/…</code></td><td>Centres, contacts, partenaires</td></tr>
+        <tr><td>🗄️ BDD / Sécurité</td><td><code>bdd/…</code></td><td>Migrations, RLS, index, tables</td></tr>
+        <tr><td>🔐 Auth</td><td><code>auth/…</code></td><td>Login, signup, rôles, middleware</td></tr>
+        <tr><td>🎨 UI / Layout</td><td><code>ui/…</code></td><td>Composants réutilisables, sidebar, header, CSS</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="box tip" style="margin-top:0.75rem;">
+    <strong>✅ Règle :</strong> On ne pousse <strong>jamais</strong> directement sur <code>main</code>.
+    Toute modification passe par une PR relue par au moins 1 personne.
+  </div>
+  <span class="slide-num">4</span>
+</section>
+
+<!-- SLIDE 5 — NOMMAGE DES BRANCHES -->
+<section class="slide git" id="nommage" data-section="Partie 1 — Git">
+  <h2>Nommer ses branches</h2>
+  <p class="subtitle">Format : <code>module/description-courte</code></p>
+
+  <div class="box tip">
+    <h3 class="highlight-green">Exemples concrets</h3>
+    <pre><code>familles/ajout-fiche-sanitaire
+inscriptions/formulaire-sejour
+bdd/migration-table-inscriptions
+auth/correction-reset-password
+ui/refonte-sidebar
+sejours/page-liste-sejours</code></pre>
+  </div>
+
+  <div class="box" style="margin-top:0.75rem;">
+    <strong>🔄 Circuit :</strong>
+    <div class="flow" style="font-size:0.95rem; margin:0.5rem 0 0 0;">
+      <span class="step">1. Créer <code>module/…</code></span>
+      <span class="arrow">→</span>
+      <span class="step">2. Coder + commiter</span>
+      <span class="arrow">→</span>
+      <span class="step">3. Push sur GitHub</span>
+      <span class="arrow">→</span>
+      <span class="step">4. PR → develop</span>
+      <span class="arrow">→</span>
+      <span class="step">5. Relecture</span>
+      <span class="arrow">→</span>
+      <span class="step">6. Merge</span>
+    </div>
+  </div>
+  <span class="slide-num">5</span>
+</section>
+
+<!-- SLIDE 6 — CRÉER UNE BRANCHE & PR (GitHub Desktop) -->
+<section class="slide git" id="branche-pr" data-section="Partie 1 — Git">
+  <h2>Créer une branche & faire une PR</h2>
+  <p class="subtitle">Tout se fait depuis <strong>GitHub Desktop</strong> + le site GitHub</p>
+
+  <div class="two-cols">
+    <div>
+      <h3 class="highlight-orange">🌿 Dans GitHub Desktop</h3>
+      <ol style="margin-top:0.5rem;">
+        <li><strong>Fetch / Pull</strong> — cliquer sur <em>"Fetch origin"</em> puis <em>"Pull"</em> pour se mettre à jour</li>
+        <li><strong>Nouvelle branche</strong> — <em>Current Branch → New Branch</em> → nommer <code>familles/ajout-fiche-sanitaire</code></li>
+        <li><strong>Coder</strong> — travailler dans VS Code normalement</li>
+        <li><strong>Commit</strong> — dans GitHub Desktop, cocher les fichiers → écrire le message → <em>"Commit to…"</em></li>
+        <li><strong>Push</strong> — cliquer sur <em>"Push origin"</em></li>
+      </ol>
+    </div>
+    <div>
+      <h3 class="highlight-orange">🔀 Sur GitHub (site web)</h3>
+      <ol style="margin-top:0.5rem;">
+        <li>Un bandeau jaune apparaît : <em>"Compare & pull request"</em></li>
+        <li>Vérifier : <strong>base = develop</strong>, compare = ta branche</li>
+        <li>Titre clair : <em>« Familles — Ajout fiche sanitaire »</em></li>
+        <li>Décrire ce que tu as fait en quelques lignes</li>
+        <li>Assigner un relecteur</li>
+        <li>Cliquer <strong>"Create pull request"</strong></li>
+      </ol>
+      <div class="box tip" style="margin-top:1rem;">
+        <strong>Après relecture approuvée</strong> → <em>Merge pull request</em> → Supprimer ta branche.
+      </div>
+    </div>
+  </div>
+  <span class="slide-num">6</span>
+</section>
+
+<!-- SLIDE 7 — CONVENTIONAL COMMITS -->
+<section class="slide git" id="commits" data-section="Partie 1 — Git">
+  <h2>Messages de commit</h2>
+  <p class="subtitle">Format Conventional Commits — obligatoire dans l'équipe</p>
+
+  <table>
+    <thead>
+      <tr><th>Préfixe</th><th>Quand l'utiliser</th><th>Exemple de message</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>feat:</code></td>
+        <td>Nouvelle fonctionnalité</td>
+        <td><code>feat: ajouter le formulaire inscription séjour</code></td>
+      </tr>
+      <tr>
+        <td><code>fix:</code></td>
+        <td>Correction de bug</td>
+        <td><code>fix: corriger le calcul de l'âge</code></td>
+      </tr>
+      <tr>
+        <td><code>refactor:</code></td>
+        <td>Réorganisation (même résultat, code différent)</td>
+        <td><code>refactor: découper la page clients</code></td>
+      </tr>
+      <tr>
+        <td><code>docs:</code></td>
+        <td>Documentation</td>
+        <td><code>docs: mettre à jour le guide d'installation</code></td>
+      </tr>
+      <tr>
+        <td><code>test:</code></td>
+        <td>Ajout / modification de tests</td>
+        <td><code>test: ajouter les tests du formulaire famille</code></td>
+      </tr>
+      <tr>
+        <td><code>style:</code></td>
+        <td>Mise en forme (espaces, guillemets…)</td>
+        <td><code>style: reformater le fichier Sidebar</code></td>
+      </tr>
+      <tr>
+        <td><code>chore:</code></td>
+        <td>Maintenance (dépendances, config…)</td>
+        <td><code>chore: mettre à jour les packages npm</code></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="box info" style="margin-top:1rem;">
+    <strong>💡</strong> Dans GitHub Desktop, tu écris ce message dans le champ <em>"Summary"</em> avant de cliquer <em>"Commit"</em>.
+  </div>
+  <span class="slide-num">7</span>
+</section>
+
+<!-- SLIDE 8 — AIDE-MÉMOIRE ACTIONS GIT -->
+<section class="slide git" id="memento" data-section="Partie 1 — Git">
+  <h2>📋 Aide-mémoire : les actions à connaître</h2>
+  <p class="subtitle">Vocabulaire et ce que chaque action fait — tout se fait dans GitHub Desktop</p>
+
+  <table>
+    <thead>
+      <tr><th>Action</th><th>Ce que ça fait</th><th>Où dans GitHub Desktop</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>Clone</strong></td><td>Télécharger le repo sur ton ordi (1ère fois)</td><td><em>File → Clone Repository</em></td></tr>
+      <tr><td><strong>Fetch</strong></td><td>Vérifier s'il y a des nouveautés sur GitHub</td><td>Bouton <em>"Fetch origin"</em></td></tr>
+      <tr><td><strong>Pull</strong></td><td>Récupérer les dernières modifications</td><td>Bouton <em>"Pull origin"</em></td></tr>
+      <tr><td><strong>Créer une branche</strong></td><td>Démarrer un travail isolé (<code>module/…</code>)</td><td><em>Current Branch → New Branch</em></td></tr>
+      <tr><td><strong>Changer de branche</strong></td><td>Passer sur une autre branche</td><td><em>Current Branch → cliquer sur la branche</em></td></tr>
+      <tr><td><strong>Commit</strong></td><td>Sauvegarder une « photo » du code avec un message</td><td>Cocher fichiers → message → <em>"Commit"</em></td></tr>
+      <tr><td><strong>Push</strong></td><td>Envoyer tes commits vers GitHub</td><td>Bouton <em>"Push origin"</em></td></tr>
+      <tr><td><strong>Pull Request</strong></td><td>Demander une relecture avant de fusionner</td><td>Bouton <em>"Create Pull Request"</em> → ouvre GitHub</td></tr>
+      <tr><td><strong>Merge</strong></td><td>Fusionner ta branche dans develop</td><td>Sur GitHub après approbation de la PR</td></tr>
+    </tbody>
+  </table>
+
+  <div class="box info" style="margin-top:1rem;">
+    <strong>🔄 Routine quotidienne :</strong><br>
+    <strong>Fetch</strong> → <strong>Pull</strong> → coder → <strong>Commit</strong> → <strong>Push</strong> → <strong>Pull Request</strong>
+  </div>
+  <span class="slide-num">8</span>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- PARTIE 2 — BONNES PRATIQUES DE CODE                      -->
+<!-- ═══════════════════════════════════════════════════════ -->
+
+<!-- SLIDE 9 — NOS RÈGLES DE CODE -->
+<section class="slide code" id="pourquoi-regles" data-section="Partie 2 — Code">
+  <h2>Nos règles de code</h2>
+  <p class="subtitle">Le code est lu beaucoup plus souvent qu'il n'est écrit</p>
+
+  <div class="box tip">
+    <h3 class="highlight-green">🎯 Les 5 règles à retenir</h3>
+    <ul>
+      <li><strong>~200 lignes max</strong> par fichier — au-delà, découper</li>
+      <li><strong>1 fichier de types</strong> par domaine (<code>types/family.ts</code>, <code>types/centre.ts</code>…)</li>
+      <li><strong>1 seule méthode CSS</strong> — Tailwind uniquement</li>
+      <li><strong>Commenter le pourquoi</strong>, pas le quoi — code lisible avant tout</li>
+      <li><strong>0 doublon</strong> — chaque logique n'existe qu'à un seul endroit</li>
+    </ul>
+  </div>
+
+  <div class="box info" style="margin-top:1rem;">
+    <strong>💡</strong> Écrire un code propre, c'est un cadeau pour ton <strong>futur toi</strong> et pour l'équipe.
+  </div>
+  <span class="slide-num">9</span>
+</section>
+
+<!-- SLIDE 10 — COMMENTER SON CODE -->
+<section class="slide code" id="commenter" data-section="Partie 2 — Code">
+  <h2>Commenter son code</h2>
+  <p class="subtitle">Expliquer le <strong>pourquoi</strong>, pas le <em>quoi</em></p>
+
+  <div class="box tip">
+    <h3 class="highlight-green">✅ Comment bien commenter</h3>
+    <pre><code><span style="color:#6b7280;">// On cherche d'abord le partenaire existant
+// pour éviter les doublons en base.
+// Si introuvable, on le crée automatiquement.</span>
+const resolvePartnerId = async (name) =&gt; {
+
+<span style="color:#6b7280;">// Format attendu par Supabase : snake_case
+// Notre front utilise camelCase → conversion ici</span>
+function mapChildToRow(child) { ... }</code></pre>
+  </div>
+
+  <div class="box" style="margin-top:1rem;">
+    <table style="margin:0;">
+      <tbody>
+        <tr><td><strong>✅ Commenter</strong></td><td>Le <em>pourquoi</em> d'une décision, une logique complexe, un piège à éviter</td></tr>
+        <tr><td><strong>⛔ Pas commenter</strong></td><td>Ce que le code dit déjà (<code>i++</code>, <code>return result</code>…)</td></tr>
+        <tr><td><strong>💡 Préférer</strong></td><td>Un bon nom de fonction/variable plutôt qu'un commentaire</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <span class="slide-num">10</span>
+</section>
+
+<!-- SLIDE 12 — ÉVITER LES REDONDANCES (DRY) -->
+<section class="slide code" id="dry" data-section="Partie 2 — Code">
+  <h2>DRY — Don't Repeat Yourself</h2>
+  <p class="subtitle">Si tu copies-colles → crée une fonction réutilisable</p>
+
+  <div class="box tip">
+    <h3 class="highlight-green">✅ La bonne approche</h3>
+    <pre><code><span style="color:#6b7280;">// lib/phone.ts — la logique n'existe qu'ici</span>
+export function formatPhone(value: string) {
+  return value
+    .replace(/\D/g, "")
+    .replace(/(\d{2})(?=\d)/g, "$1 ");
+}
+
+<span style="color:#6b7280;">// Dans n'importe quelle page :</span>
+import { formatPhone } from "@/lib/phone";
+const phone = formatPhone(value);</code></pre>
+    <p style="color:#4ade80; font-size:0.9rem; margin-top:0.5rem;">→ Un bug ? On corrige <strong>1 seul fichier</strong>, tout le projet est réparé.</p>
+  </div>
+
+  <div class="box info" style="margin-top:1rem;">
+    <strong>💡 Le réflexe :</strong> même logique utilisée 2 fois ? → extraire dans <code>lib/</code> ou un composant dans <code>components/</code>.
+  </div>
+  <span class="slide-num">11</span>
+</section>
+
+<!-- SLIDE 13 — NOMMER CLAIREMENT -->
+<section class="slide code" id="nommer" data-section="Partie 2 — Code">
+  <h2>Nommer clairement</h2>
+  <p class="subtitle">Un bon nom remplace un commentaire</p>
+
+  <div class="box tip">
+    <h3 class="highlight-green">✅ Exemples de bons noms</h3>
+    <pre><code>const today = new Date();
+const olderThan6 = children.filter(c =&gt; c.age &gt; 6);
+function formatPhoneNumber(raw) { ... }
+const partnerName = getPartnerName();
+const isAdmin = true;</code></pre>
+  </div>
+
+  <div class="box" style="margin-top:1rem;">
+    <h3>📏 Conventions de nommage</h3>
+    <table style="margin:0;">
+      <tbody>
+        <tr><td><strong>Variables / fonctions</strong></td><td><code>camelCase</code></td><td><code>familyLabel</code>, <code>fetchChildren()</code></td></tr>
+        <tr><td><strong>Composants React</strong></td><td><code>PascalCase</code></td><td><code>FamilyCard</code>, <code>HealthForm</code></td></tr>
+        <tr><td><strong>Constantes</strong></td><td><code>UPPER_SNAKE</code></td><td><code>FAMILY_TABLE</code>, <code>MAX_RETRIES</code></td></tr>
+        <tr><td><strong>Fichiers</strong></td><td><code>kebab-case</code></td><td><code>phone.ts</code>, <code>families.ts</code></td></tr>
+        <tr><td><strong>Colonnes BDD</strong></td><td><code>snake_case</code></td><td><code>first_name</code>, <code>birth_date</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <span class="slide-num">12</span>
+</section>
+
+<!-- SLIDE 14 — ORGANISER SES FICHIERS -->
+<section class="slide code" id="organiser" data-section="Partie 2 — Code">
+  <h2>1 fichier = 1 responsabilité</h2>
+  <p class="subtitle">Notre organisation cible</p>
+
+  <div class="box tip">
+    <h3 class="highlight-green">✅ Structure cible du projet</h3>
+    <pre><code>services/
+├── families.ts    <span style="color:#6b7280;">← CRUD familles</span>
+├── adults.ts      <span style="color:#6b7280;">← CRUD adultes</span>
+├── children.ts    <span style="color:#6b7280;">← CRUD enfants</span>
+├── centres.ts     <span style="color:#6b7280;">← CRUD centres</span>
+└── sejours.ts     <span style="color:#6b7280;">← CRUD séjours</span>
+lib/
+├── mappers.ts     <span style="color:#6b7280;">← Conversions camelCase ↔ snake_case</span>
+└── phone.ts       <span style="color:#6b7280;">← Formatage téléphone</span>
+types/
+├── family.ts      <span style="color:#6b7280;">← Types famille</span>
+├── centre.ts      <span style="color:#6b7280;">← Types centre</span>
+└── auth.ts        <span style="color:#6b7280;">← Types auth</span></code></pre>
+  </div>
+
+  <div class="box info" style="margin-top:1rem;">
+    <strong>📏 Limites :</strong> ~200 lignes max par fichier · 1 composant exporté par fichier React · 1 domaine par service
+  </div>
+  <span class="slide-num">13</span>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- PARTIE 3 — BIEN UTILISER L'IA                            -->
+<!-- ═══════════════════════════════════════════════════════ -->
+
+<!-- SLIDE 15 — L'IA : CE QU'ELLE FAIT BIEN / MAL -->
+<section class="slide ia" id="ia-intro" data-section="Partie 3 — IA">
+  <h2>L'IA n'est pas magique</h2>
+  <p class="subtitle">Un outil puissant, mais qui a ses limites</p>
+
+  <div class="two-cols">
+    <div class="box tip">
+      <h3 class="highlight-green">✅ L'IA est bonne pour…</h3>
+      <ul>
+        <li>Générer du code répétitif rapidement</li>
+        <li>Expliquer un concept ou un bout de code</li>
+        <li>Proposer une structure de fichiers/dossiers</li>
+        <li>Débugger un message d'erreur précis</li>
+        <li>Convertir entre formats (camelCase ↔ snake_case…)</li>
+      </ul>
+    </div>
+    <div class="box warning">
+      <h3 class="highlight-red">⚠️ L'IA est mauvaise pour…</h3>
+      <ul>
+        <li>Comprendre le <strong>contexte métier</strong> du projet sans explication</li>
+        <li>Garantir que le code fonctionne sans le tester</li>
+        <li>Prendre des décisions d'architecture à ta place</li>
+        <li>Écrire du code sécurisé sans vérification</li>
+        <li>Remplacer la réflexion et la planification</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="box info" style="margin-top:1rem;">
+    <strong>💡 Règle d'or :</strong> L'IA est un <strong>assistant</strong>, pas un développeur. C'est <strong>toi</strong> qui décides, vérifies et valides.
+  </div>
+  <span class="slide-num">14</span>
+</section>
+
+<!-- SLIDE 16 — PLANIFIER AVANT DE PROMPTER -->
+<section class="slide ia" id="ia-planifier" data-section="Partie 3 — IA">
+  <h2>Planifier avant de prompter</h2>
+  <p class="subtitle">Générer un fichier plan, puis coder étape par étape</p>
+
+  <div class="box tip">
+    <h3 class="highlight-green">La méthode : fichier plan → implémentation</h3>
+    <ol style="margin-top:0.5rem;">
+      <li><strong>Comprendre ce qu'on veut</strong> — résultat attendu, fichiers existants concernés</li>
+      <li><strong>Demander à l'IA de générer un fichier plan</strong> (ex : <code>PLAN_inscriptions.md</code>) contenant le contexte complet : objectif, fichiers à créer/modifier, types, dépendances</li>
+      <li><strong>Implémenter étape par étape</strong> — un prompt = une sous-tâche du plan, valider avant de continuer</li>
+    </ol>
+  </div>
+
+  <div class="box info" style="margin-top:1rem;">
+    <strong>💡 Pourquoi un fichier plan ?</strong> L'IA peut le <strong>relire à chaque prompt</strong> pour garder le contexte.<br>
+    → <em>"Consulte PLAN_inscriptions.md et implémente l'étape 3."</em>
+  </div>
+
+  <div class="box warning" style="margin-top:1rem;">
+    <strong>⚠️ À chaque nouvelle implémentation, rappelle à l'IA :</strong>
+    <ul style="margin-top:0.3rem;">
+      <li>Ne pas recoder ce qui existe déjà</li>
+      <li>Commenter le code (expliquer le <em>pourquoi</em>)</li>
+      <li>Prévoir la gestion d'erreurs (try/catch, messages utilisateur)</li>
+      <li>Prévoir les tests</li>
+    </ul>
+  </div>
+  <span class="slide-num">15</span>
+</section>
+
+<!-- SLIDE 16 — PROMPT POUR GÉNÉRER LE PLAN -->
+<section class="slide ia" id="ia-plan-prompt" data-section="Partie 3 — IA">
+  <h2>Exemple : prompt de plan</h2>
+  <p class="subtitle">Un prompt concret pour générer ton fichier plan</p>
+
+  <div class="box" style="margin-top:1rem;">
+    <h3>💬 Prompt à envoyer à l'IA :</h3>
+    <pre style="font-size:0.85rem;"><code><span style="color:#a78bfa;">"Génère un fichier PLAN_inscriptions.md pour implémenter
+la page d'inscriptions. Le plan doit contenir :
+- L'objectif de la feature
+- Les fichiers existants à ne PAS recoder
+- Les nouveaux fichiers à créer (types, composants, services)
+- Les sous-tâches numérotées dans l'ordre
+
+Contraintes à respecter pour chaque étape :
+  ✅ Ne pas recoder ce qui existe déjà
+  ✅ Commenter le code (expliquer le pourquoi)
+  ✅ Prévoir la gestion d'erreurs (try/catch, messages)
+  ✅ Prévoir les tests"</span></code></pre>
+  </div>
+
+  <div class="box tip" style="margin-top:1rem;">
+    <strong>📋 Ce que tu obtiens :</strong> un fichier structuré avec toutes les étapes numérotées. Tu peux ensuite demander :
+    <pre style="margin-top:0.5rem; font-size:0.85rem;"><code><span style="color:#a78bfa;">"Consulte PLAN_inscriptions.md et implémente l'étape 2.
+Rappel : ne touche pas aux fichiers existants, commente
+le code, gère les erreurs et prévois les tests."</span></code></pre>
+  </div>
+  <span class="slide-num">16</span>
+</section>
+
+<!-- SLIDE 17 — ÉCRIRE DE BONS PROMPTS -->
+<section class="slide ia" id="ia-prompts" data-section="Partie 3 — IA">
+  <h2>Écrire de bons prompts</h2>
+  <p class="subtitle">Clair, simple, avec du contexte</p>
+
+  <div class="box tip">
+    <h3 class="highlight-green">Les 4 ingrédients d'un bon prompt</h3>
+    <table style="margin:0.5rem 0 0 0;">
+      <tbody>
+        <tr><td><strong>1. Le contexte</strong></td><td>Dans quel fichier, quel framework, quelle techno</td></tr>
+        <tr><td><strong>2. La tâche</strong></td><td>Ce que tu veux, en une phrase</td></tr>
+        <tr><td><strong>3. Les contraintes</strong></td><td>Format attendu, conventions, limites</td></tr>
+        <tr><td><strong>4. Un exemple</strong></td><td>Un résultat attendu ou un modèle à suivre</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="box" style="margin-top:1rem;">
+    <h3>Exemple concret :</h3>
+    <pre><code><span style="color:#a78bfa;">"Dans le fichier services/families.ts (Next.js + Supabase),
+crée une fonction fetchFamilyById(id: number) qui :
+- récupère la famille avec ses adultes et enfants
+- retourne un objet typé FamilyWithRelations
+- gère les erreurs avec un try/catch
+Utilise le même style que fetchAllFamilies déjà dans le fichier."</span></code></pre>
+  </div>
+
+  <div class="box info" style="margin-top:0.75rem;">
+    <strong>💡 Astuce :</strong> Plus ton prompt est <strong>précis</strong>, moins tu auras de corrections à faire après.
+  </div>
+  <span class="slide-num">17</span>
+</section>
+
+<!-- SLIDE 18 — VÉRIFIER LES RÉSULTATS -->
+<section class="slide ia" id="ia-verifier" data-section="Partie 3 — IA">
+  <h2>Toujours vérifier</h2>
+  <p class="subtitle">Ne jamais copier-coller aveuglément</p>
+
+  <div class="box tip">
+    <h3 class="highlight-green">Checklist avant d'intégrer du code IA</h3>
+    <ol style="margin-top:0.5rem;">
+      <li><strong>Lire et comprendre</strong> — si tu ne comprends pas le code, ne l'utilise pas</li>
+      <li><strong>Tester</strong> — est-ce que ça fonctionne vraiment ? lancer le projet, vérifier dans le navigateur</li>
+      <li><strong>Vérifier la sécurité</strong> — pas de clé en dur ? pas de faille ? pas de <code>any</code> partout ?</li>
+      <li><strong>Vérifier le style</strong> — respecte-t-il nos conventions ? (nommage, structure, Tailwind…)</li>
+      <li><strong>Adapter</strong> — le code IA est un <em>point de départ</em>, pas un résultat final</li>
+    </ol>
+  </div>
+
+  <div class="box warning" style="margin-top:1rem;">
+    <strong>⚠️ Pièges courants du code IA :</strong>
+    <ul style="margin-top:0.3rem;">
+      <li>Invente des fonctions ou des API qui n'existent pas</li>
+      <li>Oublie la gestion d'erreurs</li>
+      <li>Utilise des packages non installés</li>
+      <li>Ignore les conventions du projet</li>
+    </ul>
+  </div>
+  <span class="slide-num">18</span>
+</section>
+
+<!-- SLIDE 19 — RÉCAP -->
+<section class="slide intro" id="recap" data-section="Récap">
+  <h2>Récap — Les 3 piliers</h2>
+  <p class="subtitle">Ce qu'il faut retenir</p>
+
+  <div class="three-cols" style="margin-top:1.5rem;">
+    <div class="box" style="border-top:3px solid #f97316;">
+      <h3 style="color:#f97316;">🔀 Git</h3>
+      <ul style="font-size:0.95rem;">
+        <li>Branches par <strong>module</strong></li>
+        <li>Commits <strong>conventionnels</strong></li>
+        <li>Toujours passer par une <strong>PR</strong></li>
+        <li><code>git pull</code> avant de coder</li>
+      </ul>
+    </div>
+    <div class="box" style="border-top:3px solid #22d3ee;">
+      <h3 style="color:#22d3ee;">📐 Code</h3>
+      <ul style="font-size:0.95rem;">
+        <li>Commenter le <strong>pourquoi</strong></li>
+        <li><strong>DRY</strong> — pas de copier-coller</li>
+        <li>Noms <strong>clairs</strong> et conventions</li>
+        <li>1 fichier = 1 <strong>responsabilité</strong></li>
+      </ul>
+    </div>
+    <div class="box" style="border-top:3px solid #a78bfa;">
+      <h3 style="color:#a78bfa;">🤖 IA</h3>
+      <ul style="font-size:0.95rem;">
+        <li><strong>Planifier</strong> avant de prompter</li>
+        <li><strong>Découper</strong> en petites tâches</li>
+        <li>Prompts <strong>clairs</strong> avec contexte</li>
+        <li><strong>Toujours vérifier</strong> le résultat</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="box info" style="margin-top:1.5rem; text-align:center;">
+    <strong>Un bon réflexe vaut mieux qu'un bon outil.</strong>
+  </div>
+  <span class="slide-num">19</span>
+</section>
+
+</div><!-- /.slideshow -->
+
+<script>
+  // ── Slideshow engine ──
+  const slides = document.querySelectorAll('.slide');
+  const counter = document.getElementById('counter');
+  const sectionLabel = document.getElementById('sectionLabel');
+  const dotsContainer = document.getElementById('dots');
+  const btnPrev = document.getElementById('btnPrev');
+  const btnNext = document.getElementById('btnNext');
+  let current = 0;
+
+  // Build dots
+  slides.forEach((s, i) => {
+    const dot = document.createElement('span');
+    dot.className = 'dot';
+    if (s.classList.contains('git'))  dot.classList.add('git');
+    if (s.classList.contains('code')) dot.classList.add('code');
+    if (s.classList.contains('ia'))   dot.classList.add('ia');
+    dot.addEventListener('click', () => goTo(i));
+    dotsContainer.appendChild(dot);
+  });
+
+  function goTo(n) {
+    slides[current].classList.remove('active');
+    current = Math.max(0, Math.min(n, slides.length - 1));
+    slides[current].classList.add('active');
+    counter.textContent = (current + 1) + ' / ' + slides.length;
+    sectionLabel.textContent = slides[current].dataset.section || '';
+    btnPrev.disabled = current === 0;
+    btnNext.disabled = current === slides.length - 1;
+    // Update dots
+    dotsContainer.querySelectorAll('.dot').forEach((d, i) => {
+      d.classList.toggle('active', i === current);
+    });
+  }
+
+  function next() { goTo(current + 1); }
+  function prev() { goTo(current - 1); }
+
+  // Keyboard navigation
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); next(); }
+    if (e.key === 'ArrowLeft')  { e.preventDefault(); prev(); }
+    if (e.key === 'Home')       { e.preventDefault(); goTo(0); }
+    if (e.key === 'End')        { e.preventDefault(); goTo(slides.length - 1); }
+  });
+
+  // Init
+  goTo(0);
+</script>
+
+</body>
+</html>

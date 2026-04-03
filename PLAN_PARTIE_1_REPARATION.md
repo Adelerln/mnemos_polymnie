@@ -1,4 +1,4 @@
-# Milestone 1 — Réparation et mise en ordre du projet
+# Plan Partie 1 — Réparation et mise en ordre du projet
 
 > Créé le 1er avril 2026 — Phases 1 à 4 du Planning MVP
 >
