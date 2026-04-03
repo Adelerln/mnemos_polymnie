@@ -1,0 +1,664 @@
+Fonctionnement du site Internet
+Site vitrine qui présente des produits avec : 
+→ Des pages libres pour présenter des informations
+→ Des pages “produits” type avec 
+Photos
+Informations de description (Séjour / Programme / Hébergement)
+Menus déroulants de sélection des options
+Question à réfléchir : différencier l’aller du retour ? 
+Bouton “réserver / s’inscrire” 
+→ Un formulaire de recrutement
+→ Un panier d’achat
+→ Un système de création de compte “Client” avec des “Mineurs” rattachés
+→ Un tunnel de vente avec paiements de tout ou partie en carte bancaire (ou bien autres options selon l’organisme : CB en 3 fois, chèque, virement, ANCV, ANCV Connect, etc.).
+→ Un espace client avec : 
+Les mineurs rattachés
+Les réservations effectuées (avec possibilité de solder les résas)
+Les documents à remplir
+Les documents à consulter - catégorie Financiers
+Les documents à consulter - catégorie Séjours
+La fiche Client où l’on peut modifier ses informations
+Vackelys : les avis, les favoris
+
+
+Brouillon: 
+
+Fonctionnalités indispensables à avoir pour le MVP 
+
+Site internet 
+Produits
+Options de produits
+Tunnel de vente avec paiement
+Comptes clients
+Logiciel
+Compte Famille avec mineurs rattachés
+Centres de vacances avec coordonnées + commission de sécurité 
+Séjours liés à des centres de vacances ou non
+Options liées (assurance, dates, transports, noms de séjours, prix)
+Inscriptions de mineurs sur un séjour avec des options
+Partenaires avec coordonnées + prix spécifiques de séjours
+Facturation : 
+Possibilité de facturer un partenaire / une famille pour les éléments qui lui sont affectés du séjour ou pour une prise en charge
+Paiements : prise en compte d’un paiement effectué par une famille ou un partenaire avec affectation simple ou multiple
+
+Logiciel v2
+Fiche Personnel avec informations
+Edition contrat de travail (word modifiable avec rubrique de fusion, plusieurs types de contrats, rémunération variable, faire CEE et CDD)
+Ajout d’un séjour au personnel avec transport aller et retour + case pension (DP, PC)
+Documents à ajouter (à décider dans réglages + possibilité d’ajouter manuellement)
+Base de gestion des CV reçus
+
+
+Logiciel v3
+Module Transports
+Tronçon transport
+Encadrants affectés
+Mineurs affectés
+Arrêts du tronçon
+Documents liés
+Module gestion des émissions et dossiers SNCF
+….
+
+
+
+Cahier des charges 
+
+I - Introduction
+
+Présentation du projet
+L’entreprise
+L’équipe MOE et MOA
+Coordonnées
+
+II - Modèle du domaine
+
+Vocabulaire
+Modèle du domaine
+Utilisateurs et droits
+Fonctionnalités
+
+III - Les besoins
+
+Description des utilisateurs
+Besoins fonctionnels
+Besoins non fonctionnels
+
+IV - Evolution potentielle des besoins
+
+Fonctionnalités
+Ressources
+
+V - Risques
+
+VI - Organisation
+
+Méthode d’organisation
+Planning du projet
+
+
+
+Proposition de structure de chaque sous-partie avant qu’on entame la user-story : 
+Liste des rubriques + qui peut modifier ou non
+Liste des boutons et de leurs fonctions (ce qu’il y a dessus, ce qui s’affiche quand on survole, là où ça emmène)
+
+
+
+
+Page d’authentification
+
+Deux champs inscriptibles : adresse mail + mot de passe
+Bouton “Mot de passe oublié”
+Authentification avec confirmation par mail
+Logo avec le nom du produit XXXXX
+Footer avec contact de l’entreprise (Mnémos - Adresse - CP + Ville - Téléphone - Mail)
+
+Landing Page
+
+Barre de navigation avec les accès rapides : 
+Accueil, Clients, Séjours, Inscriptions, Fiche, Partenaires, Convocations (sous bouton : Aller / Retour), Transports, Personnel
++ une petite roue à droite pour Paramètres 
++ le nom / logo du produit à gauche / accueil
+X logos au centre sous forme de cards cliquables qui ouvrent un sous-menu
+Clients (accéder) → Règlements, Factures, Avoirs, Devis 
+Séjours → Centres, Gestion Séjours, Repos Compensateurs, Prestations, Prestataires, Calendrier, Budget, numéros utiles
+Inscriptions → ?
+Partenaires → Tableau de bord financier, factures et devis, prises en charge
+Transports → convocations (Aller / Retour), Tronçons, Planning, Billets, fiches / documents, (voyagistes et émissions)
+Personnel → documents, contrats, registres perso, (tableau équipes), comptabilité, recrutement
+
+
+Clients / Familles
+
+VERSION CLEAN : 
+Arrivée sur la page
+
+SECTION DOSSIERS CLIENTS : Bandeau de recherche (cards) : 
+Intitulé “Dossiers Clients”
+Tableau qui présente les résultats de recherche (5 lignes)
+
+Mode recherche : 
+
+????
+
+
+SECTION INFORMATIONS CLIENTS : Un bandeau avec : 
+Informations Clients en Intitulé
+4 boutons : ajouter, supprimer (qui demande confirmation), enregistrer, annuler modifs
+
+Début de la section Informations Clients : 
+ID (non modifiable)
+Civilité
+Prénom
+Nom de Famille
+
+
+
+VERSION BROUILLON :
+Arriver sur une page vide, dans laquelle on peut faire une recherche 
+Bouton ou raccourci clavier pour initier une recherche
+Tous les champs peuvent faire l’objet d’une recherche
+
+Cases accessibles côté Compte Client de la Famille : 
+
+
+
+
+
+
+
+ID Famille (pas affiché)
+Compte 1 (pas affiché)
+Compte 2 (pas affiché)
+ID Compte Client 1 *
+ID Compte Client 2 *
+Civilité 1 *
+Civilité 2 *
+Nom de famille 1 *
+Nom de famille 2 *
+Prénom 1 *
+Prénom 2 *
+Adresse 1 *
+Adresse 2 *
+Complément 1
+Complément 2 *
+Code postal 1 *
+Code postal 2 *
+Ville 1 *
+Ville 2 *
+Pays 1 *
+Pays 2 *
+Tel 1 *
+Tel 2 *
+TelBis - 1
+TelBis - 2
+Mail 1 *
+Mail 2 *
+Matricule CAF 1 
+Matricule CAF 2
+Revenu fiscal de référence 1 ou QF 1
+Revenu fiscal de référence 2 ou QF 2
+Justificatif revenu fiscal 1
+Justificatif revenu fiscal 2
+Statut de validation du justificatif 1
+Statut de validation du justificatif 2
+Date d’expiration du justificatif 1
+Date d’expiration du justificatif 2
+
+
+*champs obligatoires
+
+
+Petite table avec plusieurs enregistrements : 
+Un enregistrement = ID compte de référence + partenaire lié
+
+Table avec enfants rattachés : 
+Modifiable pour le parent : 
+Prénom* (affiché) 
+Nom* (affiché)
+Date de naissance* (affiché)
+Sexe* (affiché)
+Infos sanitaires : 
+Régime alimentaire* (choix à définir par l’organisme) (affiché)
+Allergies (asthme, graminées, alimentaire) (affiché)
+Difficultés de santé (affiché)
+Recommandations utiles (affiché)
+Ami(e) de… (affiché)
+
+Bouton Infos sanitaire→ design bouton à déterminer, ouverture d’une fenêtre flottante (format carte) → on reste sur le même modèle, la fenêtre est par-dessus avec transparence du modèle derrière, cf. spécificités du modèle
+
+Suppression possible d’un enfant par le parent ? NON, il peut faire la demande de suppression de ses données mais via un formulaire (RGPD)
+Suppression possible d’un enfant par l’organisateur ? OUI, à condition qu’il ne soit relié à aucune inscription. Sinon il faut d’abord supprimer les inscriptions
+
+non modifiable pour le parent : 
+ID enfant (pas affiché)
+Âge année : auto-calcul (affiché)
+Âge mois : auto-calcul (affiché)
+nombre de séjours de l’enfant (pas affiché)
+Bouton pour accéder aux rapports de séjours (pas affiché)
+Bouton pour inscrire l’enfant à un séjour (pas affiché)
+Bouton pour supprimer l’enfant (pas affiché - ne s’affiche que si l’enfant n’est pas relié à une inscription)
+Infos sanitaires : 
+Conduite à tenir (pas affiché)
+Recommandations pour les équipes (pas affiché)
+
+Créé par QUI + HORODATAGE (pas affiché)
+Modifié par QUI + HORODATAGE (pas affiché)
+Notes (pas affiché)
+
+
+
+
+
+
+
+
+
+Modèle :  Infos Sanitaires
+
+
+
+
+Fiche d’inscription
+
+
+
+
+
+Au-dessus du premier bandeau : 
+Inscription faite le “HORODATAGE”, par XXXXXXXX (nom d’utilisateur) → deux variables de fusion
+Dernière modification le “HORODATAGE”, par XXXXXXXX (nom d’utilisateur) → deux variables de fusion (juste en dessous, à voir comment le styliser)
+
+Sur la droite du premier bandeau : 
+Bouton permettant de supprimer l’inscription (possible uniquement si pas de facturation) design à déterminer, ouvre une page de confirmation de l’action puis supprime l’enregistrement → retour à la fiche Client
+Bouton permettant d’enregistrer l’inscription et de sortir du mode édition design à déterminer, enregistre la fiche, permet de changer de page ce qui n’était pas autorisé jusque là → on reste sur le même modèle
+Bouton annulation des modifications → design à déterminer, page de confirmation de l’action puis retour à la version précédemment enregistrée. Permet d’annuler les modifications effectuées par l’utilisateur et autorise la sortie de la fiche 
+
+Sur la gauche du premier bandeau : 
+Rubrique du mode d’inscription, liste déroulante : Site internet, Mail, Téléphone, Courrier postal, En agence (On ne peut en sélectionner qu’un seul)
+Si mode d’inscription “Site internet” la fiche a déjà été créé depuis le site vitrine automatiquement donc le numéro de commande est déjà stocké dans la base
+
+Premier bandeau : 
+ID de l’enfant (ne s’affiche pas), Nom de l’enfant, prénom de l’enfant, sa date de naissance et son genre → case qui s’auto-remplissent quand on a cliqué sur le bouton “nouvel inscription” depuis la fiche client → pas de saisie par l’utilisateur + rien n’est modifiable
+ID Client : case n’est pas modifiable, mais un bouton sur la gauche permet de demander vers quel ID client l’utilisateur souhaite transférer l’inscription (en cas d’erreur) design à déterminer, ouvre une fenêtre permettant de saisir le champ vers lequel on souhaite transférer l’inscription → on reste sur le même modèle, et l’ID Client se modifie
+Bouton qui permet de revenir à la fiche Client correspondante design à déterminer, pas d’action → retour Fiche Client
+Numéro d’inscription auto incrémenté “IXXXXX”
+
+Sous le premier bandeau : 
+Case à Cocher, permettant d’affecter l’inscription au parent 2 (afficher le nom du parent 2) design à déterminer, affiche le nom du parent 2 - pas d’autre action → on reste sur le même modèle
+
+Second bandeau - Définitions des options de l’inscription : 
+Case à cocher appelée XP, “lier l’inscription à un partenaire” : design case à cocher, fait apparaître une liste déroulante → on reste sur le même modèle
+Liste déroulante qui apparaît si XP coché : Liste des partenaires inscrits dans le logiciel, doit obligatoirement* être rempli si la case précédente est cochée, sinon reste vide quand n’apparaît pas
+Case à cocher Prix Public Séjour, qui apparaît si XP coché
+Case à cocher Prix Public Transport, qui apparaît si XP coché
+		→ ces deux cases à cocher sont modifiables librement par l’utilisateur. Insérer de l’IA pour déterminer par rapport aux inscriptions d’un même partenaire si cela est cohérent
+
+Options d’inscriptions : 
+Référence Séjour = liste déroulante parmi les refs non archivées
+Lieu du séjour = auto-remplissage en fonction de la référence du séjour, non modifiable
+Thème du séjour = liste déroulante des thèmes, en fonction de la ref choisie
+Nom du séjour = liste déroulante des noms de séjour, en fonction de la ref choisie + du thème sélectionnée
+Ville de départ = liste déroulante des villes, en fonction de la ref choisie (format Proper : nom commun avec une majuscule)
+Ville de retour = liste déroulante des villes, en fonction de la ref choisie (format Proper : nom commun avec une majuscule)
+Période de séjour = liste déroulante des périodes, en fonction de la ref choisie
+Assurance = liste déroulante des assurances, en fonction de la ref choisie
+Date d’entrée = auto-remplissage, non modifiable, en fonction de la période de séjour choisie
+Date de sortie = auto-remplissage, non modifiable, en fonction de la période de séjour choisie A REVOIR AVEC JEANNE
+
+Troisième Bandeau, paramètres financiers (red / supp / pec) : 
+Réductions : 
+Bouton d’ajout de réduction : design case +, action invisible de création d’enregistrement dans la base liée avec l’ID d’inscription,  → on reste sur le même modèle, et la ligne apparaît dans le tableau
+Tableau d’ajout des réductions, avec 3 rubriques par ligne ajoutée 
+Intitulé (affiché au client), liste déroulante modifiable
+Détails (non affiché au client), saisie libre
+Prix
+Bouton supprimer : design case poubelle, fenêtre de confirmation pour l’utilisateur, puis suppression de l’enregistrement dans la base liée avec l’ID d’inscription → on reste sur le même modèle, et la ligne disparaît dans le tableau
+
+Case indiquant la somme des réductions → pas modifiable par l’utilisateur, n’apparaît pas si case vide ou égale à 0€
+
+Supplément : 
+Bouton d’ajout de supplément : design case +, action invisible de création d’enregistrement dans la base liée avec l’ID d’inscription,  → on reste sur le même modèle, et la ligne apparaît dans le tableau
+Tableau d’ajout des suppléments, avec 3 rubriques par ligne ajoutée 
+Intitulé (affiché au client), liste déroulante modifiable
+Détails (non affiché au client), saisie libre
+Prix
+Bouton supprimer : design case poubelle, fenêtre de confirmation pour l’utilisateur, puis suppression de l’enregistrement dans la base liée avec l’ID d’inscription → on reste sur le même modèle, et la ligne disparaît dans le tableau
+
+Case indiquant la somme des suppléments → pas modifiable par l’utilisateur, n’apparaît pas si case vide ou égale à 0€
+
+Prises en charge : 
+Bouton d’ajout d’une prise en charge: design case +, action invisible de création d’enregistrement dans la base liée avec l’ID d’inscription,  → on reste sur le même modèle, et la ligne apparaît dans le tableau
+Tableau d’ajout des prises en charges, avec 3 rubriques par ligne ajoutée 
+Partenaire, liste déroulante pulled from la base des Partenaires
+ID Partenaire, auto-remplissage en fonction du partenaire sélectionné
+Montant de la prise en charge
+Bouton supprimer : design case poubelle, fenêtre de confirmation pour l’utilisateur, puis suppression de l’enregistrement dans la base liée avec l’ID d’inscription → on reste sur le même modèle, et la ligne disparaît dans le tableau
+Case indiquant la somme des prises en charge → pas modifiable par l’utilisateur, n’apparaît pas si case vide ou égale à 0€
+
+Quatrième partie : total de l’inscription et affectation des sommes
+
+L’ensembles des rubriques ne sont pas modifiables et permettent juste à l’utilisateur d’avoir un récapitulatif financier de l’inscription
+Tableau récap plutôt sur la gauche : 
+Récapitulatif du nom de séjour et du thème, puis prix
+Récapitulatif du transport aller sélectionné, puis prix
+Récapitulatif du transport retour sélectionné, puis prix
+Récapitulatif de l’assurance sélectionnée, puis prix
+Récapitulatif du total des suppléments sans mention des intitulés, puis somme
+Récapitulatif du total des réductions sans mention des intitulés, puis somme
+Sous-total avant prises en charge, rubrique calculée (Séjour + TranspAller + TranspRetour + Assurance - Réduction + Suppléments)
+Récapitulatif du total des prises en charge, sans mention des intitulés, puis somme
+Total après prises en charge, rubrique calculée (Séjour + TranspAller + TranspRetour + Assurance - Réduction + Suppléments - Prises en Charge)
+
+ATTENTION : toutes les règles de calcul des prix/sommes sont précisées si dessous : 
+Si un partenaire est renseigné, il faut pull son prix de séjour en provenance de la table Prix Partenaire Sej + son prix de transport et le diviser en 2 en provenance de la même table
+SAUF si prix public séjour/transport est coché, auquel cas on prend les infos classiques pulled depuis la table Séjours
+L’assurance peut se calculer de 2 manières différentes en fonction des spécificités de l’option sélectionnée : somme forfaitaire ou bien % du prix de séjour 
+
+
+1er bouton “Ouvrir un dossier facturation” (à voir la meilleure terminologie, gros doute, sur le logiciel ça s’appelle “Décider facturation”) → l’inscription est alors considérée comme financièrement ‘ouverte’ et apparaissent les champs suivants : 
+
+Tableau récap d’affectations des sommes : 
+Séjour, puis rubrique d’affectation Famille/Partenaire
+Transport Aller, puis rubrique d’affectation Famille/Partenaire
+Transport Retour, puis rubrique d’affectation Famille/Partenaire
+Assurance, puis rubrique d’affectation Famille/Partenaire
+Réduction(s), puis rubrique d’affectation Famille/Partenaire
+Supplément(s), puis rubrique d’affectation Famille/Partenaire
+Prise(s) en charge, puis rubrique d’affectation Famille/Partenaire
+
+Deux boutons apparaissent avec : 
+“TOUT FAMILLE” → design à déterminer, auto-remplissage de “Famille” dans tous les champs précédemment cités → on reste sur le même modèle, les cases se remplissent
+“TOUT PARTENAIRE” → design à déterminer, auto-remplissage de “Partenaire” dans tous les champs précédemment cités → on reste sur le même modèle, les cases se remplissent
+
+
+Mini-section “Reste à payer”, masquée quand pas de financiarisation de l’inscription (pas de création d’un compte paiement validée) : 
+Texte “Restant dû Famille” avec case non-modifiable + logo OK si = 0€ (design à déterminer) ou NON si >0€ (design à déterminer)
+Bouton Relance Paiement → design à déterminer, ouverture d’un mail adressé à P1/P2, avec intitulé personnalisé et corps du texte personnalisé → sortie de l’application
+
+
+Case “Colos Apprenantes” avec case à cocher ET// Case “Pass Colo” avec case à cocher ⇒ pas utile pour l’instant à mon avis, nous permettait chez Thalie de faire des exports pour des mailings spécifiques, je ne sais pas si c’est pertinent de les garder honnêtement
+
+
+
+
+
+
+
+Cinquième encadré : ESPACE WEB
+
+Deux boutons dans un petit encadré : 
+Créer le compte client sur le Web, ce bouton n’apparaît que si un compte numéroté N’EXISTE PAS pour le P1/P2 dans la Fiche Client → design à déterminer, écran de chargement, ouverture d’une fenêtre qui confirme ou non à l’utilisateur la bonne création du compte Web associé → on reste sur le même modèle
+Modifier le compte client sur le Web, ce bouton n’apparaît que si un compte numéroté EXISTE pour le P1/P2 dans la Fiche Client → design à déterminer, écran de chargement, ouverture d’une fenêtre qui confirme ou non à l’utilisateur la bonne mise à jour des groupes du compte Web associé → on reste sur le même modèle
+
+Sixième encadré : TRANSPORTS
+Cette section est réservée à l’ajout manuel ou automatique de tronçons transports liés à l’inscription de l’enfant. 
+Rubrique vide permettant la saisie d’un numéro de tronçon
+Si la rubrique est remplie et correspond à un numéro de tronçon, apparition d’un bouton sur la droite de la rubrique → design bouton +, création d’un enregistrement dans la table liée des transports avec l’ID d’inscription, le numéro du tronçon, à ajouter : renumérotation à chaque fois des trajets par linéarité → on reste sur le même modèle, la rubrique de saisie du tronçon est vide, la ligne du tronçon est apparue dans le tableau
+Bouton Auto → design bouton à déterminer, script de recherche des transports correspondants à la ville de départ puis à la ville de retour / si le tronçon est déjà ajouté à l’inscription, pas de doublon. Script peut être joint depuis Filemaker // Attention : nécessité d’ajouter une vérification de cohérence au script (linéarité du trajet et numérotation de l’ordre des trajets l’ajout) → on reste sur le même modèle, les lignes de tronçons aller et retour sont apparues dans le tableau.
+
+Tableau des tronçons, juste en dessous : 
+4 informations en colonne : 
+Numéro du tronçon, non modifiable
+Logo A ou R → permet de savoir si c’est l’aller ou le retour
+Mention écrite du mot “Trajet :” puis variable de fusion du trajet Aller - Retour correspondant (non modifiable)
+Bouton supprimer → design bouton poubelle, demande de validation de la suppression du trajet, renumérotation de l’ordre des trajets→ on reste sur le même modèle, la ligne correspondante a disparu. Si le trajet devient incohérent, apparition sous le tableau d’une mention “Trajets incohérents - Nécessité de vérification manuelle des tronçons présents”. 
+
+Section “Informations Enfants / Inscription”
+Rubrique “Notes” : saisie libre
+Rubrique “Taille” : saisie libre, format XXX (cm), entre 030 et 300
+Rubrique “Poids” : saisie libre, format XX (kg), possibilité de décimale, max 1 chiffre après la virgule
+Bouton “Infos Sanitaires” // même design et fonctionnement que dans le modèle Client
+
+Sous-section des documents liés à l’inscription :
+Attention, pour la section qui va suivre, je n’ai aucune idée du format de présentation idéal, en attente de vos propositions (en dur dans le modèle avec un format graphique, ouverture d’une carte flottante, etc.)
+Case à cocher, Fiche Sanitaire
+Si case à cocher FS remplie, apparition d’un bouton d’upload du document → design à déterminer, mode de fonctionnement à déterminer
+Case à cocher, Vaccinations
+Si case à cocher Vaccinations remplie, apparition d’un bouton d’upload du document → design à déterminer, mode de fonctionnement à déterminer
+Ce modèle est à répéter pour chaque document ajouté par le compte Admin de l’organisation. 
+
+Mini-section “Relance sanitaire” :
+Bouton → design à déterminer, ouverture d’un mail adressé à P1/P2, avec intitulé personnalisé et corps du texte personnalisé (documents manquants avec indiqué le cas échéant) → sortie de l’application
+
+Section Documents Inscriptions
+
+Section documents administratifs et financiers : 
+
+Un doc obligatoire : Récap inscription / Confirmation d’inscription
+Un champ de boutons radios permettant de définir l’étape à laquelle se trouve l’inscription : liste déroulante appelée CI, paramétrée par l’admin
+Bouton d’affichage du document avant export
+
+Je m’arrête dans cette section là, besoin de Tim pour avancer : push automatique sur appli web ? personnalisation du mail ? à voir
+
+Doc facultatif : 
+
+
+
+Convocation : 
+
+
+
+
+Bouton nouveau paiement : → design à déterminer, ouverture du modèle des Paiements Famille → sortie du modèle vers un autre
+
+
+Section Annulation de l’inscription, divisée en “avec frais” ou “sans frais”
+Sans frais ne peut apparaître que si l’inscription n’a pas fait l’objet d’une facturation pour le Client
+Bouton “Sans Frais” → design à déterminer, l’inscription passe au statut “Annulée” mais reste visible, les champs d’affectations sont vidés, si prises en charge le cas échéant passent en mode “à annuler”, réductions et suppléments restent → retour au Moteur de Recherche des Inscriptions avec l’affichage de celle-ci en mode annulée. Ce bouton ne s’affiche que si montant conservé Famille ou montant conservé Partenaire est vide + si l’inscription n’a pas fait l’objet d’une facturation. 
+Rubrique “montant conservé Famille” → prix à indiquer en euro, ne peut être supérieur au solde Famille (reste à payer Famille)
+Rubrique “montant conservé Famille” → prix à indiquer en euro, ne peut être supérieur au solde Partenaire (reste à payer Partenaire)
+Bouton “Avec Frais” → design à déterminer, l’inscription passe au statut “Annulée” mais reste visible, les champs d’affectations sont vidés
+prises en charge le cas échéant passent en mode “à annuler” ?
+réductions et suppléments restent ?
+Montant conservé Famille→ Reste à payer Famille
+Montant conservé Partenaire → Reste à payer Partenaire
+ → retour au Moteur de Recherche des Inscriptions avec l’affichage de celle-ci en mode annulée
+Rubrique “Statut Annulation” non modifiable, design à déterminer
+
+6) Fiche Centre
+
+Barre du moteur de recherche Centres : 
+à déterminer avec Tim : à ce jour, n’existe pas, à voir si pertinent ou non (recherche par département ? par nom ?)
+
+Tableau d’affichage des centres - Affichage 5 lignes
+5 champs : 
+Nom du centre : non modifiable
+Code Postal : non modifiable
+Ville : non modifiable
+LOGO → design à déterminer, Si centre en activité = OK Vert, Si centre plus en activité = NON rouge
+Logo Commission de sécurité → design à déterminer, apparition d’un logo si la commission de sécurité est dépassée ou si elle le sera pour un séjour dont la date de début est postérieure à la date de péremption de la CS
+
+Bandeau pré-fiche du centre : 
+Rubrique En activité ou non : format à déterminer
+Rubrique Nom du Centre : non modifiable après création de la fiche (à préciser à l’utilisateur)
+ID du centre : auto-incrémentation à la création de la fiche
+Bouton enregistrement → design à déterminer, demande confirmation à l’utilisateur puis enregistre ses modifs. Permet l’enregistrement de la fiche et la sortie de l’utilisateur s’il a effectué des modifications
+Bouton annulation des modifications → design à déterminer, demande confirmation à l’utilisateur. Permet d’annuler les modifications effectuées par l’utilisateur et autorise la sortie de la fiche 
+
+Fiche du centre : 
+Adresse Postale en plusieurs rubriques, saisissables
+Numéro avec éventuel bis/ter
+Voie
+Complément
+Code Postal
+Ville avec liste déroulante en fonction du code postal saisi
+Pays
+Contact Principal
+Civilité du contact : liste déroulante M./Mme
+Prénom du contact
+Nom de famille du contact
+Poste du contact
+Tel 1 du contact (format libre car potentiels numéros étrangers)
+Tel 2 du contact (format libre car potentiels numéros étrangers)
+Mail du contact
+Bouton Mail → design bouton MAIL, ouverture d’un mail avec “à” complété → sortie du logiciel
+
+Tableau des contacts du centre : 
+Affichage d’une table externe (3 lignes max en affichage simultané)
+Bouton ajout d’un contact → design bouton +, création de l’enregistrement dans la table liée, l’utilisateur reste sur le même modèle → la ligne à compléter est apparue
+Dans chaque ligne de la table, avec tous les champs saisissables : 
+Civilité du contact : liste déroulante M./Mme
+Prénom du contact
+Nom de famille du contact
+Poste du contact
+Tel 1 du contact (format libre car potentiels numéros étrangers)
+Tel 2 du contact (format libre car potentiels numéros étrangers)
+Mail du contact
+Bouton Mail → design bouton MAIL, ouverture d’un mail avec “à” complété → sortie du logiciel
+Bouton Supprimer : → design bouton poubelle, demande confirmation à l’utilisateur → suppression de la ligne qui disparaît
+
+Coordonnées du contact (rubriques de fusion : Civilité, Prénom, Nom) : non modifiable
+
+Informations du centre : 
+Rubrique à compléter France / Étranger → si l’adresse est à l’étranger, est-ce que certaines rubriques dotées d’un * disparaissent automatiquement ? ou bien on fait resaisir l’information à l’utilisateur ? à déterminer avec Tim 
+Rubrique Coordonnées GPS (facultatif), format pré-déterminé : à compléter, recherche à faire
+Rubrique N° DDCS Ouverture* : uniquement des numéros
+Rubrique Date PV Commission Sécurité* : format Date
+Rubrique Date Péremption Commission Sécurité* : format Date
+Rubrique Nom Commun du centre : texte libre, format Proper (majuscule au début, minuscules ensuite)
+
+Informations du centre - Numéros Utiles : 
+à déterminer avec Tim 
+
+Informations du centre - Data spécifique (fiche renseignements sur le centre, affichage au directeur dans son espace :
+à déterminer avec Tim 
+
+
+Informations du centre - Budget : 
+Affichage d’une table externe (? lignes max en affichage simultané)
+Bouton ajout d’une ligne→ design bouton +, création de l’enregistrement dans la table liée, l’utilisateur voit une ligne apparaître → l’utilisateur reste sur le même modèle
+Dans chaque ligne de la table, on trouve : 
+Rubrique Saison* : Liste déroulante (Hiver/Printemps/Été/Automne/Noël)
+Rubrique Année* : Liste déroulante (2020 à l’année actuelle)
+Rubrique Prix par personne : prix monétaire avec deux décimales
+Rubrique Prix par personne : prix forfaitaire avec deux décimales
+Bouton Supprimer : → design bouton poubelle, demande confirmation à l’utilisateur → suppression de la ligne qui disparaît
+
+7) Séjours
+
+Barre du moteur de recherche Séjours : 
+Trois champs peuvent être renseignés pour effectuer une recherche : 
+Année : rubrique vide, liste déroulante (2020 à … année actuelle, ordre décroissant)
+Saison : rubrique vide, liste déroulante (Hiver/Printemps/Été/Automne/Noël/Hors Saison)
+Centre : rubrique liste, liste à pull from centres (en activité ou non)
+Bouton Recherche Séjour → design bouton recherche, effectue un filtre selon les paramètres renseignés par l’utilisateur, mise à jour de la table dessous → l’utilisateur reste sur le même modèle
+Bouton Réinitialisation du modèle Séjour→ design bouton “vider modèle”, ignore tous les enregistrements, le tableau dessous est vide, rien ne s’affiche → l’utilisateur reste sur le même modèle
+
+Tableau d’affichage des Séjours : 
+5 champs qui s’affichent : 
+Référence Séjour, non-modifiable
+Nom du centre/circuit, non modifiable
+Année, non modifiable
+Période, non modifiable
+Saison, non modifiable, mise en forme colorée selon la saison en gras
+
+Pré-bandeau Séjour : 
+Rubrique archivé ou non, format à définir
+Bouton ajout d’un séjour, → design bouton ajout, crée un enregistrement→ l’utilisateur reste sur le même modèle
+Bouton suppression d’un séjour, → design bouton suppression, demande confirmation à l’utilisateur de la suppression → l’utilisateur reste sur le même modèle et le modèle se vide entièrement
+Bouton enregistrement → design à déterminer, demande confirmation à l’utilisateur puis enregistre ses modifs. Permet l’enregistrement de la fiche et la sortie de l’utilisateur s’il a effectué des modifications
+Bouton annulation des modifications → design à déterminer, demande confirmation à l’utilisateur. Permet d’annuler les modifications effectuées par l’utilisateur et autorise la sortie de la fiche 
+
+Bandeau central du Séjour : 
+Rubrique Nom du centre : Saisie avec liste déroulante pulled from Centres, uniquement ceux qui sont en activités
+Rubrique ID centre : auto-remplissage, pas de modification possible. Se met à jour en fonction du centre sélectionné, pulled from Centres.
+Rubrique N° DDCS du centre : auto-remplissage, pas de modification possible. Se met à jour en fonction du centre sélectionné, pulled from Centres.
+Rubrique référence séjour : format XXX25-? (année est obligatoirement renseignée comme le 4e et 5e caractère), la saisie est libre en ? avec max 4 caractères.
+Rubrique Saison : liste déroulante (Hiver/Printemps/Été/Automne/Noël/Hors Saison)
+Rubrique Année : (2020 à … année actuelle, ordre décroissant)
+Rubrique période globale : champ libre, format du XX au XX année
+Rubrique date de début : date minimale de début du séjour, format date
+Rubrique date de fin : date maximale de fin du séjour, format date
+Rubrique N° DDCS complémentaire : à compléter manuellement, format obligatoire (0750712SV001824-24-A01 ?)
+Rubrique Nom Commun du séjour : texte libre, manière dont l’organisme appelle communément le séjour
+Code Analytique comptable (pas obligatoire) : pour import ou export en comptabilité
+
+Section Docs DDCS du séjour :
+3 rubriques qui permettent d’uploader des documents : 
+Rubrique conteneur pdf du récépissé de déclaration initiale (attention volume fichier)
+Rubrique conteneur pdf du récépissé de déclaration complémentaire (attention volume fichier)
+Rubrique capture de la fiche complémentaire pdf/png/jpeg, (attention volume fichier)
+
+Mini-encadré à nommer, récupérer les données d’un autre séjour :
+Rubrique Ref Séjour d’où on veut pull les données : liste déroulante des séjours archives ou non
+Bouton Pull Récup infos : → design à déterminer, demande confirmation à l’utilisateur, import des données d’assurance tarifées, d’options (noms/thèmes) tarifées, de villes de départ tarifées, de villes de retours tarifées. ATTENTION PAS DE PULL DES DATES ET DES PÉRIODES → l’utilisateur reste sur le même écran et les données apparaissent dans chaque table correspondante
+
+Tableau des assurances : 
+Bouton Ajout → design à déterminer, crée l’enregistrement lié dans la table  → l’utilisateur reste sur le même écran et la ligne apparaît dans la table en dessous
+Spécificités de la table : 
+Rubrique Nom : texte libre
+Rubrique valeur : nombre libre
+Rubrique % ou € : définit si le nombre est indiqué en euro ou en % du prix de séjour
+A trancher : aujourd’hui il faut laisser vide l’assurance de base (ne pas indiquer 0) pour pas que la ligne sorte dans l’inscription. A voir ce qu’on veut en faire
+Bouton Supprimer → design poubelle, demande confirmation à l’utilisateur de sa volonté de supprimer la ligne. Impossible de supprimer l’option si elle est renseignée dans une inscription  → l’utilisateur reste sur le même écran et la ligne disparaît dans la table en dessous
+
+Tableau des thèmes/options : 
+Bouton Ajout → design à déterminer, crée l’enregistrement lié dans la table  → l’utilisateur reste sur le même écran et la ligne apparaît dans la table en dessous
+Spécificités de la table : 
+Rubrique Nom du séjour : texte libre
+Rubrique Thème du séjour : texte libre
+Rubrique Prix en € : nombre libre
+Bouton Supprimer → design poubelle, demande confirmation à l’utilisateur de sa volonté de supprimer la ligne. Impossible de supprimer l’option si elle est renseignée dans une inscription  → l’utilisateur reste sur le même écran et la ligne disparaît dans la table en dessous
+
+Tableau des dates de début : 
+Bouton Ajout → design à déterminer, crée l’enregistrement lié dans la table  → l’utilisateur reste sur le même écran et la ligne apparaît dans la table en dessous
+Spécificités de la table : 
+Rubrique Date de début : format date
+Bouton Supprimer → design poubelle, demande confirmation à l’utilisateur de sa volonté de supprimer la ligne. Impossible de supprimer l’option si elle est renseignée dans une inscription  → l’utilisateur reste sur le même écran et la ligne disparaît dans la table en dessous
+
+Tableau des dates de fin : 
+Bouton Ajout → design à déterminer, crée l’enregistrement lié dans la table  → l’utilisateur reste sur le même écran et la ligne apparaît dans la table en dessous
+Spécificités de la table : 
+Rubrique Date de fin : format date
+Bouton Supprimer → design poubelle, demande confirmation à l’utilisateur de sa volonté de supprimer la ligne. Impossible de supprimer l’option si elle est renseignée dans une inscription  → l’utilisateur reste sur le même écran et la ligne disparaît dans la table en dessous
+Tableau des villes de départ : 
+Bouton Ajout → design à déterminer, crée l’enregistrement lié dans la table  → l’utilisateur reste sur le même écran et la ligne apparaît dans la table en dessous
+Spécificités de la table : 
+Rubrique Ville de départ : texte libre, format Proper (majuscule à la 1ère lettre du mot, puis minuscules)
+Rubrique Prix : nombre libre, affichage en euro
+Bouton Supprimer → design poubelle, demande confirmation à l’utilisateur de sa volonté de supprimer la ligne. Impossible de supprimer l’option si elle est renseignée dans une inscription  → l’utilisateur reste sur le même écran et la ligne disparaît dans la table en dessous
+
+Tableau des villes de retour : 
+Bouton Ajout → design à déterminer, crée l’enregistrement lié dans la table  → l’utilisateur reste sur le même écran et la ligne apparaît dans la table en dessous
+Spécificités de la table : 
+Rubrique Ville de retour : texte libre, format Proper (majuscule à la 1ère lettre du mot, puis minuscules)
+Rubrique Prix : nombre libre, affichage en euro
+Bouton Supprimer → design poubelle, demande confirmation à l’utilisateur de sa volonté de supprimer la ligne. Impossible de supprimer l’option si elle est renseignée dans une inscription  → l’utilisateur reste sur le même écran et la ligne disparaît dans la table en dessous
+
+Tableau des périodes de séjour : 
+Bouton Ajout → design à déterminer, crée l’enregistrement lié dans la table  → l’utilisateur reste sur le même écran et la ligne apparaît dans la table en dessous
+Spécificités de la table : 
+Rubrique Période : texte libre, format du XX au XX année
+Rubrique Grp Espace Web : permet de créer le groupe ? est-ce que c’est à ce moment-là qu’il est créé ? nombre
+Bouton Supprimer → design poubelle, demande confirmation à l’utilisateur de sa volonté de supprimer la ligne. Impossible de supprimer l’option si elle est renseignée dans une inscription  → l’utilisateur reste sur le même écran et la ligne disparaît dans la table en dessous
+
+à voir avec Tim : table des prix partenaires, table des tâches associées, table du personnel associé
+
+8) Paramètres
+
+Paramètres des comptes et des droits : 
+
+Est-ce que le compte admin administre les sous-comptes eux-mêmes avec les droits ? ou est-ce que la création passe par Mnémos ?
+Si le compte admin crée les sous-comptes, a-t-il besoin de remplir les informations personnelles de l’employé ou il le fait en autonomie
+
+
+Paramètres organisateurs : 
+Fonctionnement par QF ou non (revenu fiscal de référence + justificatif + statut du justif + date d’expiration du justif)
+Règles de calcul liées au QF
+Décider les régimes alimentaires proposées
+Documents obligatoires ou facultatifs liés à une inscription. Pré-remplies avant quoiqu’ils arrivent : Fiche Sanitaire, Vaccinations. 
+Propositions de documents complémentaires : PAI, Attestation SS, Attestation CMU / AME, Pass Nautique, Autorisation de sortie de territoire, Carte d’identité, Passeport, Attestation de mutuelle, Ordonnance, Livret Inclusion ou similaire
+COVID : Pass Vaccinal, Autorisation parentale de test
+Mail de relance sanitaire à définir (titre avec rubriques de fusion, corps du texte avec rubriques de fusion) → Possibilité de l’automatiser ? 
+Mail de relance paiement à définir (titre avec rubriques de fusion, corps du texte avec rubriques de fusion) → Possibilité de l’automatiser ? 
+Personnalisation de l’intitulé ‘Récap Inscription’ - Champs à définir dans la liste déroulante appelée CI
+Module Budget par centre ou non : payant (?)
+
+
+
+Interrogations / TO DO : 
+Revoir si j’ai bien noté la mention du champ obligatoire ou non sur toutes les rubriques
+Voir pour la question de l’export vers un logiciel de comptabilité des factures de vente
+
+
+
