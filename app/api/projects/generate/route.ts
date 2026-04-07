@@ -1,12 +1,6 @@
 import { createSupabaseServerClient } from "@/lib/supabase-server";
+import { generateProjectSchema, formatZodError } from "@/lib/validations";
 import { NextResponse } from "next/server";
-
-type GeneratePayload = {
-  title?: string;
-  description?: string;
-  assets?: Record<string, unknown> | null;
-  metadata?: Record<string, unknown> | null;
-};
 
 export async function POST(request: Request) {
   const supabase = await createSupabaseServerClient();
@@ -29,22 +23,25 @@ export async function POST(request: Request) {
     );
   }
 
-  const payload = (await request.json().catch(() => null)) as
-    | GeneratePayload
-    | null;
+  const payload = (await request.json().catch(() => null)) as unknown;
 
-  if (!payload?.title) {
+  // Validation et normalisation via Zod (title requis, defaults pour les champs optionnels)
+  const parsed = generateProjectSchema.safeParse(payload);
+
+  if (!parsed.success) {
     return NextResponse.json(
-      { error: "Le champ title est obligatoire." },
-      { status: 422 },
+      { error: formatZodError(parsed.error) },
+      { status: 400 },
     );
   }
 
+  const { title, description, assets, metadata } = parsed.data;
+
   const insertPayload = {
-    title: payload.title,
-    description: payload.description ?? "",
-    assets: payload.assets ?? null,
-    metadata: payload.metadata ?? null,
+    title,
+    description,
+    assets,
+    metadata,
     user_id: session.user.id,
   };
 

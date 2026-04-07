@@ -1,13 +1,6 @@
 import { createSupabaseServerClient } from "@/lib/supabase-server";
+import { deleteProjectSchema, formatZodError } from "@/lib/validations";
 import { NextResponse } from "next/server";
-
-type DeletePayload = {
-  projectId?: number | string;
-  assets?: {
-    bucket: string;
-    path: string;
-  }[];
-};
 
 export async function DELETE(request: Request) {
   const supabase = await createSupabaseServerClient();
@@ -30,21 +23,24 @@ export async function DELETE(request: Request) {
     );
   }
 
-  const payload = (await request.json().catch(() => null)) as
-    | DeletePayload
-    | null;
+  const payload = (await request.json().catch(() => null)) as unknown;
 
-  if (!payload?.projectId) {
+  // Validation via Zod (projectId requis, assets optionnel avec structure vérifiée)
+  const parsed = deleteProjectSchema.safeParse(payload);
+
+  if (!parsed.success) {
     return NextResponse.json(
-      { error: "projectId est obligatoire." },
-      { status: 422 },
+      { error: formatZodError(parsed.error) },
+      { status: 400 },
     );
   }
+
+  const { projectId, assets } = parsed.data;
 
   const { data, error } = await supabase
     .from("projects")
     .delete()
-    .eq("id", payload.projectId)
+    .eq("id", projectId)
     .eq("user_id", session.user.id)
     .select("id")
     .single();
@@ -56,13 +52,10 @@ export async function DELETE(request: Request) {
     );
   }
 
-  const assets = Array.isArray(payload.assets) ? payload.assets : [];
+  // assets est déjà validé et garanti comme tableau par Zod (default: [])
   const removalResults = [];
 
   for (const asset of assets) {
-    if (!asset.bucket || !asset.path) {
-      continue;
-    }
     const { error: storageError } = await supabase
       .storage
       .from(asset.bucket)
