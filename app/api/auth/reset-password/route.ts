@@ -1,5 +1,6 @@
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import { resetPasswordSchema, formatZodError } from "@/lib/validations";
 import type { User } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 
@@ -58,26 +59,19 @@ export async function POST(request: Request) {
     );
   }
 
-  const payload = (await request.json().catch(() => null)) as
-    | { email?: string; newPassword?: string }
-    | null;
+  const payload = (await request.json().catch(() => null)) as unknown;
 
-  const email = payload?.email?.trim().toLowerCase() ?? "";
-  const newPassword = payload?.newPassword?.trim() ?? "";
+  // Validation des données via Zod (email normalisé + newPassword min 6 chars)
+  const parsed = resetPasswordSchema.safeParse(payload);
 
-  if (!email || !newPassword) {
+  if (!parsed.success) {
     return NextResponse.json(
-      { error: "Email et nouveau mot de passe requis." },
+      { error: formatZodError(parsed.error) },
       { status: 400 },
     );
   }
 
-  if (newPassword.length < 6) {
-    return NextResponse.json(
-      { error: "Le mot de passe doit contenir au moins 6 caractères." },
-      { status: 422 },
-    );
-  }
+  const { email, newPassword } = parsed.data;
 
   try {
     const user = await findUserByEmail(email);
