@@ -1,6 +1,11 @@
 import { supabaseAdmin } from "@/lib/supabase-admin";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 import type { User } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
+
+// Limite de reset password : 3 tentatives par IP par fenêtre de 15 minutes.
+// Plus stricte que le signup car opération sensible (modification de mot de passe).
+const RESET_RATE_LIMIT = { maxRequests: 3, windowMs: 15 * 60 * 1000 };
 
 const PAGE_SIZE = 100;
 
@@ -39,6 +44,20 @@ const findUserByEmail = async (email: string): Promise<User | null> => {
 };
 
 export async function POST(request: Request) {
+  // Vérification du rate limit avant tout traitement
+  const clientIp = getClientIp(request);
+  const rateLimitResult = checkRateLimit(`reset:${clientIp}`, RESET_RATE_LIMIT);
+
+  if (!rateLimitResult.allowed) {
+    return NextResponse.json(
+      { error: "Trop de tentatives. Veuillez réessayer dans quelques minutes." },
+      {
+        status: 429,
+        headers: { "Retry-After": String(Math.ceil(rateLimitResult.retryAfterMs / 1000)) },
+      },
+    );
+  }
+
   const payload = (await request.json().catch(() => null)) as
     | { email?: string; newPassword?: string }
     | null;
