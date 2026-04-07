@@ -1,6 +1,7 @@
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 import { resetPasswordSchema, formatZodError } from "@/lib/validations";
+import { apiError } from "@/lib/api-error";
 import type { User } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 
@@ -95,24 +96,11 @@ export async function POST(request: Request) {
     );
 
     if (updateError) {
-      return NextResponse.json(
-        {
-          error: `Impossible de mettre à jour le mot de passe : ${updateError.message}`,
-        },
-        { status: 500 },
-      );
+      return apiError("reset-password/update", updateError, "Impossible de mettre à jour le mot de passe. Veuillez réessayer.");
     }
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    return NextResponse.json(
-      {
-        error:
-          error instanceof Error
-            ? error.message
-            : "Impossible de mettre à jour le mot de passe pour le moment.",
-      },
-      { status: 500 },
-    );
+    return apiError("reset-password", error, "Une erreur est survenue. Veuillez réessayer.");
   }
 }
