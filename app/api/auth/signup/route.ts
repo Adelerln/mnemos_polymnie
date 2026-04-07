@@ -1,5 +1,6 @@
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import { signupSchema, formatZodError } from "@/lib/validations";
 import type { User } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 
@@ -56,28 +57,19 @@ export async function POST(request: Request) {
     );
   }
 
-  const payload = (await request.json().catch(() => null)) as
-    | { email?: string; password?: string }
-    | null;
+  const payload = (await request.json().catch(() => null)) as unknown;
 
-  const rawEmail = payload?.email ?? "";
-  const rawPassword = payload?.password ?? "";
-  const email = rawEmail.trim().toLowerCase();
-  const password = rawPassword.trim();
+  // Validation des données via Zod (email normalisé + password min 6 chars)
+  const parsed = signupSchema.safeParse(payload);
 
-  if (!email || !password) {
+  if (!parsed.success) {
     return NextResponse.json(
-      { error: "Adresse email et mot de passe requis." },
+      { error: formatZodError(parsed.error) },
       { status: 400 },
     );
   }
 
-  if (password.length < 6) {
-    return NextResponse.json(
-      { error: "Le mot de passe doit contenir au moins 6 caractères." },
-      { status: 422 },
-    );
-  }
+  const { email, password } = parsed.data;
 
   const { data, error } = await supabaseAdmin.auth.admin.createUser({
     email,
