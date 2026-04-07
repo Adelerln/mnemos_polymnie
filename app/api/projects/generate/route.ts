@@ -1,5 +1,6 @@
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { generateProjectSchema, formatZodError } from "@/lib/validations";
+import { apiError } from "@/lib/api-error";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
@@ -10,10 +11,7 @@ export async function POST(request: Request) {
   } = await supabase.auth.getSession();
 
   if (sessionError) {
-    return NextResponse.json(
-      { error: sessionError.message },
-      { status: 500 },
-    );
+    return apiError("projects/generate/session", sessionError, "Erreur d'authentification. Veuillez vous reconnecter.");
   }
 
   if (!session?.user) {
@@ -52,10 +50,7 @@ export async function POST(request: Request) {
     .single();
 
   if (error) {
-    return NextResponse.json(
-      { error: `Impossible de créer le projet : ${error.message}` },
-      { status: 500 },
-    );
+    return apiError("projects/generate/insert", error, "Impossible de créer le projet. Veuillez réessayer.");
   }
 
   return NextResponse.json({ project: data }, { status: 201 });

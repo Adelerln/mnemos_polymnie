@@ -1,5 +1,6 @@
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { deleteProjectSchema, formatZodError } from "@/lib/validations";
+import { apiError } from "@/lib/api-error";
 import { NextResponse } from "next/server";
 
 export async function DELETE(request: Request) {
@@ -10,10 +11,7 @@ export async function DELETE(request: Request) {
   } = await supabase.auth.getSession();
 
   if (sessionError) {
-    return NextResponse.json(
-      { error: sessionError.message },
-      { status: 500 },
-    );
+    return apiError("projects/delete/session", sessionError, "Erreur d'authentification. Veuillez vous reconnecter.");
   }
 
   if (!session?.user) {
@@ -46,10 +44,7 @@ export async function DELETE(request: Request) {
     .single();
 
   if (error) {
-    return NextResponse.json(
-      { error: `Impossible de supprimer le projet : ${error.message}` },
-      { status: 500 },
-    );
+    return apiError("projects/delete", error, "Impossible de supprimer le projet. Veuillez réessayer.");
   }
 
   // assets est déjà validé et garanti comme tableau par Zod (default: [])
@@ -62,10 +57,12 @@ export async function DELETE(request: Request) {
       .remove([asset.path]);
 
     if (storageError) {
+      // Log l'erreur storage côté serveur sans exposer le détail à l'utilisateur
+      console.error(`[API projects/delete/storage] ${storageError.message}`);
       removalResults.push({
         bucket: asset.bucket,
         path: asset.path,
-        error: storageError.message,
+        error: "Erreur lors de la suppression du fichier.",
       });
     }
   }
