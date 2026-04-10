@@ -1,0 +1,268 @@
+-- WARNING: This schema is for context only and is not meant to be run.
+-- Table order and constraints may not be valid for execution.
+
+CREATE TABLE public.adults (
+  id bigint NOT NULL DEFAULT nextval('adults_id_seq'::regclass),
+  civility text,
+  last_name text NOT NULL,
+  first_name text NOT NULL,
+  address text,
+  complement text,
+  postal_code text,
+  city text,
+  country text,
+  phone_1 text,
+  phone_2 text,
+  email text,
+  partner_id bigint,
+  vacaf_number text,
+  notes text,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  anonymized_at timestamp with time zone,
+  CONSTRAINT adults_pkey PRIMARY KEY (id),
+  CONSTRAINT adults_partner_id_fkey FOREIGN KEY (partner_id) REFERENCES public.partners(id)
+);
+CREATE TABLE public.allowed_emails (
+  email text NOT NULL,
+  CONSTRAINT allowed_emails_pkey PRIMARY KEY (email)
+);
+CREATE TABLE public.centres (
+  id bigint NOT NULL DEFAULT nextval('centres_id_seq'::regclass),
+  name text NOT NULL,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  created_by uuid,
+  modified_at timestamp with time zone,
+  modified_by uuid,
+  is_active boolean NOT NULL DEFAULT true,
+  address_street text,
+  address_extra text,
+  postal_code text,
+  city text,
+  phone_landline text,
+  generic_email text,
+  ddcs_number text,
+  gps_latitude numeric,
+  gps_longitude numeric,
+  commission_pv_date date,
+  commission_expiry_date date,
+  CONSTRAINT centres_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.children (
+  id text NOT NULL,
+  last_name text,
+  first_name text,
+  birth_date text,
+  gender text,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  allergies text,
+  diet text,
+  health_issues text,
+  instructions text,
+  transport_notes text,
+  friend text,
+  family_id bigint NOT NULL,
+  anonymized_at timestamp with time zone,
+  CONSTRAINT children_pkey PRIMARY KEY (id),
+  CONSTRAINT children_family_id_fkey FOREIGN KEY (family_id) REFERENCES public.families(id)
+);
+CREATE TABLE public.contacts_centres (
+  id bigint NOT NULL DEFAULT nextval('contacts_centres_id_seq'::regclass),
+  centre_id bigint NOT NULL,
+  civility text,
+  last_name text NOT NULL,
+  first_name text NOT NULL,
+  role text,
+  phone_1 text,
+  phone_2 text,
+  email text,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT contacts_centres_pkey PRIMARY KEY (id),
+  CONSTRAINT contacts_centres_centre_id_fkey FOREIGN KEY (centre_id) REFERENCES public.centres(id)
+);
+CREATE TABLE public.families (
+  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+  id_client text NOT NULL UNIQUE,
+  email text,
+  created_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
+  updated_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
+  user_id uuid,
+  label text,
+  notes text,
+  anonymized_at timestamp with time zone,
+  CONSTRAINT families_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.family_adults (
+  id bigint NOT NULL DEFAULT nextval('family_adults_id_seq'::regclass),
+  family_id bigint NOT NULL,
+  adult_id bigint NOT NULL,
+  role text NOT NULL,
+  is_primary boolean DEFAULT false,
+  position smallint,
+  can_be_contacted boolean DEFAULT true,
+  created_at timestamp with time zone DEFAULT now(),
+  can_be_contacted_global boolean DEFAULT false,
+  CONSTRAINT family_adults_pkey PRIMARY KEY (id),
+  CONSTRAINT family_adults_family_id_fkey FOREIGN KEY (family_id) REFERENCES public.families(id),
+  CONSTRAINT family_adults_adult_id_fkey FOREIGN KEY (adult_id) REFERENCES public.adults(id)
+);
+CREATE TABLE public.identifications (
+  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+  user_id uuid,
+  email text NOT NULL,
+  status text NOT NULL CHECK (status = ANY (ARRAY['success'::text, 'failure'::text, 'locked'::text])),
+  ip_address inet,
+  user_agent text,
+  context jsonb DEFAULT '{}'::jsonb,
+  created_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
+  CONSTRAINT identifications_pkey PRIMARY KEY (id),
+  CONSTRAINT identifications_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
+);
+CREATE TABLE public.partners (
+  id bigint NOT NULL DEFAULT nextval('partners_id_seq'::regclass),
+  name text NOT NULL,
+  type USER-DEFINED DEFAULT 'AUTRE'::partner_type,
+  address text,
+  postal_code text,
+  city text,
+  country text,
+  email text,
+  phone text,
+  notes text,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT partners_pkey PRIMARY KEY (id)
+);
+
+
+-- 1. RLS Policies
+SELECT '--- RLS POLICIES ---' AS section;
+SELECT tablename, policyname, permissive, roles::text, cmd, qual, with_check
+FROM pg_policies WHERE schemaname = 'public';
+
+| tablename       | policyname                 | permissive | roles           | cmd    | qual | with_check                                                                                                                                    |
+| --------------- | -------------------------- | ---------- | --------------- | ------ | ---- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| identifications | Insert allowed emails only | PERMISSIVE | {authenticated} | INSERT | null | ((auth.uid() = user_id) AND (EXISTS ( SELECT 1
+   FROM allowed_emails ae
+  WHERE (lower(ae.email) = lower((auth.jwt() ->> 'email'::text)))))) |
+
+-- 2. Indexes
+SELECT '--- INDEXES ---' AS section;
+SELECT tablename, indexname, indexdef
+FROM pg_indexes WHERE schemaname = 'public' ORDER BY tablename;
+
+| tablename        | indexname                            | indexdef                                                                                                           |
+| ---------------- | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------ |
+| adults           | adults_pkey                          | CREATE UNIQUE INDEX adults_pkey ON public.adults USING btree (id)                                                  |
+| allowed_emails   | allowed_emails_pkey                  | CREATE UNIQUE INDEX allowed_emails_pkey ON public.allowed_emails USING btree (email)                               |
+| centres          | centres_pkey                         | CREATE UNIQUE INDEX centres_pkey ON public.centres USING btree (id)                                                |
+| children         | children_pkey                        | CREATE UNIQUE INDEX children_pkey ON public.children USING btree (id)                                              |
+| contacts_centres | contacts_centres_pkey                | CREATE UNIQUE INDEX contacts_centres_pkey ON public.contacts_centres USING btree (id)                              |
+| families         | idx_clients_id_client                | CREATE INDEX idx_clients_id_client ON public.families USING btree (id_client)                                      |
+| families         | idx_clients_email                    | CREATE INDEX idx_clients_email ON public.families USING btree (lower(email))                                       |
+| families         | idx_clients_user_id                  | CREATE INDEX idx_clients_user_id ON public.families USING btree (user_id)                                          |
+| families         | clients_pkey                         | CREATE UNIQUE INDEX clients_pkey ON public.families USING btree (id)                                               |
+| families         | clients_id_client_key                | CREATE UNIQUE INDEX clients_id_client_key ON public.families USING btree (id_client)                               |
+| family_adults    | family_adults_family_id_adult_id_key | CREATE UNIQUE INDEX family_adults_family_id_adult_id_key ON public.family_adults USING btree (family_id, adult_id) |
+| family_adults    | family_adults_pkey                   | CREATE UNIQUE INDEX family_adults_pkey ON public.family_adults USING btree (id)                                    |
+| identifications  | identifications_pkey                 | CREATE UNIQUE INDEX identifications_pkey ON public.identifications USING btree (id)                                |
+| identifications  | idx_identifications_created_at       | CREATE INDEX idx_identifications_created_at ON public.identifications USING btree (created_at DESC)                |
+| identifications  | idx_identifications_user_id          | CREATE INDEX idx_identifications_user_id ON public.identifications USING btree (user_id)                           |
+| identifications  | idx_identifications_email            | CREATE INDEX idx_identifications_email ON public.identifications USING btree (lower(email))                        |
+| partners         | partners_pkey                        | CREATE UNIQUE INDEX partners_pkey ON public.partners USING btree (id)                                              |
+
+-- 3. Triggers
+SELECT '--- TRIGGERS ---' AS section;
+SELECT trigger_name, event_object_table, action_timing, event_manipulation
+FROM information_schema.triggers WHERE trigger_schema = 'public';
+
+| trigger_name            | event_object_table | action_timing | event_manipulation |
+| ----------------------- | ------------------ | ------------- | ------------------ |
+| trg_clients_updated     | families           | BEFORE        | UPDATE             |
+| trg_clients_updated_at  | families           | BEFORE        | UPDATE             |
+| trg_children_updated_at | children           | BEFORE        | UPDATE             |
+
+-- 4. Functions
+SELECT '--- FUNCTIONS ---' AS section;
+SELECT routine_name, routine_type
+FROM information_schema.routines WHERE routine_schema = 'public';
+
+| routine_name            | routine_type |
+| ----------------------- | ------------ |
+| set_children_updated_at | FUNCTION     |
+| set_clients_updated_at  | FUNCTION     |
+
+-- 5. Enums
+SELECT '--- ENUMS ---' AS section;
+SELECT t.typname AS enum_name, e.enumlabel AS enum_value
+FROM pg_type t JOIN pg_enum e ON t.oid = e.enumtypid
+ORDER BY t.typname, e.enumsortorder;
+
+| enum_name                  | enum_value                 |
+| -------------------------- | -------------------------- |
+| aal_level                  | aal1                       |
+| aal_level                  | aal2                       |
+| aal_level                  | aal3                       |
+| action                     | INSERT                     |
+| action                     | UPDATE                     |
+| action                     | DELETE                     |
+| action                     | TRUNCATE                   |
+| action                     | ERROR                      |
+| buckettype                 | STANDARD                   |
+| buckettype                 | ANALYTICS                  |
+| buckettype                 | VECTOR                     |
+| code_challenge_method      | s256                       |
+| code_challenge_method      | plain                      |
+| equality_op                | eq                         |
+| equality_op                | neq                        |
+| equality_op                | lt                         |
+| equality_op                | lte                        |
+| equality_op                | gt                         |
+| equality_op                | gte                        |
+| equality_op                | in                         |
+| factor_status              | unverified                 |
+| factor_status              | verified                   |
+| factor_type                | totp                       |
+| factor_type                | webauthn                   |
+| factor_type                | phone                      |
+| oauth_authorization_status | pending                    |
+| oauth_authorization_status | approved                   |
+| oauth_authorization_status | denied                     |
+| oauth_authorization_status | expired                    |
+| oauth_client_type          | public                     |
+| oauth_client_type          | confidential               |
+| oauth_registration_type    | dynamic                    |
+| oauth_registration_type    | manual                     |
+| oauth_response_type        | code                       |
+| one_time_token_type        | confirmation_token         |
+| one_time_token_type        | reauthentication_token     |
+| one_time_token_type        | recovery_token             |
+| one_time_token_type        | email_change_token_new     |
+| one_time_token_type        | email_change_token_current |
+| one_time_token_type        | phone_change_token         |
+| partner_type               | CSE                        |
+| partner_type               | ASSOCIATION                |
+| partner_type               | AUTRE                      |
+
+-- 6. Sequences
+SELECT '--- SEQUENCES ---' AS section;
+SELECT sequencename, last_value FROM pg_sequences WHERE schemaname = 'public';
+
+| sequencename            | last_value |
+| ----------------------- | ---------- |
+| centres_id_seq          | 6          |
+| contacts_centres_id_seq | 3          |
+| clients_id_seq          | 7          |
+| identifications_id_seq  | 38         |
+| partners_id_seq         | 1          |
+| adults_id_seq           | 36         |
+| family_adults_id_seq    | 76         |
+
+-- 7. Storage buckets
+SELECT '--- STORAGE BUCKETS ---' AS section;
+SELECT id, name, public, file_size_limit, allowed_mime_types FROM storage.buckets;
+
+| section                 |
+| ----------------------- |
+| --- STORAGE BUCKETS --- |

@@ -1,0 +1,114 @@
+BUG FIX
+Tim
+Adèle
+Jeanne
+Mymo
+
+
+CORRIGÉS - ADÈLE
+header
+
+
+
+À CORRIGER - ADÈLE
+Ajouter des encadrés qui disent à quoi servent les boutons pour certains (ceux qui n’ont pas de contexte) 
+Faire un back qui fonctionne ahahauhahhahahhah
+revoir le rollover du cta "Pour accéder ->" qui devrait être plus marquant + il envoie vers espace famille, est-ce normal ou pas ?
+Revoir les paddings / espacements qui sont tous les memes alors qu’ils ne devraient pas + problème d'alignement vertical + revoir peut être le bouton connexion aux a une police et une taille de police aussi peut etre différente et son rollover n’est pas très joli
+Y'a t-il besoin des 3 phrases, je pense que l’on peut enlever module clé en haut + rapprocher les textes, j’ai inspecté la page et il y a des margin top en trop qui ne servent à rien + on a pas de modification du curseur de souris quand on passe sur les images alors qu’il y a un rolloverx il faut en rajouter un 
+(PS : je ne comprends toujours pas le fait que quand on appuie dessus c’est different que lorsque l’on appuie sur accéder)
+
+Page pp :
+
+Famille
+Problème d'alignement entre fiches familles et dossier client
+Mélanger les border-radius (arrondis) ne se fait pas trop en temps normal (entre inscrits mineurs, recherche + le bloc qui les entoure, ça fait beaucoup d’arrondis différents) + les deux bords arrondissement en haut mais pas en bas ça fait très bizarre (il existe en design une vraie règle par rapport aux arrondis si vous voulez aller voir)
+Dans le tableau des dossiers clients il faut un meilleur rollover ou en tout cas que le curseur passe en pointer
+Les ombres je ne sais pas si c’est obligé surtout que parfois on sait pas pourquoi il n’en y a pas...
+Il faut une uniformité des blocs cad : le deuxième bloc "informations famille" son titre est indiqué dans un mini header noir donc celui d’en haut "fiches familles dossier client" devrait aussi etre indiqué dans un bordereau noir + les deux icônes a droite n'ont pas de title pas ouf niveau accessibilité 
+(PS : pour la suite, je crois qu’il s’est mal adapté a mon écran d'ordinateur donc je dois avoir des problèmes supplémentaires que vous n'avez pas)
+
+Problème de couleur "enregistrer la fiche" ne peut pas etre rouge
+Revoir la taille des input qui sont différentes pour le moment + ID client n’est pas forcément au même endroit avec tout le reste et/ou doit s’afficher différemment car non modifiable
+
+Dans informations enfants le rollover orange pour inscription devrait plutot etre rouge je pense (dans un site il faut une couleur accent, ici le orange n'apparaît nulle part d’autre et d’un coup il y a plein d'orange, doit on garder un côté thalie avec du rouge ou s’en détacher ? Si oui alors quelle couleur pourquoi et réussir a mieux l'intégrer
+
+Quand on clique dans fiche sanitaire, je trouve ca un peu dommage que ca prenne toute la hauteur de l'écran (peut etre seulement un probleme sur mon ordi) (+on peut quand on est dessus quand meme défiler la page, ne doit elle pas se bloquer ?)
+Le "retirer" est très bizarre, a voir comment bien l'intégrer, je n’ai pas de suggestions pour le moment 
+
+
+
+Inscriptions
+Je ne peux pas dire grand chose car la page s'affiche trop mal sur mon ordi et le site n’est donc pas assez représentatif pour donner un avis mais je vois qla DA qui est intéressant
+
+Fiche
+L’id client doit il etre modifiable et ne doit on pas plutot avoir un bouton recherche ?
+Les icônes n ont toujours pas de title 
+L'inscription lie au partenaire ne devrair s’afficher que lorsque l’on clique sur active
+
+
+
+À DÉTERMINER - JEANNE
+•⁠  ⁠Question de « Vitrine », pourquoi ne pas partir sur un site plus « coloré » ?… ça fait peut etre plus accueillant, plus chaleureux, plus humain. Tons beige? Tons pastel? Rester classe et simple. Pas enfantin.Cohérent. La DA —> une vision, pas un style. (Comme Thalie avec son site noir et rouge)  Je suis d’accord, partons sur des tons pastels mais colorés
+•⁠  ⁠Dans le dossier Client, j’ai été un peu surprise, par le « inscrits mineurs + le nombre » au dessus des infos parents, il pourrait peut-être être au niveau des infos enfants? Ou alors du coté droit plus haute en plus petit? Et ça laisserait champs libre à la recherche famille qui serait plus cohérente. A supprimer de ce modèle → ce champ sera transféré dans un modèle dédié à l’analyse de la data sur le logiciel
+
+
+DESIGN - MYMO
+•⁠  ⁠Transitions douce entre les pages? Animation subtil pas flashy.
+•⁠  ⁠Garde t-on cette typo? Manrope? DM Sans?
+•⁠  ⁠Les petits caractères de la première page sont peut être trop petits? C’est ce qu’on voit en premier, comme un slogan, soit les mettre plus grand soit  mettre le premier titre plus petit, mais dommage. Phrase très bien, c’est qu’on promet aux gens qui vont s’en servir « pensée pour vos équipes » + des gens qui ne voient pas les petits caractères seront amenés à se servir du logiciel (taille typo min. à 16px)
+•⁠  ⁠Espacer un peu les icônes? Sensation de respirer (+ plus on rapproche la page, plus les icônes sont les uns sur les autres) 
+•⁠  ⁠« Polymnie » dans le header trop proche de « famille » 
+•⁠  ⁠Différent style d’une page à l’autre : inscription famille différente de fiche inscription pourtant meme typo de titre. Faire une cohérence de taille de typo.
+•⁠  ⁠Logo : Fait avec IA ou adobe? Couleur? Si on garde le nom, est ce que vous voulez quelques croquis? ( a voir peut être plus tard ça)
+•⁠  ⁠Possible d’ajouter une petite animation sur la flèche du « pour accéder » pour rendre l’entrée plus engageante ?
+
+
+POUR PLUS TARD
+•⁠  ⁠Idée de CHATBOT : page avec un tuto court? Widget flottant en bas a droite? répondre aux questions, aide la prise en main du logiciel, guider les premières actions
+•⁠  ⁠Vidéo de présentation quelque part? Qui explique ce que c’est et pourquoi?
+•⁠  ⁠Rajouter une zone RGPD
+
+
+Tim : 
+
+
+
+....
+
+
+
+
+Update 23 /11
+
+
+
+ADELE
+Séparer dans le card transports les convocations “Aller” des convocations “Retour” qui ne sont pas le même sous-item
+éventuel chatbot
+
+
+MYMO
+Logo Mon Compte plutôt que le mail dans le header page 1
+Ajouter une petite roue à droite avec un logo et enlever “Paramètres” écrit en toutes lettres
+Enlever le mot déconnexion et faire un petit bouton signifiant la même chose avec un logo
+mettre logo déconnection dans un dropdown pour que le bouton déconnexion soit là quand on appui sur “compte”
+le bouton déconnexion sort de l’écran - NE MARCHE PAS
+
+
+https://coolors.co/
+Une charte graphique globale
+Des sous-chartes graphiques (6) : 
+Clients ; rose: #F5DBE3
+Inscriptions : Violet #F5D4FF
+Séjours : bleu #BBFAF4
+Personnel : 
+Transport : 
+Partenaires : 
+
+
+autre site : https://www.realtimecolors.com/?colors=070608-faf9fb-857092-c0acb9-aa909c&fonts=Inter-Inter
+
+
+
+TIM & JEANNE
