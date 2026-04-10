@@ -1,0 +1,42 @@
+# Pipeline CI — vérifie chaque PR avant fusion
+# Déclenché sur les PRs vers develop et main
+# 3 étapes séquentielles : lint → build → tests
+# Si une étape échoue, le merge est bloqué
+
+name: CI
+
+on:
+  pull_request:
+    branches: [develop, main]
+
+concurrency:
+  # Annule les exécutions précédentes sur la même PR (évite les runs en doublon)
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    name: Lint → Build → Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout du code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Installation des dépendances
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
+
+      - name: Tests unitaires
+        run: npm run test:run
