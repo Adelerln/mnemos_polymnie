@@ -4,11 +4,11 @@ import { defineConfig, devices } from "@playwright/test";
 // Lance un vrai navigateur Chromium pour tester l'application comme un utilisateur
 export default defineConfig({
   // Dossier contenant les tests E2E
-  testDir: "./e2e",
+  testDir: "./__tests__/e2e",
   // Timeout par test (30s par défaut)
   timeout: 30_000,
   // Répertoire des résultats (screenshots, traces, etc.)
-  outputDir: "./e2e/results",
+  outputDir: "./__tests__/e2e/results",
   // Retry 1 fois en CI pour fiabiliser les tests instables
   retries: process.env.CI ? 1 : 0,
   // Reporter console + HTML en CI

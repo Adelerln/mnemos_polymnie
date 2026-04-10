@@ -12,7 +12,7 @@
 
 # testing
 /coverage
-/e2e/results/
+/__tests__/e2e/results/
 /playwright-report/
 /blob-report/
 
