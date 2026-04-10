@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "@/styles/globals.css";
 import { AuthProvider } from "@/components/AuthProvider";
-import { Footer, SiteHeader } from "@/components/layout";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 
 const geistSans = Geist({
@@ -21,6 +20,8 @@ export const metadata: Metadata = {
     "Interface moderne pour la gestion des colonies de vacances pour enfants.",
 };
 
+// Layout racine — fournit les fonts, le thème et l'AuthProvider
+// Le header/footer est géré par les layouts de chaque route group
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -32,16 +33,12 @@ export default async function RootLayout({
   } = await supabase.auth.getSession();
 
   return (
-    <html lang="en">
+    <html lang="fr">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-neutral-100 text-neutral-900`}
       >
         <AuthProvider initialSession={session}>
-          <div className="flex min-h-screen flex-col">
-            <SiteHeader />
-            <main className="flex-1">{children}</main>
-            <Footer />
-          </div>
+          {children}
         </AuthProvider>
       </body>
     </html>
