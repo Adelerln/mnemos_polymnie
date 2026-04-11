@@ -64,7 +64,6 @@ type FamilyRow = {
   id?: number;
   id_client: string;
   notes: string | null;
-  email: string | null;
   family_adults?: Array<{
     is_primary: boolean;
     adult_id?: string;
@@ -92,7 +91,7 @@ type FamilyRow = {
   created_at?: string;
   updated_at?: string;
 };
-type FamilyRowPayload = Pick<FamilyRow, "id_client" | "notes" | "email">;
+type FamilyRowPayload = Pick<FamilyRow, "id_client" | "notes">;
 
 // Payload pour la sauvegarde (children gérés dans la table dédiée)
 type FamilyRowPayloadForSave = FamilyRowPayload;
@@ -522,7 +521,7 @@ const mapRowToFamilyRecord = (row: FamilyRow): FamilyRecord => {
       email: link.adult?.email ?? "",
       partner: link.adult?.partner?.name ?? "",
     })),
-    familyEmail: row.email ?? null,
+    familyEmail: null,
     notes: row.notes ?? null,
     children: (row.children ?? []).map(mapChildRowToChild),
     createdAt: row.created_at ?? undefined,
@@ -533,7 +532,6 @@ const mapRowToFamilyRecord = (row: FamilyRow): FamilyRecord => {
 const mapFamilyRecordToRow = (family: FamilyRecord): FamilyRowPayloadForSave => ({
   id_client: family.id,
   notes: family.notes ?? null,
-  email: family.familyEmail ?? null,
 });
 
 export const findAdultsByName = async (
@@ -649,7 +647,6 @@ export const fetchFamilies = async (): Promise<FamilyRecord[]> => {
         id,
         id_client,
         notes,
-        email,
         family_adults:family_adults(
           is_primary,
           adult_id,
