@@ -63,7 +63,6 @@ type ChildRow = {
 type FamilyRow = {
   id?: number;
   id_client: string;
-  label: string | null;
   notes: string | null;
   email: string | null;
   family_adults?: Array<{
@@ -93,7 +92,7 @@ type FamilyRow = {
   created_at?: string;
   updated_at?: string;
 };
-type FamilyRowPayload = Pick<FamilyRow, "id_client" | "label" | "notes" | "email">;
+type FamilyRowPayload = Pick<FamilyRow, "id_client" | "notes" | "email">;
 
 // Payload pour la sauvegarde (children gérés dans la table dédiée)
 type FamilyRowPayloadForSave = FamilyRowPayload;
@@ -153,7 +152,7 @@ export type AdultDuplicateMatch = {
   country: string | null;
   family_links: Array<{
     family_id: number | null;
-    family: { id_client: string | null; label: string | null } | null;
+    family: { id_client: string | null } | null;
   }>;
 };
 
@@ -471,9 +470,8 @@ const mapRowToFamilyRecord = (row: FamilyRow): FamilyRecord => {
     primaryAdultId: primaryAdultLink?.adult_id ?? null,
     primaryRole: primaryAdultLink?.role ?? "",
     label:
-      row.label ??
-      ([primaryAdult?.first_name, primaryAdult?.last_name].filter(Boolean).join(" ").trim() ||
-        row.id_client),
+      [primaryAdult?.first_name, primaryAdult?.last_name].filter(Boolean).join(" ").trim() ||
+      row.id_client,
     civility: primaryAdult?.civility ?? "",
     lastName: primaryAdult?.last_name ?? "",
     firstName: primaryAdult?.first_name ?? "",
@@ -534,7 +532,6 @@ const mapRowToFamilyRecord = (row: FamilyRow): FamilyRecord => {
 
 const mapFamilyRecordToRow = (family: FamilyRecord): FamilyRowPayloadForSave => ({
   id_client: family.id,
-  label: family.label || family.id,
   notes: family.notes ?? null,
   email: family.familyEmail ?? null,
 });
@@ -564,7 +561,7 @@ export const findAdultsByName = async (
         country,
         family_links:family_adults(
           family_id,
-          family:families(id_client, label)
+          family:families(id_client)
         )
       `,
     )
@@ -651,7 +648,6 @@ export const fetchFamilies = async (): Promise<FamilyRecord[]> => {
       `
         id,
         id_client,
-        label,
         notes,
         email,
         family_adults:family_adults(
