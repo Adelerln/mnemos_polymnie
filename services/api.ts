@@ -86,7 +86,7 @@ type FamilyRow = {
       phone_2: string | null;
       email: string | null;
       notes: string | null;
-      partner: { name: string | null; id?: string | number | null } | null;
+      partner?: { name: string | null; id?: string | number | null } | null;
     } | null;
   }>;
   children?: ChildRow[];
@@ -672,8 +672,7 @@ export const fetchFamilies = async (): Promise<FamilyRecord[]> => {
             country,
             phone_1,
             phone_2,
-            email,
-            partner:partners(name)
+            email
           )
         ),
         children:children(
