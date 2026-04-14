@@ -517,7 +517,7 @@ export default function CentresPage() {
               </div>
             </div>
           ) : null}
-          <div className="max-h-[280px] overflow-y-auto overscroll-y-contain touch-pan-y" style={{ WebkitOverflowScrolling: "touch" }}>
+          <div className="max-h-[280px] overflow-y-auto overscroll-y-contain touch-pan-y">
             <table className="w-full border-collapse text-sm text-centres-accent">
               <thead className="sticky top-0 z-10 border-b border-centres-surface bg-white text-left text-[11px] font-semibold uppercase tracking-[0.3em] text-centres-accent">
                 <tr>

@@ -73,6 +73,10 @@
   --color-inscriptions-surface: #F5D4FF;
   --color-inscriptions-border: #D8C2E8;
 
+  /* Module fiche — bleu-vert */
+  --color-fiche-accent: #0f4c65;
+  --color-fiche-accent-hover: #0c3d51;
+
   /* Statuts */
   --color-status-success: #027a48;
   --color-status-error: #b42318;
