@@ -41,6 +41,41 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+
+  /* ── Tokens applicatifs (issue #32) ─────────────────────── */
+
+  /* Texte commun */
+  --color-app-heading: #1f2330;
+  --color-app-body: #2b2f36;
+  --color-app-label: #5c606b;
+
+  /* Structure commune */
+  --color-app-border: #d4d7df;
+  --color-app-input-focus: #7f8696;
+  --color-app-page-bg: #f3f4f8;
+
+  /* Module centres — bleu */
+  --color-centres-accent: #204991;
+  --color-centres-surface: #CFE5FF;
+  --color-centres-hover: #B3D2FF;
+  --color-centres-cta: #c77845;
+  --color-centres-cta-hover: #b45b12;
+
+  /* Module familles — rose */
+  --color-familles-accent: #A53E69;
+  --color-familles-surface: #f5dbe3;
+  --color-familles-border: #f3d5df;
+  --color-familles-bg: #fff9fb;
+
+  /* Module inscriptions — violet */
+  --color-inscriptions-accent: #7D498C;
+  --color-inscriptions-surface: #F5D4FF;
+  --color-inscriptions-border: #D8C2E8;
+
+  /* Statuts */
+  --color-status-success: #027a48;
+  --color-status-error: #b42318;
+  --color-status-warning: #c2410c;
 }
 
 :root {
@@ -114,10 +149,12 @@
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    border-color: var(--border);
+    outline-color: var(--ring);
   }
   body {
-    @apply bg-background text-foreground;
+    background-color: var(--background);
+    color: var(--foreground);
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   }
   h1,
