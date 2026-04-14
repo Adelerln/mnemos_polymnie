@@ -1,6 +1,7 @@
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 import { signupSchema, formatZodError } from "@/lib/validations";
+import { apiError } from "@/lib/api-error";
 import type { User } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 
@@ -110,22 +111,11 @@ export async function POST(request: Request) {
 
         return NextResponse.json({ user: existingUser }, { status: 200 });
       } catch (lookupError) {
-        return NextResponse.json(
-          {
-            error:
-              lookupError instanceof Error
-                ? lookupError.message
-                : "Impossible de vérifier l'utilisateur existant.",
-          },
-          { status: 500 },
-        );
+        return apiError("signup/lookup", lookupError, "Une erreur est survenue lors de la création du compte. Veuillez réessayer.");
       }
     }
 
-    return NextResponse.json(
-      { error: `Impossible de créer le compte : ${error.message}` },
-      { status: 500 },
-    );
+    return apiError("signup/create", error, "Impossible de créer le compte. Veuillez réessayer ou contacter un administrateur.");
   }
 
   if (data.user) {
@@ -137,12 +127,7 @@ export async function POST(request: Request) {
     );
 
     if (updateError) {
-      return NextResponse.json(
-        {
-          error: `Compte créé mais impossible de valider l'email automatiquement : ${updateError.message}`,
-        },
-        { status: 500 },
-      );
+      return apiError("signup/confirm", updateError, "Compte créé, mais une erreur est survenue. Contactez un administrateur.");
     }
   }
 
