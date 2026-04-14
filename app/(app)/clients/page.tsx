@@ -25,16 +25,9 @@ import {
   useRef,
   useState,
 } from "react";
-import {
-  deleteFamily,
-  fetchFamilies,
-  saveFamily,
-  upsertSecondaryAdult,
-  type FamilyRecord,
-  type SecondaryContact,
-  type Child,
-  type HealthFormState,
-} from "@/services/api";
+import { deleteFamily, fetchFamilies, saveFamily } from "@/services/families";
+import { upsertSecondaryAdult } from "@/services/adults";
+import type { FamilyRecord, SecondaryContact, Child, HealthFormState } from "@/lib/mappers";
 import { useProjectLogger } from "@/hooks/useProjectLogger";
 import { ParentsGrid, type ParentCardData } from "@/components/ParentsGrid";
 
