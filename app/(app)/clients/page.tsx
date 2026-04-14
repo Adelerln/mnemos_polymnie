@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -25,16 +25,9 @@ import {
   useRef,
   useState,
 } from "react";
-import {
-  deleteFamily,
-  fetchFamilies,
-  saveFamily,
-  upsertSecondaryAdult,
-  type FamilyRecord,
-  type SecondaryContact,
-  type Child,
-  type HealthFormState,
-} from "@/services/api";
+import { deleteFamily, fetchFamilies, saveFamily } from "@/services/families";
+import { upsertSecondaryAdult } from "@/services/adults";
+import type { FamilyRecord, SecondaryContact, Child, HealthFormState } from "@/lib/mappers";
 import { useProjectLogger } from "@/hooks/useProjectLogger";
 import { ParentsGrid, type ParentCardData } from "@/components/ParentsGrid";
 
@@ -1979,34 +1972,34 @@ const filteredFamilies = useMemo(() => {
     const first = family.firstName ?? "";
     return `${civ}${first} ${last}`.trim();
   };
-  const fieldBg = isDirty ? "bg-white" : "bg-[#fdf2f6]";
+  const fieldBg = isDirty ? "bg-white" : "bg-familles-bg";
   const pastelSearchInputClass =
-    "rounded-2xl border border-[#f3d5df] bg-white/80 px-4 py-2.5 text-sm text-[#2b1b27] placeholder:text-[#b090a0] focus:border-[#e0a8bc] focus:outline-none";
-  const pastelLabelClass = "text-xs font-semibold uppercase tracking-[0.25em] text-[#b17f92]";
+    "rounded-2xl border border-familles-border bg-white/80 px-4 py-2.5 text-sm text-app-heading placeholder:text-familles-input-focus focus:border-familles-input-focus focus:outline-none";
+  const pastelLabelClass = "text-xs font-semibold uppercase tracking-[0.25em] text-familles-accent";
   const pastelFieldInputClass =
-    "rounded-2xl border border-[#f2d4de] px-4 py-2.5 text-sm text-[#2b1b27] focus:border-[#e0a8bc] focus:outline-none";
+    "rounded-2xl border border-familles-border px-4 py-2.5 text-sm text-app-heading focus:border-familles-input-focus focus:outline-none";
   const pastelIconButtonClass =
-    "inline-flex size-9 items-center justify-center rounded-full border border-[#f0c9d7] bg-white/70 text-[#7b4b60] transition hover:bg-[#f5dbe3]/80 disabled:cursor-not-allowed disabled:opacity-40";
+    "inline-flex size-9 items-center justify-center rounded-full border border-familles-border bg-white/70 text-app-label transition hover:bg-familles-surface/80 disabled:cursor-not-allowed disabled:opacity-40";
 
   return (
-    <div className="min-h-screen bg-white py-12 text-[#2f1d28]">
+    <div className="min-h-screen bg-white py-12 text-app-heading">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-5 md:px-10">
-        <header className="rounded-3xl border border-[#f2d4de] bg-white/95 px-8 py-7 shadow-[0_25px_60px_rgba(83,15,43,0.05)]">
+        <header className="rounded-3xl border border-familles-border bg-white/95 px-8 py-7 shadow-[0_25px_60px_rgba(83,15,43,0.05)]">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.5em] text-[#A53E69]">
+              <p className="text-sm font-semibold uppercase tracking-[0.5em] text-familles-accent">
                 Clients
               </p>
-              <h1 className="mt-2 text-3xl font-semibold tracking-tight text-[#2d1826]">
+              <h1 className="mt-2 text-3xl font-semibold tracking-tight text-app-heading">
                 Dossiers Clients
               </h1>
-              <p className="mt-2 text-sm text-[#806471]">
+              <p className="mt-2 text-sm text-app-label">
                 Effectuez une recherche pour afficher les dossiers clients.
               </p>
             </div>
             <button
               type="button"
-              className="inline-flex items-center gap-3 rounded-full border border-[#f2d4de] bg-white/70 px-5 py-2 text-sm font-medium text-[#4C2331] transition hover:border-[#ebbccc] hover:bg-[#E9C6D2]"
+              className="inline-flex items-center gap-3 rounded-full border border-familles-border bg-white/70 px-5 py-2 text-sm font-medium text-app-heading transition hover:border-familles-input-focus hover:bg-familles-surface"
               onClick={() => {
                 if (isDirty) {
                   alert("Enregistrez ou annulez les modifications avant de rechercher.");
@@ -2029,13 +2022,13 @@ const filteredFamilies = useMemo(() => {
               }}
             >
               {isSearchPanelOpen ? "FERMER LA RECHERCHE" : "OUVRIR LA RECHERCHE"}
-              <span className="rounded-full bg-[#f5dbe3] px-2 py-0.5 text-[10px] font-semibold text-[#742f48]">
+              <span className="rounded-full bg-familles-surface px-2 py-0.5 text-[10px] font-semibold text-familles-accent">
                 ⌘K
               </span>
             </button>
           </div>
-          <div className="mt-3 flex items-center gap-2 text-sm text-[#8e6d7d]">
-            <span className="inline-flex h-1 w-8 rounded-full bg-[#f5dbe3]" aria-hidden="true" />
+          <div className="mt-3 flex items-center gap-2 text-sm text-app-label">
+            <span className="inline-flex h-1 w-8 rounded-full bg-familles-surface" aria-hidden="true" />
             {hasActiveSearch
               ? filteredFamilies.length > 1
                 ? `Résultats : ${filteredFamilies.length}`
@@ -2043,7 +2036,7 @@ const filteredFamilies = useMemo(() => {
               : "Aucune recherche en cours."}
           </div>
           {isSearchPanelOpen ? (
-            <div className="mt-5 grid gap-4 rounded-2xl border border-[#f3d5df] bg-[#fff9fb] p-5 text-sm text-[#35202f] shadow-[0_20px_50px_rgba(83,15,43,0.04)]">
+            <div className="mt-5 grid gap-4 rounded-2xl border border-familles-border bg-familles-bg p-5 text-sm text-app-heading shadow-[0_20px_50px_rgba(83,15,43,0.04)]">
               <div className="grid gap-4 lg:grid-cols-3">
                 <label className="flex flex-col gap-2">
                   <span className={pastelLabelClass}>Nom</span>
@@ -2223,18 +2216,18 @@ const filteredFamilies = useMemo(() => {
                 </label>
               </div>
 
-              <div className="flex flex-wrap items-center gap-3 text-xs font-medium uppercase tracking-[0.18em] text-[#7b5869]">
+              <div className="flex flex-wrap items-center gap-3 text-xs font-medium uppercase tracking-[0.18em] text-familles-accent">
                 <button
                   type="button"
                   onClick={() => setIsSearchPanelOpen(false)}
-                  className="inline-flex items-center justify-center rounded-full border border-transparent bg-[#f5dbe3] px-4 py-2 text-[#3b2331] transition hover:bg-[#f2c5d4]"
+                  className="inline-flex items-center justify-center rounded-full border border-transparent bg-familles-surface px-4 py-2 text-app-body transition hover:bg-familles-surface"
                 >
                   Fermer
                 </button>
                 <button
                   type="button"
                   onClick={handleReset}
-                  className="inline-flex items-center justify-center rounded-full border border-[#f3d5df] bg-white px-4 py-2 text-[#3b2331] transition hover:bg-[#fff6f9]"
+                  className="inline-flex items-center justify-center rounded-full border border-familles-border bg-white px-4 py-2 text-app-body transition hover:bg-familles-bg"
                 >
                   Réinitialiser
                 </button>
@@ -2244,29 +2237,29 @@ const filteredFamilies = useMemo(() => {
         </header>
 
         {hasActiveSearch ? (
-          <section className="overflow-hidden rounded-3xl border border-[#f1d6e0] bg-white/95 shadow-[0_30px_70px_rgba(83,15,43,0.04)]">
+          <section className="overflow-hidden rounded-3xl border border-familles-border bg-white/95 shadow-[0_30px_70px_rgba(83,15,43,0.04)]">
             <div className="max-h-[360px] overflow-y-auto">
-              <table className="w-full border-collapse text-sm text-[#2f1d28]">
-                <thead className="sticky top-0 z-10 border-b border-[#f3d8e1] bg-white/95 text-left text-xs font-semibold uppercase tracking-[0.3em] text-[#8E4865]">
+              <table className="w-full border-collapse text-sm text-app-heading">
+                <thead className="sticky top-0 z-10 border-b border-familles-border bg-white/95 text-left text-xs font-semibold uppercase tracking-[0.3em] text-familles-accent">
                   <tr>
                     <th className="px-6 py-3">
-                      <span className="text-[#A53E69]">ID CLIENT</span>
+                      <span className="text-familles-accent">ID CLIENT</span>
                     </th>
                     <th className="px-6 py-3">
-                      <span className="text-[#A53E69]">CLIENT</span>
+                      <span className="text-familles-accent">CLIENT</span>
                     </th>
                     <th className="px-6 py-3">
-                      <span className="text-[#A53E69]">CODE POSTAL</span>
+                      <span className="text-familles-accent">CODE POSTAL</span>
                     </th>
                     <th className="px-6 py-3">
-                      <span className="text-[#A53E69]">VILLE</span>
+                      <span className="text-familles-accent">VILLE</span>
                     </th>
                   </tr>
                 </thead>
                 <tbody>
                   {paddedFamilies.every((item) => item === null) ? (
                     <tr>
-                      <td className="px-6 py-7 text-center text-sm text-[#9a7a8a]" colSpan={4}>
+                      <td className="px-6 py-7 text-center text-sm text-app-label" colSpan={4}>
                         Aucune famille enregistrée pour le moment.
                       </td>
                     </tr>
@@ -2276,7 +2269,7 @@ const filteredFamilies = useMemo(() => {
                         return (
                           <tr
                             key={`placeholder-${index}`}
-                            className="border-b border-[#f3d8e1] bg-white/60 text-[#b9a7b0]"
+                            className="border-b border-familles-border bg-white/60 text-familles-input-focus"
                           >
                             <td className="px-6 py-3">-</td>
                             <td className="px-6 py-3">-</td>
@@ -2290,17 +2283,17 @@ const filteredFamilies = useMemo(() => {
                       return (
                         <tr
                           key={item.id}
-                          className={`cursor-pointer border-b border-[#f3d8e1] transition hover:bg-[#fff6f9] focus:bg-[#f7ecf1] ${isSelected ? "bg-[#f7ecf1]" : ""}`}
+                          className={`cursor-pointer border-b border-familles-border transition hover:bg-familles-bg focus:bg-[#f7ecf1] ${isSelected ? "bg-[#f7ecf1]" : ""}`}
                           onClick={() => handleSelectFamily(item.id)}
                           onKeyDown={handleRowKeyDown(item.id)}
                           tabIndex={0}
                           role="button"
                           aria-pressed={isSelected}
                         >
-                          <td className="px-6 py-3 font-semibold text-[#2d1826]">{item.id}</td>
-                          <td className="px-6 py-3 text-[#463140]">{formatPrimaryAdultName(item)}</td>
-                          <td className="px-6 py-3 text-[#463140]">{item.postalCode}</td>
-                          <td className="px-6 py-3 text-[#463140]">{item.city}</td>
+                          <td className="px-6 py-3 font-semibold text-app-heading">{item.id}</td>
+                          <td className="px-6 py-3 text-app-body">{formatPrimaryAdultName(item)}</td>
+                          <td className="px-6 py-3 text-app-body">{item.postalCode}</td>
+                          <td className="px-6 py-3 text-app-body">{item.city}</td>
                         </tr>
                       );
                     })
@@ -2310,30 +2303,30 @@ const filteredFamilies = useMemo(() => {
             </div>
           </section>
         ) : (
-          <section className="rounded-3xl border border-dashed border-[#f3d5df] bg-white/60 px-6 py-10 text-center text-sm text-[#8e6d7d] shadow-[0_20px_50px_rgba(83,15,43,0.04)]">
+          <section className="rounded-3xl border border-dashed border-familles-border bg-white/60 px-6 py-10 text-center text-sm text-app-label shadow-[0_20px_50px_rgba(83,15,43,0.04)]">
             Lancez une recherche pour afficher les dossiers Parents.
           </section>
         )}
 
-        <section className="rounded-3xl border border-[#f1d6e0] bg-white p-8 shadow-[0_30px_70px_rgba(83,15,43,0.03)]">
+        <section className="rounded-3xl border border-familles-border bg-white p-8 shadow-[0_30px_70px_rgba(83,15,43,0.03)]">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.5em] text-[#A53E69]">
+              <p className="text-xs font-semibold uppercase tracking-[0.5em] text-familles-accent">
                 Fiche client
               </p>
-              <h2 className="mt-2 text-2xl font-semibold tracking-tight text-[#2d1826]">
+              <h2 className="mt-2 text-2xl font-semibold tracking-tight text-app-heading">
                 Informations Client
               </h2>
-              <p className="mt-2 text-sm text-[#806471]">
+              <p className="mt-2 text-sm text-app-label">
                 Consultez ou mettez à jour les détails du dossier sélectionné.
               </p>
             </div>
-            <div className="flex flex-col items-end gap-3 text-xs font-semibold uppercase tracking-[0.2em] text-[#7b4b60]">
+            <div className="flex flex-col items-end gap-3 text-xs font-semibold uppercase tracking-[0.2em] text-app-label">
               {selectedFamilyId ? (
-                <div className="flex items-center gap-3 rounded-full border border-[#f0c9d7] bg-white/80 px-4 py-2 text-[#7b4b60]">
+                <div className="flex items-center gap-3 rounded-full border border-familles-border bg-white/80 px-4 py-2 text-app-label">
                   <span>ID client</span>
                   <input
-                    className="w-28 bg-transparent text-sm text-[#2d1826] outline-none"
+                    className="w-28 bg-transparent text-sm text-app-heading outline-none"
                     value={familyForm.id}
                     readOnly
                   />
@@ -2386,7 +2379,7 @@ const filteredFamilies = useMemo(() => {
           {selectedFamilyId ? (
             <form
               id="family-form"
-              className="space-y-8 pt-6 text-[#2f1d28]"
+              className="space-y-8 pt-6 text-app-heading"
               onSubmit={handleSaveFamily}
               noValidate
             >
@@ -2407,7 +2400,7 @@ const filteredFamilies = useMemo(() => {
                       </p>
                     ) : null}
                     {adultFeedback ? (
-                      <p className="text-sm font-medium text-[#2f7a57]">
+                      <p className="text-sm font-medium text-status-success">
                         {adultFeedback}
                       </p>
                     ) : null}
@@ -2416,7 +2409,7 @@ const filteredFamilies = useMemo(() => {
                         {saveError}
                       </p>
                     ) : feedback ? (
-                      <p className="text-sm font-medium text-[#2f7a57]">
+                      <p className="text-sm font-medium text-status-success">
                         {feedback}
                       </p>
                     ) : null}
@@ -2429,15 +2422,15 @@ const filteredFamilies = useMemo(() => {
                 </div>
 
                 <div className="space-y-6">
-                  <div className="space-y-5 rounded-3xl border border-[#e3e6ed] bg-white p-6 shadow-lg w-full">
+                  <div className="space-y-5 rounded-3xl border border-app-border bg-white p-6 shadow-lg w-full">
                     <div className="flex flex-wrap items-center justify-between gap-3">
-                      <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-[#1f2330]">
+                      <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-app-heading">
                         Informations enfants
                       </h3>
                       <div className="flex items-center gap-2">
                         <button
                           type="button"
-                          className="inline-flex items-center gap-2 rounded-md border border-[#d4d7df] bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-[#2b2f36] transition hover:bg-[#f0f3f8] cursor-pointer"
+                          className="inline-flex items-center gap-2 rounded-md border border-app-border bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-app-body transition hover:bg-app-page-bg cursor-pointer"
                           onClick={() => {
                             setIsChildFormOpen((open) => !open);
                             setChildError(null);
@@ -2450,7 +2443,7 @@ const filteredFamilies = useMemo(() => {
                         </button>
                         <button
                           type="button"
-                          className="inline-flex items-center justify-center rounded-md border border-[#d4d7df] bg-white p-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#2b2f36] transition hover:bg-[#f0f3f8] cursor-pointer"
+                          className="inline-flex items-center justify-center rounded-md border border-app-border bg-white p-2 text-xs font-semibold uppercase tracking-[0.16em] text-app-body transition hover:bg-app-page-bg cursor-pointer"
                           onClick={() => {
                             const firstChild = familyForm.children[0];
                             if (!firstChild) {
@@ -2465,9 +2458,9 @@ const filteredFamilies = useMemo(() => {
                         </button>
                       </div>
                     </div>
-                    <div className="w-full overflow-hidden rounded-2xl border border-[#d4d7df]">
-                      <table className="w-full border-collapse text-sm text-[#2b2f36]">
-                        <thead className="bg-[#2f3442] text-xs font-semibold uppercase tracking-[0.16em] text-white">
+                    <div className="w-full overflow-hidden rounded-2xl border border-app-border">
+                      <table className="w-full border-collapse text-sm text-app-body">
+                        <thead className="bg-app-body text-xs font-semibold uppercase tracking-[0.16em] text-white">
                           <tr>
                             <th className="px-5 py-3 text-left">Nom de famille</th>
                             <th className="px-5 py-3 text-left">prenom</th>
@@ -2493,44 +2486,44 @@ const filteredFamilies = useMemo(() => {
                             </tr>
                           ) : (
                             familyForm.children.map((child) => (
-                              <tr key={child.id} className="border-t border-[#e3e6ed]">
-                                <td className="px-5 py-3 uppercase tracking-wide text-[#1f2330]">
+                              <tr key={child.id} className="border-t border-app-border">
+                                <td className="px-5 py-3 uppercase tracking-wide text-app-heading">
                                   {child.lastName}
                                 </td>
-                                <td className="px-5 py-3 text-[#2b2f36]">
+                                <td className="px-5 py-3 text-app-body">
                                   {child.firstName}
                                 </td>
-                                <td className="px-5 py-3 text-[#4d525d]">
+                                <td className="px-5 py-3 text-app-label">
                                   {formatDateToFrench(child.birthDate)}
                                 </td>
-                                <td className="px-5 py-3 text-[#2b2f36] whitespace-nowrap min-w-[180px]">
+                                <td className="px-5 py-3 text-app-body whitespace-nowrap min-w-[180px]">
                                   {computeAgeFromBirthDate(child.birthDate)}
                                 </td>
-                                <td className="px-5 py-3 text-[#2b2f36]">
+                                <td className="px-5 py-3 text-app-body">
                                   {child.gender}
                                 </td>
                                 <td className="px-5 py-3 text-center">
                                   <button
                                     type="button"
-                                    className="inline-flex items-center justify-center rounded-full border border-[#d4d7df] bg-white px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#2b2f36] transition hover:border-[#c77845] hover:text-[#c77845] cursor-pointer"
+                                    className="inline-flex items-center justify-center rounded-full border border-app-border bg-white px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-app-body transition hover:border-centres-cta hover:text-[#c77845] cursor-pointer"
                                     onClick={() => handleCreateChildRegistration(child.id)}
                                     aria-label={`Creer une inscription pour ${child.firstName} ${child.lastName}`}
                                   >
                                     Creer inscription
                                   </button>
                                 </td>
-                                <td className="px-5 py-3 text-center text-xs uppercase tracking-[0.16em] text-[#5c606b]">
+                                <td className="px-5 py-3 text-center text-xs uppercase tracking-[0.16em] text-app-label">
                                   <div className="flex flex-col items-center gap-2">
                                     <button
                                       type="button"
-                                      className="rounded-md border border-[#d4d7df] bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#2b2f36] transition hover:bg-[#f0f3f8] cursor-pointer"
+                                      className="rounded-md border border-app-border bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-app-body transition hover:bg-app-page-bg cursor-pointer"
                                       onClick={() => handleOpenHealthModal(child.id)}
                                     >
                                       Infos sanitaire
                                     </button>
                                     <button
                                       type="button"
-                                      className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#b45b12] transition hover:text-[#8f4104] cursor-pointer"
+                                      className="text-[11px] font-semibold uppercase tracking-[0.16em] text-centres-cta-hover transition hover:text-centres-cta-hover cursor-pointer"
                                       onClick={() => handleRemoveChild(child.id)}
                                     >
                                       Retirer
@@ -2544,61 +2537,61 @@ const filteredFamilies = useMemo(() => {
                       </table>
                     </div>
                     {isChildFormOpen ? (
-                      <div className="rounded-xl border border-dashed border-[#d4d7df] bg-[#f7f8fb] p-5">
-                        <h4 className="text-xs font-semibold uppercase tracking-[0.16em] text-[#1f2330]">
+                      <div className="rounded-xl border border-dashed border-app-border bg-app-page-bg p-5">
+                        <h4 className="text-xs font-semibold uppercase tracking-[0.16em] text-app-heading">
                           {editingChildId ? "Modifier la fiche enfant" : "Nouvelle fiche enfant"}
                         </h4>
-                        <div className="mt-3 grid gap-3 text-sm text-[#2b2f36] md:grid-cols-2">
+                        <div className="mt-3 grid gap-3 text-sm text-app-body md:grid-cols-2">
                           <label className="flex flex-col gap-1">
-                            <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
+                            <span className="text-xs font-semibold uppercase tracking-[0.14em] text-app-label">
                               Nom de famille
                             </span>
                             <input
-                              className="rounded border border-[#d4d7df] bg-white px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none"
+                              className="rounded border border-app-border bg-white px-3 py-2 text-app-body focus:border-app-input-focus focus:outline-none"
                               value={childForm.lastName}
                               onChange={handleChildFieldChange("lastName")}
                               placeholder="Nom"
                             />
                           </label>
                           <label className="flex flex-col gap-1">
-                            <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
+                            <span className="text-xs font-semibold uppercase tracking-[0.14em] text-app-label">
                               prenom
                             </span>
                             <input
-                              className="rounded border border-[#d4d7df] bg-white px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none"
+                              className="rounded border border-app-border bg-white px-3 py-2 text-app-body focus:border-app-input-focus focus:outline-none"
                               value={childForm.firstName}
                               onChange={handleChildFieldChange("firstName")}
                               placeholder="prenom"
                             />
                           </label>
                           <label className="flex flex-col gap-1">
-                            <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
+                            <span className="text-xs font-semibold uppercase tracking-[0.14em] text-app-label">
                               Date de naissance
                             </span>
                             <input
                               type="date"
-                              className="rounded border border-[#d4d7df] bg-white px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none"
+                              className="rounded border border-app-border bg-white px-3 py-2 text-app-body focus:border-app-input-focus focus:outline-none"
                               value={childForm.birthDate}
                               onChange={handleChildFieldChange("birthDate")}
                             />
                           </label>
                           <label className="flex flex-col gap-1">
-                            <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
+                            <span className="text-xs font-semibold uppercase tracking-[0.14em] text-app-label">
                               age
                             </span>
                             <input
-                              className="rounded border border-[#d4d7df] bg-[#f7f8fb] px-3 py-2 text-[#2b2f36] focus:border-[#7f8696] focus:outline-none min-w-[200px]"
+                              className="rounded border border-app-border bg-app-page-bg px-3 py-2 text-app-body focus:border-app-input-focus focus:outline-none min-w-[200px]"
                               value={computeAgeFromBirthDate(childForm.birthDate)}
                               placeholder="Calcul automatique"
                               readOnly
                             />
                           </label>
                           <label className="flex flex-col gap-1 md:col-span-2">
-                            <span className="text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
+                            <span className="text-xs font-semibold uppercase tracking-[0.14em] text-app-label">
                               Sexe
                             </span>
                             <select
-                              className="rounded border border-[#d4d7df] bg-white px-3 py-2 text-sm text-[#2b2f36] focus:border-[#7f8696] focus:outline-none"
+                              className="rounded border border-app-border bg-white px-3 py-2 text-sm text-app-body focus:border-app-input-focus focus:outline-none"
                               value={childForm.gender}
                               onChange={handleChildFieldChange("gender")}
                             >
@@ -2611,14 +2604,14 @@ const filteredFamilies = useMemo(() => {
                           </label>
                     </div>
                     {childError ? (
-                      <p className="mt-3 text-sm font-medium text-[#c43d3d]">
+                      <p className="mt-3 text-sm font-medium text-status-error">
                         {childError}
                       </p>
                         ) : null}
                         <div className="mt-4 flex flex-wrap items-center justify-end gap-2">
                           <button
                             type="button"
-                            className="inline-flex items-center gap-2 rounded-md border border-[#d4d7df] bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#2b2f36] transition hover:bg-[#f0f3f8] cursor-pointer"
+                            className="inline-flex items-center gap-2 rounded-md border border-app-border bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-app-body transition hover:bg-app-page-bg cursor-pointer"
                             onClick={() => {
                               setChildForm(createEmptyChildForm());
                               setIsChildFormOpen(false);
@@ -2630,7 +2623,7 @@ const filteredFamilies = useMemo(() => {
                           </button>
                           <button
                             type="button"
-                            className="inline-flex items-center gap-2 rounded-md border border-[#b96d3c] bg-[#c77845] px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-[#b45b12] disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+                            className="inline-flex items-center gap-2 rounded-md border border-centres-cta-hover bg-centres-cta px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-centres-cta-hover disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
                             onClick={handleAddChild}
                             disabled={isAutoSavingChildren}
                           >
@@ -2645,14 +2638,14 @@ const filteredFamilies = useMemo(() => {
                     ) : null}
                   </div>
 
-                  <div className="grid gap-4 rounded-3xl border border-[#e3e6ed] bg-white p-6 shadow-lg sm:grid-cols-3 lg:grid-cols-6">
+                  <div className="grid gap-4 rounded-3xl border border-app-border bg-white p-6 shadow-lg sm:grid-cols-3 lg:grid-cols-6">
                     {quickActions.map(({ id, label, icon: Icon, href }) => {
                       const content = (
                         <div className="flex h-full flex-col items-center justify-center gap-3">
-                          <span className="flex size-12 items-center justify-center rounded-full bg-[#2f3442] text-white shadow-lg">
+                          <span className="flex size-12 items-center justify-center rounded-full bg-app-body text-white shadow-lg">
                             <Icon className="size-6" />
                           </span>
-                          <span className="leading-tight text-[#2b2f36] text-center">{label}</span>
+                          <span className="leading-tight text-app-body text-center">{label}</span>
                         </div>
                       );
 
@@ -2661,7 +2654,7 @@ const filteredFamilies = useMemo(() => {
                           <Link
                             key={id}
                             href={href}
-                            className="h-full rounded-lg border border-[#e3e6ed] bg-[#f7f8fb] px-4 py-3 text-left text-sm font-semibold uppercase tracking-[0.14em] text-[#2b2f36] transition hover:-translate-y-0.5 hover:border-[#c77845] hover:bg-[#fde2e4] hover:shadow-xl cursor-pointer"
+                            className="h-full rounded-lg border border-app-border bg-app-page-bg px-4 py-3 text-left text-sm font-semibold uppercase tracking-[0.14em] text-app-body transition hover:-translate-y-0.5 hover:border-centres-cta hover:bg-rose-100 hover:shadow-xl cursor-pointer"
                           >
                             {content}
                           </Link>
@@ -2672,7 +2665,7 @@ const filteredFamilies = useMemo(() => {
                         <button
                           key={id}
                           type="button"
-                          className="h-full rounded-lg border border-[#e3e6ed] bg-[#f7f8fb] px-4 py-3 text-left text-sm font-semibold uppercase tracking-[0.14em] text-[#2b2f36] transition hover:-translate-y-0.5 hover:border-[#c77845] hover:bg-[#fde2e4] hover:shadow-xl cursor-pointer"
+                          className="h-full rounded-lg border border-app-border bg-app-page-bg px-4 py-3 text-left text-sm font-semibold uppercase tracking-[0.14em] text-app-body transition hover:-translate-y-0.5 hover:border-centres-cta hover:bg-rose-100 hover:shadow-xl cursor-pointer"
                         >
                           {content}
                         </button>
@@ -2680,11 +2673,11 @@ const filteredFamilies = useMemo(() => {
                     })}
                   </div>
 
-                  <div className="grid gap-4 rounded-2xl border border-[#e3e6ed] bg-white p-6 text-[11px] uppercase tracking-[0.16em] text-[#5c606b] shadow-lg sm:grid-cols-2 lg:grid-cols-4">
+                  <div className="grid gap-4 rounded-2xl border border-app-border bg-white p-6 text-[11px] uppercase tracking-[0.16em] text-app-label shadow-lg sm:grid-cols-2 lg:grid-cols-4">
                     {auditEntries.map(({ label }) => (
-                      <div key={label} className="italic text-[#6b7080]">
+                      <div key={label} className="italic text-app-label">
                         {label}
-                        <p className="mt-1 italic font-semibold text-[#555a66]">
+                        <p className="mt-1 italic font-semibold text-app-label">
                           A completer
                         </p>
                       </div>
@@ -2694,7 +2687,7 @@ const filteredFamilies = useMemo(() => {
               </div>
           </form>
         ) : (
-          <div className="rounded-b-3xl bg-white px-8 py-10 text-sm text-[#5c606b]">
+          <div className="rounded-b-3xl bg-white px-8 py-10 text-sm text-app-label">
             Salectionnez un dossier dans le tableau pour afficher la fiche.
           </div>
         )}
@@ -2703,10 +2696,10 @@ const filteredFamilies = useMemo(() => {
 
       {isSecondaryContactModalOpen ? (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-neutral-950/70 px-4 py-10 backdrop-blur">
-          <div className="relative w-full max-w-3xl rounded-2xl border border-[#3f4350] bg-[#2b2f36] p-6 shadow-2xl md:p-7 lg:p-8 max-h-[85vh] overflow-y-auto">
+          <div className="relative w-full max-w-3xl rounded-2xl border border-app-body bg-app-body p-6 shadow-2xl md:p-7 lg:p-8 max-h-[85vh] overflow-y-auto">
             <button
               type="button"
-              className="absolute right-5 top-5 text-sm font-semibold uppercase tracking-[0.16em] text-[#d0d4de] transition hover:text-white"
+              className="absolute right-5 top-5 text-sm font-semibold uppercase tracking-[0.16em] text-app-border transition hover:text-white"
               onClick={handleCloseSecondaryContactModal}
             >
               Fermer
@@ -2715,7 +2708,7 @@ const filteredFamilies = useMemo(() => {
               <h3 className="text-lg font-semibold uppercase tracking-[0.2em] text-white">
                 Autre adulte
               </h3>
-              <p className="mt-1 text-sm text-[#d0d4de]">
+              <p className="mt-1 text-sm text-app-border">
                 Renseignez les informations du responsable secondaire.
               </p>
             </header>
@@ -2735,7 +2728,7 @@ const filteredFamilies = useMemo(() => {
                   Civilita
                 </span>
                 <select
-                  className="max-w-[140px] rounded border border-white/20 bg-white/90 px-3 py-2 text-[#1f2330] focus:border-[#c77845] focus:outline-none"
+                  className="max-w-[140px] rounded border border-white/20 bg-white/90 px-3 py-2 text-app-heading focus:border-centres-cta focus:outline-none"
                   value={adultForm.civility ?? ""}
                   onChange={handleSecondaryContactChange("civility")}
                 >
@@ -2751,7 +2744,7 @@ const filteredFamilies = useMemo(() => {
                   Nom
                 </span>
                 <input
-                  className="rounded border border-white/20 bg-white/90 px-3 py-2 text-[#1f2330] focus:border-[#c77845] focus:outline-none"
+                  className="rounded border border-white/20 bg-white/90 px-3 py-2 text-app-heading focus:border-centres-cta focus:outline-none"
                   value={adultForm.lastName}
                   onChange={handleSecondaryContactChange("lastName")}
                   placeholder="Nom"
@@ -2762,7 +2755,7 @@ const filteredFamilies = useMemo(() => {
                   prenom
                 </span>
                 <input
-                  className="rounded border border-white/20 bg-white/90 px-3 py-2 text-[#1f2330] focus:border-[#c77845] focus:outline-none"
+                  className="rounded border border-white/20 bg-white/90 px-3 py-2 text-app-heading focus:border-centres-cta focus:outline-none"
                   value={adultForm.firstName}
                   onChange={handleSecondaryContactChange("firstName")}
                   placeholder="prenom"
@@ -2773,7 +2766,7 @@ const filteredFamilies = useMemo(() => {
                   Rale dans la famille
                 </span>
                 <input
-                  className="rounded border border-white/20 bg-white/90 px-3 py-2 text-[#1f2330] focus:border-[#c77845] focus:outline-none"
+                  className="rounded border border-white/20 bg-white/90 px-3 py-2 text-app-heading focus:border-centres-cta focus:outline-none"
                   value={adultForm.role}
                   onChange={handleSecondaryContactChange("role")}
                   list="secondary-role-suggestions"
@@ -2794,7 +2787,7 @@ const filteredFamilies = useMemo(() => {
                   Adresse
                 </span>
                 <input
-                  className="rounded border border-white/20 bg-white/90 px-3 py-2 text-[#1f2330] focus:border-[#c77845] focus:outline-none"
+                  className="rounded border border-white/20 bg-white/90 px-3 py-2 text-app-heading focus:border-centres-cta focus:outline-none"
                   value={adultForm.address}
                   onChange={handleSecondaryAddressChange}
                   placeholder="NAo et rue"
@@ -2811,18 +2804,18 @@ const filteredFamilies = useMemo(() => {
                 ) : null}
                 {secondaryAddressSuggestions.length > 0 ? (
                   <div className="mt-2 space-y-2">
-                    <div className="rounded-lg border border-white/30 bg-white/90 text-[#1f2330] shadow-lg">
-                      <ul className="divide-y divide-[#e7e9ef]">
+                    <div className="rounded-lg border border-white/30 bg-white/90 text-app-heading shadow-lg">
+                      <ul className="divide-y divide-app-border">
                         {secondaryAddressSuggestions.map((suggestion, index) => (
                           <li
                             key={`${suggestion.label}-${index}`}
-                            className="cursor-pointer px-3 py-2 text-sm hover:bg-[#f7f8fb]"
+                            className="cursor-pointer px-3 py-2 text-sm hover:bg-app-page-bg"
                             onClick={() => handleSelectSecondaryAddressSuggestion(suggestion)}
                           >
-                            <p className="font-semibold text-[#1f2330]">
+                            <p className="font-semibold text-app-heading">
                               {suggestion.label}
                             </p>
-                            <p className="text-xs text-[#5c606b]">
+                            <p className="text-xs text-app-label">
                               {suggestion.postcode} {suggestion.city}
                             </p>
                           </li>
@@ -2831,7 +2824,7 @@ const filteredFamilies = useMemo(() => {
                     </div>
                     <button
                       type="button"
-                      className="text-xs font-semibold uppercase tracking-[0.12em] text-[#b45b12] transition hover:text-[#8f4104]"
+                      className="text-xs font-semibold uppercase tracking-[0.12em] text-centres-cta-hover transition hover:text-centres-cta-hover"
                       onClick={handleConfirmSecondaryManualAddress}
                     >
                       Utiliser l&apos;adresse saisie
@@ -2844,7 +2837,7 @@ const filteredFamilies = useMemo(() => {
                   Complament
                 </span>
                 <input
-                  className="rounded border border-white/20 bg-white/90 px-3 py-2 text-[#1f2330] focus:border-[#c77845] focus:outline-none"
+                  className="rounded border border-white/20 bg-white/90 px-3 py-2 text-app-heading focus:border-centres-cta focus:outline-none"
                   value={adultForm.complement}
                   onChange={handleSecondaryContactChange("complement")}
                   placeholder="Batiment, atage..."
@@ -2855,7 +2848,7 @@ const filteredFamilies = useMemo(() => {
                   Code postal
                 </span>
                 <input
-                  className="rounded border border-white/20 bg-white/90 px-3 py-2 text-[#1f2330] focus:border-[#c77845] focus:outline-none"
+                  className="rounded border border-white/20 bg-white/90 px-3 py-2 text-app-heading focus:border-centres-cta focus:outline-none"
                   value={adultForm.postalCode}
                   onChange={handleSecondaryContactChange("postalCode")}
                   placeholder="75017"
@@ -2866,7 +2859,7 @@ const filteredFamilies = useMemo(() => {
                   Ville
                 </span>
                 <input
-                  className="rounded border border-white/20 bg-white/90 px-3 py-2 text-[#1f2330] focus:border-[#c77845] focus:outline-none"
+                  className="rounded border border-white/20 bg-white/90 px-3 py-2 text-app-heading focus:border-centres-cta focus:outline-none"
                   value={adultForm.city}
                   onChange={handleSecondaryContactChange("city")}
                   placeholder="Paris"
@@ -2877,7 +2870,7 @@ const filteredFamilies = useMemo(() => {
                   Pays
                 </span>
                 <input
-                  className="rounded border border-white/20 bg-white/90 px-3 py-2 text-[#1f2330] focus:border-[#c77845] focus:outline-none"
+                  className="rounded border border-white/20 bg-white/90 px-3 py-2 text-app-heading focus:border-centres-cta focus:outline-none"
                   value={adultForm.country}
                   onChange={handleSecondaryContactChange("country")}
                   placeholder="France"
@@ -2888,7 +2881,7 @@ const filteredFamilies = useMemo(() => {
                   Telephone
                 </span>
                 <input
-                  className="rounded border border-white/20 bg-white/90 px-3 py-2 text-[#1f2330] focus:border-[#c77845] focus:outline-none"
+                  className="rounded border border-white/20 bg-white/90 px-3 py-2 text-app-heading focus:border-centres-cta focus:outline-none"
                   value={adultForm.phone}
                   onChange={handleSecondaryContactChange("phone")}
                   placeholder="07 00 00 00 00"
@@ -2899,7 +2892,7 @@ const filteredFamilies = useMemo(() => {
                   Telephone 2
                 </span>
                 <input
-                  className="rounded border border-white/20 bg-white/90 px-3 py-2 text-[#1f2330] focus:border-[#c77845] focus:outline-none"
+                  className="rounded border border-white/20 bg-white/90 px-3 py-2 text-app-heading focus:border-centres-cta focus:outline-none"
                   value={adultForm.phone2}
                   onChange={handleSecondaryContactChange("phone2")}
                   placeholder="07 00 00 00 00"
@@ -2910,7 +2903,7 @@ const filteredFamilies = useMemo(() => {
                   Email
                 </span>
                 <input
-                  className="rounded border border-white/20 bg-white/90 px-3 py-2 text-[#1f2330] focus:border-[#c77845] focus:outline-none"
+                  className="rounded border border-white/20 bg-white/90 px-3 py-2 text-app-heading focus:border-centres-cta focus:outline-none"
                   value={adultForm.email}
                   onChange={handleSecondaryContactChange("email")}
                   placeholder="Perent@example.com"
@@ -2921,7 +2914,7 @@ const filteredFamilies = useMemo(() => {
                   Partenaire
                 </span>
                 <input
-                  className="rounded border border-white/20 bg-white/90 px-3 py-2 text-[#1f2330] focus:border-[#c77845] focus:outline-none"
+                  className="rounded border border-white/20 bg-white/90 px-3 py-2 text-app-heading focus:border-centres-cta focus:outline-none"
                   value={adultForm.partner ?? ""}
                   onChange={handleSecondaryContactChange("partner")}
                   placeholder="Nom du partenaire"
@@ -2931,14 +2924,14 @@ const filteredFamilies = useMemo(() => {
             <div className="mt-6 flex flex-wrap items-center justify-end gap-2">
               <button
                 type="button"
-                className="inline-flex items-center gap-2 rounded-md border border-[#505664] bg-transPerent px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#d0d4de] transition hover:bg-[#3a3f4c]"
+                className="inline-flex items-center gap-2 rounded-md border border-[#505664] bg-transPerent px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-app-border transition hover:bg-[#3a3f4c]"
                 onClick={handleCloseSecondaryContactModal}
               >
                 Fermer
               </button>
               <button
                 type="button"
-                className="inline-flex items-center gap-2 rounded-md border border-[#c77845] bg-[#c77845] px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-[#b45b12]"
+                className="inline-flex items-center gap-2 rounded-md border border-centres-cta bg-centres-cta px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-centres-cta-hover"
                 onClick={handleSaveSecondaryAdult}
               >
                 Enregistrer
@@ -2957,10 +2950,10 @@ const filteredFamilies = useMemo(() => {
 
       {healthModalChildId && activeHealthChild ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/70 px-4 py-10 backdrop-blur">
-          <div className="relative w-full max-w-3xl rounded-2xl border border-[#3f4350] bg-[#2b2f36] p-8 shadow-2xl">
+          <div className="relative w-full max-w-3xl rounded-2xl border border-app-body bg-app-body p-8 shadow-2xl">
             <button
               type="button"
-              className="absolute right-5 top-5 text-sm font-semibold uppercase tracking-[0.16em] text-[#d0d4de] transition hover:text-white"
+              className="absolute right-5 top-5 text-sm font-semibold uppercase tracking-[0.16em] text-app-border transition hover:text-white"
               onClick={handleCloseHealthModal}
             >
               Fermer
@@ -2969,7 +2962,7 @@ const filteredFamilies = useMemo(() => {
               <h3 className="text-lg font-semibold uppercase tracking-[0.2em] text-white">
                 Informations sanitaires
               </h3>
-              <p className="mt-1 text-sm text-[#d0d4de]">
+              <p className="mt-1 text-sm text-app-border">
                 {activeHealthChild.firstName} {activeHealthChild.lastName}
               </p>
             </header>
@@ -2979,7 +2972,7 @@ const filteredFamilies = useMemo(() => {
                   Allergies
                 </span>
                 <textarea
-                  className="min-h-[80px] rounded border border-white/20 bg-white/90 px-3 py-2 text-[#1f2330] focus:border-[#c77845] focus:outline-none"
+                  className="min-h-[80px] rounded border border-white/20 bg-white/90 px-3 py-2 text-app-heading focus:border-centres-cta focus:outline-none"
                   value={healthForm.allergies}
                   onChange={handleHealthFieldChange("allergies")}
                   placeholder="Aliments, madicaments..."
@@ -2990,7 +2983,7 @@ const filteredFamilies = useMemo(() => {
                   Ragime alimentaire
                 </span>
                 <input
-                  className="rounded border border-white/20 bg-white/90 px-3 py-2 text-[#1f2330] focus:border-[#c77845] focus:outline-none"
+                  className="rounded border border-white/20 bg-white/90 px-3 py-2 text-app-heading focus:border-centres-cta focus:outline-none"
                   value={healthForm.diet}
                   onChange={handleHealthFieldChange("diet")}
                   placeholder="Sans porc, vagatarien..."
@@ -3001,7 +2994,7 @@ const filteredFamilies = useMemo(() => {
                   Difficultas de santa
                 </span>
                 <textarea
-                  className="min-h-[80px] rounded border border-white/20 bg-white/90 px-3 py-2 text-[#1f2330] focus:border-[#c77845] focus:outline-none"
+                  className="min-h-[80px] rounded border border-white/20 bg-white/90 px-3 py-2 text-app-heading focus:border-centres-cta focus:outline-none"
                   value={healthForm.healthIssues}
                   onChange={handleHealthFieldChange("healthIssues")}
                   placeholder="Traitements, pathologies suivies..."
@@ -3012,7 +3005,7 @@ const filteredFamilies = useMemo(() => {
                   Conduite a tenir
                 </span>
                 <textarea
-                  className="min-h-[80px] rounded border border-white/20 bg-white/90 px-3 py-2 text-[#1f2330] focus:border-[#c77845] focus:outline-none"
+                  className="min-h-[80px] rounded border border-white/20 bg-white/90 px-3 py-2 text-app-heading focus:border-centres-cta focus:outline-none"
                   value={healthForm.instructions}
                   onChange={handleHealthFieldChange("instructions")}
                   placeholder="Geste a effectuer en cas d'incident..."
@@ -3023,7 +3016,7 @@ const filteredFamilies = useMemo(() => {
                   Recommandations (s&apos;affichent sur la liste transport)
                 </span>
                 <textarea
-                  className="min-h-[80px] rounded border border-white/20 bg-white/90 px-3 py-2 text-[#1f2330] focus:border-[#c77845] focus:outline-none"
+                  className="min-h-[80px] rounded border border-white/20 bg-white/90 px-3 py-2 text-app-heading focus:border-centres-cta focus:outline-none"
                   value={healthForm.transportNotes}
                   onChange={handleHealthFieldChange("transportNotes")}
                   placeholder="A rappeler aux aquipes transport..."
@@ -3034,7 +3027,7 @@ const filteredFamilies = useMemo(() => {
                   Ami(e) de
                 </span>
                 <input
-                  className="rounded border border-white/20 bg-white/90 px-3 py-2 text-[#1f2330] focus:border-[#c77845] focus:outline-none"
+                  className="rounded border border-white/20 bg-white/90 px-3 py-2 text-app-heading focus:border-centres-cta focus:outline-none"
                   value={healthForm.friend}
                   onChange={handleHealthFieldChange("friend")}
                   placeholder="Nom et prenom"
@@ -3045,7 +3038,7 @@ const filteredFamilies = useMemo(() => {
                   Matricule VACAF
                 </span>
                 <input
-                  className="rounded border border-white/20 bg-white/90 px-3 py-2 text-[#1f2330] focus:border-[#c77845] focus:outline-none"
+                  className="rounded border border-white/20 bg-white/90 px-3 py-2 text-app-heading focus:border-centres-cta focus:outline-none"
                   value={healthForm.vacaf}
                   onChange={handleHealthFieldChange("vacaf")}
                   placeholder="Numaro VACAF"
@@ -3060,14 +3053,14 @@ const filteredFamilies = useMemo(() => {
             <div className="mt-6 flex flex-wrap items-center justify-end gap-2">
               <button
                 type="button"
-                className="inline-flex items-center gap-2 rounded-md border border-[#505664] bg-transPerent px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#d0d4de] transition hover:bg-[#3a3f4c]"
+                className="inline-flex items-center gap-2 rounded-md border border-[#505664] bg-transPerent px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-app-border transition hover:bg-[#3a3f4c]"
                 onClick={handleCloseHealthModal}
               >
                 Fermer
               </button>
               <button
                 type="button"
-                className="inline-flex items-center gap-2 rounded-md border border-[#b96d3c] bg-[#c77845] px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-[#b45b12]"
+                className="inline-flex items-center gap-2 rounded-md border border-centres-cta-hover bg-centres-cta px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-centres-cta-hover"
                 onClick={handleSaveHealth}
               >
                 Enregistrer

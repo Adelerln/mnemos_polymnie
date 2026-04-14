@@ -546,7 +546,7 @@ function FichePageContent() {
                 <label className="inline-flex items-center gap-2">
                   <input
                     type="checkbox"
-                    className="size-4 accent-[#0f4c65]"
+                    className="size-4 accent-fiche-accent"
                     checked={colosApprenantes}
                     onChange={(event) => setColosApprenantes(event.target.checked)}
                   />
@@ -555,7 +555,7 @@ function FichePageContent() {
                 <label className="inline-flex items-center gap-2">
                   <input
                     type="checkbox"
-                    className="size-4 accent-[#0f4c65]"
+                    className="size-4 accent-fiche-accent"
                     checked={passColo}
                     onChange={(event) => setPassColo(event.target.checked)}
                   />
@@ -563,7 +563,7 @@ function FichePageContent() {
                 </label>
               </div>
 
-              <div className="rounded-xl border border-[#0f4c65] bg-[#0f4c65] p-4 text-white shadow">
+              <div className="rounded-xl border border-fiche-accent bg-fiche-accent p-4 text-white shadow">
                 <h4 className="text-sm font-semibold uppercase tracking-[0.18em]">
                   Informations documents séjour
                 </h4>
@@ -615,7 +615,7 @@ function FichePageContent() {
               <div className="min-h-[120px] rounded-xl border border-dashed border-[#c9ccd5] bg-white" />
               <button
                 type="button"
-                className="inline-flex items-center justify-center rounded-md border border-[#d43a3a] bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-[#d43a3a] transition hover:bg-[#fdeaea]"
+                className="inline-flex items-center justify-center rounded-md border border-[#d43a3a] bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-status-error transition hover:bg-[#fdeaea]"
               >
                 Rafraîchir inscription
               </button>
@@ -635,7 +635,7 @@ function FichePageContent() {
               <div className="min-h-[120px] rounded-xl border border-dashed border-[#c9ccd5] bg-white" />
               <button
                 type="button"
-                className="inline-flex items-center justify-center rounded-md border border-[#d43a3a] bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-[#d43a3a] transition hover:bg-[#fdeaea]"
+                className="inline-flex items-center justify-center rounded-md border border-[#d43a3a] bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-status-error transition hover:bg-[#fdeaea]"
               >
                 Rafraîchir inscription
               </button>
@@ -647,7 +647,7 @@ function FichePageContent() {
               <div className="flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.16em] text-[#5c606b]">
                 <span className="text-base text-[#1f2330]">Transport :</span>
                 <input
-                  className="min-w-[160px] flex-1 rounded border border-[#d4d7df] bg-white px-3 py-2 text-sm text-[#2b2f36] focus:border-[#7f8696] focus:outline-none"
+                  className="min-w-[160px] flex-1 rounded border border-[#d4d7df] bg-white px-3 py-2 text-sm text-[#2b2f36] focus:border-app-input-focus focus:outline-none"
                   value={transportInfo.mode}
                   onChange={handleTransportFieldChange("mode")}
                   placeholder="Mode de transport"
@@ -655,7 +655,7 @@ function FichePageContent() {
                 <label className="inline-flex items-center gap-2">
                   <input
                     type="checkbox"
-                    className="size-4 accent-[#0f4c65]"
+                    className="size-4 accent-fiche-accent"
                     checked={transportInfo.auto}
                     onChange={handleTransportFieldChange("auto")}
                   />
@@ -663,7 +663,7 @@ function FichePageContent() {
                 </label>
               </div>
               <textarea
-                className="min-h-[120px] w-full rounded border border-[#d4d7df] bg-white px-3 py-2 text-sm text-[#2b2f36] focus:border-[#7f8696] focus:outline-none"
+                className="min-h-[120px] w-full rounded border border-[#d4d7df] bg-white px-3 py-2 text-sm text-[#2b2f36] focus:border-app-input-focus focus:outline-none"
                 placeholder="Informations transport"
                 value={transportInfo.details}
                 onChange={handleTransportFieldChange("details")}
@@ -688,7 +688,7 @@ function FichePageContent() {
                       value={label}
                       checked={eventType === label}
                       onChange={handleEventTypeChange}
-                      className="size-4 accent-[#0f4c65]"
+                      className="size-4 accent-fiche-accent"
                     />
                     {label}
                   </label>
@@ -726,14 +726,14 @@ function FichePageContent() {
                   <label className="flex flex-col gap-1">
                     Plan pour convocation
                     <input
-                      className="rounded border border-[#d4d7df] bg-white px-3 py-2 text-sm text-[#2b2f36] focus:border-[#7f8696] focus:outline-none"
+                      className="rounded border border-[#d4d7df] bg-white px-3 py-2 text-sm text-[#2b2f36] focus:border-app-input-focus focus:outline-none"
                       placeholder="URL ou référence"
                     />
                   </label>
                   <label className="flex flex-col gap-1">
                     Notes
                     <textarea
-                      className="min-h-[120px] rounded border border-[#d4d7df] bg-white px-3 py-2 text-sm text-[#2b2f36] focus:border-[#7f8696] focus:outline-none"
+                      className="min-h-[120px] rounded border border-[#d4d7df] bg-white px-3 py-2 text-sm text-[#2b2f36] focus:border-app-input-focus focus:outline-none"
                       value={notes}
                       onChange={(event) => setNotes(event.target.value)}
                     />
@@ -742,7 +742,7 @@ function FichePageContent() {
                     <label className="flex flex-col gap-1">
                       Taille
                       <input
-                        className="rounded border border-[#d4d7df] bg-white px-2 py-1 text-sm text-[#2b2f36] focus:border-[#7f8696] focus:outline-none"
+                        className="rounded border border-[#d4d7df] bg-white px-2 py-1 text-sm text-[#2b2f36] focus:border-app-input-focus focus:outline-none"
                         value={childMetrics.taille}
                         onChange={handleMetricsChange("taille")}
                       />
@@ -750,7 +750,7 @@ function FichePageContent() {
                     <label className="flex flex-col gap-1">
                       Poids
                       <input
-                        className="rounded border border-[#d4d7df] bg-white px-2 py-1 text-sm text-[#2b2f36] focus:border-[#7f8696] focus:outline-none"
+                        className="rounded border border-[#d4d7df] bg-white px-2 py-1 text-sm text-[#2b2f36] focus:border-app-input-focus focus:outline-none"
                         value={childMetrics.poids}
                         onChange={handleMetricsChange("poids")}
                       />
@@ -758,7 +758,7 @@ function FichePageContent() {
                     <label className="flex flex-col gap-1">
                       Pointure
                       <input
-                        className="rounded border border-[#d4d7df] bg-white px-2 py-1 text-sm text-[#2b2f36] focus:border-[#7f8696] focus:outline-none"
+                        className="rounded border border-[#d4d7df] bg-white px-2 py-1 text-sm text-[#2b2f36] focus:border-app-input-focus focus:outline-none"
                         value={childMetrics.pointure}
                         onChange={handleMetricsChange("pointure")}
                       />
@@ -835,7 +835,7 @@ function FichePageContent() {
             </div>
             <button
               type="submit"
-              className="inline-flex items-center gap-2 rounded-md border border-[#0f4c65] bg-[#0f4c65] px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-[#0c3d51] disabled:opacity-60"
+              className="inline-flex items-center gap-2 rounded-md border border-fiche-accent bg-fiche-accent px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-fiche-accent-hover disabled:opacity-60"
               disabled={isSaving || isLoading}
             >
               {isSaving ? (
