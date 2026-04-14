@@ -1,6 +1,11 @@
 import type { UserRole } from "./index";
+import type { FamilyStatus } from "./database";
 
-export type FamilleStatus = "active" | "en_retard" | "archivee";
+/**
+ * Status aligné sur l'enum BDD family_status.
+ * L'ancien type "en_retard" | "archivee" n'existait pas en BDD.
+ */
+export type FamilleStatus = FamilyStatus;
 
 export interface Famille {
   id: string;
