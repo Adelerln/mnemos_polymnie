@@ -2,6 +2,7 @@
 
 import { supabase } from "@/lib/supabase-client";
 import type { Session, User } from "@supabase/supabase-js";
+import type { AuthContextValue } from "@/types/auth";
 import {
   createContext,
   useCallback,
@@ -28,15 +29,6 @@ const formatSupabaseSessionError = (cause: unknown) => {
   }
 
   return SUPABASE_SESSION_NETWORK_ERROR_MESSAGE;
-};
-
-type AuthContextValue = {
-  session: Session | null;
-  user: User | null;
-  mnemosId: number | null;
-  loading: boolean;
-  error: string | null;
-  refreshSession: () => Promise<void>;
 };
 
 export const AuthContext = createContext<AuthContextValue | undefined>(

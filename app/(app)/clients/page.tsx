@@ -28,56 +28,10 @@ import {
 import { deleteFamily, fetchFamilies, saveFamily } from "@/services/families";
 import { upsertSecondaryAdult } from "@/services/adults";
 import type { FamilyRecord, SecondaryContact, Child, HealthFormState } from "@/lib/mappers";
+import type { ChildFormState, FamilyFormState, FamilyEditableField } from "@/types/famille";
 import { useProjectLogger } from "@/hooks/useProjectLogger";
 import { ParentsGrid, type ParentCardData } from "@/components/ParentsGrid";
 
-type ChildFormState = {
-  lastName: string;
-  firstName: string;
-  birthDate: string;
-  gender: "F" | "M" | "";
-};
-
-type FamilyFormState = {
-  id: string;
-  rowId?: number;
-  label: string;
-  primaryAdultId?: string | null;
-  primaryRole?: string | null;
-  secondaryAdults: SecondaryContact[];
-  civility: string;
-  lastName: string;
-  firstName: string;
-  address: string;
-  complement: string;
-  postalCode: string;
-  city: string;
-  country: string;
-  phone1: string;
-  phone2: string;
-  email: string;
-  partner: string;
-  familyEmail?: string | null;
-  notes?: string | null;
-  prestashopP1: string;
-  prestashopP2: string;
-  secondaryContact: SecondaryContact;
-  children: Child[];
-  createdAt?: string;
-  updatedAt?: string;
-};
-
-type FamilyEditableField =
-  | "civility"
-  | "lastName"
-  | "firstName"
-  | "address"
-  | "complement"
-  | "country"
-  | "email"
-  | "partner"
-  | "prestashopP1"
-  | "prestashopP2";
 type CityLookupState = "idle" | "loading" | "error";
 
 type AddressSuggestion = {
@@ -252,7 +206,13 @@ const mapFormStateToFamilyRecord = (
   label: form.label || form.id.trim(),
   primaryAdultId: form.primaryAdultId ?? null,
   primaryRole: form.primaryRole ?? "",
-  secondaryAdults: form.secondaryAdults ?? [],
+  secondaryAdults: (form.secondaryAdults ?? []).map((sa) => ({
+    ...sa,
+    adultId: sa.adultId ?? null,
+    role: sa.role ?? null,
+    position: sa.position ?? null,
+    canBeContacted: sa.canBeContacted ?? false,
+  })),
   civility: form.civility,
   lastName: form.lastName,
   firstName: form.firstName,

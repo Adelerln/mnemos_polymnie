@@ -7,35 +7,7 @@ import { Pencil, Trash2 } from "lucide-react";
 
 import { formatFrenchPhoneNumber } from "@/lib/phone";
 import { supabase } from "@/lib/supabase-client";
-
-type CentrePayload = {
-  id?: number | null;
-  name: string;
-  is_active: boolean;
-  address_street: string;
-  address_extra: string;
-  postal_code: string;
-  city: string;
-  phone_landline: string;
-  generic_email: string;
-  ddcs_number: string;
-  gps_latitude: string;
-  gps_longitude: string;
-  commission_pv_date: string;
-  commission_expiry_date: string;
-};
-
-type ContactRow = {
-  id: number;
-  centre_id: number;
-  civility: string | null;
-  last_name: string;
-  first_name: string;
-  role: string | null;
-  phone_1: string | null;
-  phone_2: string | null;
-  email: string | null;
-};
+import type { CentrePayload, ContactRow, ContactForm } from "@/types/centre";
 
 const createEmptyCentre = (): CentrePayload => ({
   id: null,
@@ -71,17 +43,6 @@ const mapCentreRowToPayload = (row: Record<string, unknown>): CentrePayload => (
   commission_pv_date: (row.commission_pv_date as string) ?? "",
   commission_expiry_date: (row.commission_expiry_date as string) ?? "",
 });
-
-type ContactForm = {
-  id?: number | null;
-  civility: string;
-  last_name: string;
-  first_name: string;
-  role: string;
-  phone_1: string;
-  phone_2: string;
-  email: string;
-};
 
 const createEmptyContact = (): ContactForm => ({
   id: null,

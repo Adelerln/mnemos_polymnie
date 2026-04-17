@@ -6,70 +6,7 @@ import { AlertTriangle, ArrowLeftCircle, PlusCircle, Save, Trash2 } from "lucide
 
 import { formatFrenchPhoneNumber } from "@/lib/phone";
 import { supabase } from "@/lib/supabase-client";
-
-type CentreListItem = {
-  id: number;
-  name: string;
-  is_active: boolean | null;
-  city: string | null;
-  postal_code: string | null;
-  phone_landline: string | null;
-  commission_expiry_date: string | null;
-};
-
-type CentreDetail = {
-  id: number;
-  name: string;
-  is_active: boolean | null;
-  city: string | null;
-  postal_code: string | null;
-  phone_landline: string | null;
-  commission_expiry_date: string | null;
-  address_street: string | null;
-  address_extra: string | null;
-  generic_email: string | null;
-  ddcs_number: string | null;
-  gps_latitude: string | null;
-  gps_longitude: string | null;
-  commission_pv_date: string | null;
-};
-
-type CentreForm = {
-  name: string;
-  is_active: boolean;
-  city: string;
-  postal_code: string;
-  phone_landline: string;
-  commission_expiry_date: string;
-  address_street: string;
-  address_extra: string;
-  generic_email: string;
-  ddcs_number: string;
-  gps_latitude: string;
-  gps_longitude: string;
-  commission_pv_date: string;
-};
-
-type ContactRow = {
-  id: number;
-  civility: string | null;
-  last_name: string;
-  first_name: string;
-  role: string | null;
-  phone_1: string | null;
-  phone_2: string | null;
-  email: string | null;
-};
-
-type ContactForm = {
-  civility: string;
-  last_name: string;
-  first_name: string;
-  role: string;
-  phone_1: string;
-  phone_2: string;
-  email: string;
-};
+import type { CentreListItem, CentreDetail, CentreForm, ContactRow, ContactForm } from "@/types/centre";
 
 export default function CentresPage() {
   const router = useRouter();

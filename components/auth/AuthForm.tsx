@@ -2,11 +2,10 @@
 
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/lib/supabase-client";
+import type { AuthMode } from "@/types/auth";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, useEffect, useMemo, useState } from "react";
-
-type AuthMode = "login" | "signup";
 
 type AuthFormProps = {
   defaultMode?: AuthMode;

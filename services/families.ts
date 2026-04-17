@@ -20,18 +20,17 @@ import { upsertPrimaryAdult } from "@/services/adults";
 
 /** Synchronise les enfants d'une famille : upsert les présents, supprime les absents */
 const syncChildren = async (
-  familyId: string | number,
+  familyId: number,
   children: Child[],
 ): Promise<ChildRow[]> => {
-  const familyKey = String(familyId);
-  const childRows = children.map(mapChildToRow(familyKey));
+  const childRows = children.map(mapChildToRow(familyId));
   const ids = childRows.map((child) => child.id);
 
   if (ids.length === 0) {
     const { error } = await supabase
       .from(CHILDREN_TABLE)
       .delete()
-      .eq("family_id", familyKey);
+      .eq("family_id", familyId);
     if (error) {
       throw new Error(`Erreur Supabase (sync children - delete all): ${error.message}`);
     }
@@ -42,7 +41,7 @@ const syncChildren = async (
   const { error: deleteMissingError } = await supabase
     .from(CHILDREN_TABLE)
     .delete()
-    .eq("family_id", familyKey)
+    .eq("family_id", familyId)
     .not("id", "in", `(${ids.map((id) => `'${id}'`).join(",")})`);
 
   if (deleteMissingError) {
@@ -118,7 +117,8 @@ export const fetchFamilies = async (): Promise<FamilyRecord[]> => {
     throw new Error(`Erreur Supabase (${FAMILY_TABLE}): ${error.message}`);
   }
 
-  return (data ?? []).map(mapRowToFamilyRecord);
+  // Cast nécessaire : Supabase infère les jointures imbriquées comme any[] sans types générés
+  return ((data ?? []) as unknown as FamilyRow[]).map(mapRowToFamilyRecord);
 };
 
 // ─── Écriture ──────────────────────────────────────────────
@@ -207,7 +207,7 @@ export const saveFamily = async (family: FamilyRecord): Promise<FamilyRecord> =>
       {
         is_primary: true,
         adult_id: adultId,
-        role: family.primaryRole ?? null,
+        role: family.primaryRole ?? "",
         can_be_contacted: true,
         adult: {
           civility: family.civility,

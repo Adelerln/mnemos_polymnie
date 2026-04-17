@@ -12,15 +12,10 @@ import type {
 
 // ─── Résolution partenaire ─────────────────────────────────
 
-/**
- * Retrouve un partner par nom (ilike) ou le crée.
- * TODO: partner_id a été supprimé de la table adults en BDD.
- * Ce champ est encore utilisé dans les upserts mais sera ignoré par Supabase.
- * À migrer vers inscriptions ou family_adults selon la décision métier.
- */
+/** Retrouve un partner par nom (ilike) ou le crée. */
 export const resolvePartnerId = async (
   partnerName: string | null | undefined,
-): Promise<string | number | null> => {
+): Promise<number | null> => {
   const name = partnerName?.trim();
   if (!name) return null;
 
@@ -34,7 +29,7 @@ export const resolvePartnerId = async (
     throw new Error(`Erreur Supabase (partner lookup): ${partnerError.message}`);
   }
 
-  if (existing?.id) return existing.id as string | number;
+  if (existing?.id) return existing.id as number;
 
   const { data: created, error: insertError } = await supabase
     .from("partners")
@@ -68,9 +63,9 @@ export const upsertPrimaryAdult = async ({
   phone2,
   email,
   partnerName,
-}: UpsertPrimaryAdultInput): Promise<string> => {
+}: UpsertPrimaryAdultInput): Promise<number> => {
   const partnerId = await resolvePartnerId(partnerName || null);
-  let resultingAdultId = adultId ?? null;
+  let resultingAdultId: number | null = adultId ?? null;
 
   const adultPayload = {
     civility,
@@ -84,7 +79,6 @@ export const upsertPrimaryAdult = async ({
     phone_1: phone1,
     phone_2: phone2,
     email,
-    // TODO: partner_id n'existe plus en BDD sur adults — à supprimer
     partner_id: partnerId,
   };
 
@@ -134,7 +128,7 @@ export const upsertPrimaryAdult = async ({
     throw new Error(`Erreur Supabase (link primary adult): ${linkError.message}`);
   }
 
-  return String(resultingAdultId);
+  return resultingAdultId;
 };
 
 // ─── Upsert adulte secondaire ──────────────────────────────
@@ -159,9 +153,9 @@ export const upsertSecondaryAdult = async ({
   position,
   canBeContacted,
   canBeContactedGlobal,
-}: UpsertSecondaryAdultInput): Promise<string> => {
+}: UpsertSecondaryAdultInput): Promise<number> => {
   const partnerId = await resolvePartnerId(partnerName || null);
-  let resultingAdultId = adultId ?? null;
+  let resultingAdultId: number | null = adultId ?? null;
 
   const adultPayload = {
     civility,
@@ -175,7 +169,6 @@ export const upsertSecondaryAdult = async ({
     phone_1: phone1,
     phone_2: phone2,
     email,
-    // TODO: partner_id n'existe plus en BDD sur adults — à supprimer
     partner_id: partnerId,
   };
 
@@ -220,7 +213,7 @@ export const upsertSecondaryAdult = async ({
     throw new Error(`Erreur Supabase (link secondary adult): ${linkError.message}`);
   }
 
-  return String(resultingAdultId);
+  return resultingAdultId;
 };
 
 // ─── Recherche de doublons ─────────────────────────────────

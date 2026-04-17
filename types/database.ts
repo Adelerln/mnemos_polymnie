@@ -13,20 +13,8 @@ export const PARTNERS_TABLE = "partners" as const;
 // ─── Enums BDD ─────────────────────────────────────────────
 
 export type AdultCivility = "M." | "Mme" | "M. et Mme" | "Mlle";
-export type AdultStatus = "draft" | "active" | "archived";
-
-export type FamilyStatus = "draft" | "active" | "archived" | "anonymized";
-export type FamilySource = "backoffice" | "self_service" | "import" | "api";
-export type QuotientFamilialStatus =
-  | "not_provided"
-  | "provided_by_family"
-  | "imported"
-  | "pending_validation"
-  | "validated"
-  | "expired";
 
 export type ChildGender = "F" | "M";
-export type ChildStatus = "draft" | "active" | "archived";
 
 export type FamilyAdultRole =
   | "Père"
@@ -37,23 +25,15 @@ export type FamilyAdultRole =
   | "Famille d'accueil"
   | "Autre";
 
-export type PartnerType =
-  | "CSE"
-  | "Collectivité territoriale"
-  | "Association"
-  | "Entreprise"
-  | "Mairie"
-  | "CAF"
-  | "Autre";
-
-export type PartnerStatus = "draft" | "active" | "archived";
+/** Enum partner_type en BDD (CSE, ASSOCIATION, AUTRE) */
+export type PartnerType = "CSE" | "ASSOCIATION" | "AUTRE";
 
 // ─── Row types (colonnes Supabase) ────────────────────────
 
 /** Ligne de la table `children` */
 export type ChildRow = {
   id: string;
-  family_id: string;
+  family_id: number;
   last_name: string | null;
   first_name: string | null;
   birth_date: string | null;
@@ -64,9 +44,6 @@ export type ChildRow = {
   instructions: string | null;
   transport_notes: string | null;
   friend: string | null;
-  conduite_a_tenir: string | null;
-  status: ChildStatus;
-  created_by: string | null;
   created_at?: string;
   updated_at?: string;
   anonymized_at?: string | null;
@@ -79,9 +56,6 @@ export type FamilyRow = {
   label: string | null;
   notes: string | null;
   email: string | null;
-  status?: FamilyStatus;
-  source?: FamilySource;
-  quotient_familial_status?: QuotientFamilialStatus;
   user_id?: string | null;
   family_adults?: FamilyAdultJoin[];
   children?: ChildRow[];
@@ -93,8 +67,8 @@ export type FamilyRow = {
 /** Ligne de la table `family_adults` avec jointure adulte */
 export type FamilyAdultJoin = {
   is_primary: boolean;
-  adult_id?: string;
-  role?: string | null;
+  adult_id: number;
+  role: string;
   can_be_contacted?: boolean | null;
   can_be_contacted_global?: boolean | null;
   position?: number | null;
@@ -115,7 +89,7 @@ export type AdultJoin = {
   phone_2: string | null;
   email: string | null;
   notes: string | null;
-  partner: { name: string | null; id?: string | number | null } | null;
+  partner: { name: string | null; id?: number | null } | null;
 };
 
 /** Payload pour créer/modifier une famille (colonnes éditables) */
@@ -128,7 +102,7 @@ export type FamilyRowPayload = Pick<
 export type UpsertPrimaryAdultInput = {
   familyRowId: number;
   familyIdClient: string;
-  adultId?: string;
+  adultId?: number;
   civility: string;
   lastName: string;
   firstName: string;
@@ -148,7 +122,7 @@ export type UpsertPrimaryAdultInput = {
 export type UpsertSecondaryAdultInput = {
   familyRowId: number;
   familyIdClient: string;
-  adultId?: string | null;
+  adultId?: number | null;
   civility: string;
   lastName: string;
   firstName: string;
@@ -169,7 +143,7 @@ export type UpsertSecondaryAdultInput = {
 
 /** Résultat de recherche de doublons adultes */
 export type AdultDuplicateMatch = {
-  id: string;
+  id: number;
   first_name: string | null;
   last_name: string | null;
   email: string | null;
@@ -182,6 +156,6 @@ export type AdultDuplicateMatch = {
   country: string | null;
   family_links: Array<{
     family_id: number | null;
-    family: { id_client: string | null; label: string | null } | null;
+    family: Array<{ id_client: string | null; label: string | null }>;
   }>;
 };

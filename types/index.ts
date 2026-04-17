@@ -28,3 +28,11 @@ export type PrimaryNavItem = {
   label: string;
   href: string;
 };
+
+// ─── Ré-exports domaines ──────────────────────────────────
+export * from "./famille";
+export * from "./centre";
+export * from "./inscription";
+export * from "./auth";
+export * from "./sejour";
+export * from "./database";

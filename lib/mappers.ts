@@ -8,87 +8,10 @@ import type {
   FamilyRow,
   FamilyRowPayload,
 } from "@/types/database";
+import type { HealthFormState, Child, SecondaryContact, FamilyRecord } from "@/types/famille";
 
-// ─── Types view-model (camelCase, consommés par le front) ──
-
-export type HealthFormState = {
-  allergies: string;
-  diet: string;
-  healthIssues: string;
-  instructions: string;
-  friend: string;
-  vacaf: string;
-  transportNotes: string;
-};
-
-export type Child = {
-  id: string;
-  lastName: string;
-  firstName: string;
-  birthDate: string;
-  gender: "F" | "M" | "";
-  health: HealthFormState;
-};
-
-export type SecondaryContact = {
-  civility?: string;
-  adultId?: string | null;
-  position?: number | null;
-  canBeContacted?: boolean;
-  canBeContactedGlobal?: boolean;
-  lastName: string;
-  firstName: string;
-  role: string;
-  phone: string;
-  phone2?: string;
-  address?: string;
-  complement?: string;
-  postalCode?: string;
-  city?: string;
-  country?: string;
-  email: string;
-  partner?: string;
-};
-
-export type FamilyRecord = {
-  /** Identifiant fonctionnel (alias de id_client) */
-  id: string;
-  /** Identifiant technique de la ligne */
-  rowId?: number;
-  primaryAdultId?: string | null;
-  label: string;
-  civility: string;
-  lastName: string;
-  firstName: string;
-  primaryRole?: string | null;
-  address: string;
-  complement: string;
-  postalCode: string;
-  city: string;
-  country: string;
-  phone1: string;
-  phone2: string;
-  email: string;
-  partner: string;
-  prestashopP1: string;
-  prestashopP2: string;
-  secondaryContact: SecondaryContact | null;
-  familyEmail?: string | null;
-  notes?: string | null;
-  secondaryAdults: Array<
-    SecondaryContact & {
-      adultId: string | null;
-      role: string | null;
-      position: number | null;
-      canBeContacted: boolean;
-      canBeContactedGlobal?: boolean;
-      partner?: string;
-    }
-  >;
-  children: Child[];
-  createdAt?: string;
-  updatedAt?: string;
-};
+// Ré-export pour compatibilité des imports existants
+export type { HealthFormState, Child, SecondaryContact, FamilyRecord };
 
 // ─── Constantes ────────────────────────────────────────────
 
@@ -181,7 +104,7 @@ export const mapRowToFamilyRecord = (row: FamilyRow): FamilyRecord => {
       : null,
     secondaryAdults: pickAllSecondaryAdults(row).map((link) => ({
       adultId: link.adult_id ?? null,
-      role: link.role ?? null,
+      role: link.role ?? "",
       position: link.position ?? null,
       canBeContacted: Boolean(link.can_be_contacted ?? true),
       canBeContactedGlobal: link.can_be_contacted_global ?? link.can_be_contacted ?? true,
@@ -225,7 +148,7 @@ export const generateChildId = (): string => {
 };
 
 /** Convertit un Child (camelCase) en ChildRow (snake_case) pour upsert */
-export const mapChildToRow = (familyId: string) => (child: Child): ChildRow => ({
+export const mapChildToRow = (familyId: number) => (child: Child): ChildRow => ({
   id: child.id || generateChildId(),
   family_id: familyId,
   last_name: child.lastName,
@@ -238,8 +161,4 @@ export const mapChildToRow = (familyId: string) => (child: Child): ChildRow => (
   instructions: child.health?.instructions ?? "",
   transport_notes: child.health?.transportNotes ?? "",
   friend: child.health?.friend ?? "",
-  // Nouveaux champs BDD — pas encore gérés par le formulaire
-  conduite_a_tenir: null,
-  status: "draft",
-  created_by: null,
 });
