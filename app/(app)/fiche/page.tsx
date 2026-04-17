@@ -1,125 +1,18 @@
-"use client";
+﻿"use client";
 
-import {
-  Suspense,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type ChangeEvent,
-  type FormEvent,
-} from "react";
-import { useSearchParams } from "next/navigation";
-import {
-  ArrowLeft,
-  Download,
-  RefreshCw,
-  Save,
-  Users,
-} from "lucide-react";
-import { useRouter } from "next/navigation";
+import { Suspense } from "react";
+import { Save } from "lucide-react";
 
-import {
-  fetchInscriptionById,
-  saveInscription,
-  type InscriptionRecord,
-} from "@/services/inscriptions";
-import { useProjectLogger } from "@/hooks/useProjectLogger";
-
-type InscriptionFormState = Omit<InscriptionRecord, "id"> & {
-  id?: number;
-};
-
-const createEmptyInscription = (): InscriptionFormState => ({
-  id: undefined,
-  idClient: "",
-  childFirstName: "",
-  childLastName: "",
-  childBirthDate: "",
-  childGender: "",
-  numInscription: "",
-  referenceSejour: "",
-  nomSejour: "",
-  lieuSejour: "",
-  theme: "",
-  villeDepart: "",
-  villeRetour: "",
-  periodeSejour: "",
-  dateEntree: "",
-  dateSortie: "",
-  assurance: "",
-  partenaire: "",
-  createdAt: undefined,
-  updatedAt: undefined,
-});
-
-const formatDateForInput = (value: string) => {
-  if (!value) {
-    return "";
-  }
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return value;
-  }
-  return date.toISOString().slice(0, 10);
-};
-
-const computeAgeAtDate = (birthDate: string, referenceDate: string) => {
-  if (!birthDate || !referenceDate) {
-    return "";
-  }
-  const birth = new Date(birthDate);
-  const ref = new Date(referenceDate);
-
-  if (Number.isNaN(birth.getTime()) || Number.isNaN(ref.getTime())) {
-    return "";
-  }
-
-  let years = ref.getFullYear() - birth.getFullYear();
-  let months = ref.getMonth() - birth.getMonth();
-
-  if (ref.getDate() < birth.getDate()) {
-    months -= 1;
-  }
-  if (months < 0) {
-    years -= 1;
-    months += 12;
-  }
-
-  if (years < 0) {
-    return "";
-  }
-
-  const yearLabel = `${years} an${years > 1 ? "s" : ""}`;
-  const monthLabel = `${months} mois`;
-
-  if (years === 0) {
-    return monthLabel;
-  }
-  if (months === 0) {
-    return yearLabel;
-  }
-
-  return `${yearLabel} et ${monthLabel}`;
-};
-
-const FICHE_INPUT_CLASS =
-  "rounded-2xl border border-[#D8C2E8] bg-white px-4 py-2 text-sm text-[#7D498C] placeholder:text-[#7D498C]/60 focus:border-[#B793D6] focus:outline-none";
-const FICHE_INPUT_UPPER_CLASS = `${FICHE_INPUT_CLASS} font-semibold uppercase tracking-[0.16em]`;
-const FICHE_SECTION_CLASS =
-  "rounded-3xl border border-[#F5D4FF] bg-white p-8 shadow-[0_25px_60px_rgba(32,73,145,0.08)]";
-const FICHE_SUBCARD_CLASS =
-  "rounded-2xl border border-[#F5D4FF] bg-white p-6 shadow-[0_20px_45px_rgba(32,73,145,0.05)]";
-const FICHE_LABEL_CLASS = "text-xs font-semibold uppercase tracking-[0.18em] text-[#7D498C]";
-const FICHE_TABLE_HEAD_CLASS = "bg-[#F5D4FF] text-[#7D498C]";
+import type { DocumentsState } from "./_lib/types";
+import { DOCUMENT_LABELS } from "./_lib/constants";
+import { useFichePage } from "./_hooks/useFichePage";
 
 export default function FichePage() {
   return (
     <Suspense
       fallback={
         <div className="flex min-h-screen items-center justify-center bg-white px-4 text-[#7D498C]">
-          Chargement de la fiche…
+          Chargement de la ficheâ€¦
         </div>
       }
     >
@@ -129,316 +22,49 @@ export default function FichePage() {
 }
 
 function FichePageContent() {
-  const searchParams = useSearchParams();
-  const router = useRouter();
-  const { logEdit, error: logError } = useProjectLogger();
-  const inscriptionIdParam = searchParams.get("id");
-  const prefillData = useMemo(() => {
-    const birthDateParam = searchParams.get("childBirthDate") ?? "";
+  const {
+    // Form
+    error,
+    feedback,
+    logError,
+    isSaving,
+    isLoading,
+    handleSave,
 
-    return {
-      idClient: searchParams.get("idClient") ?? "",
-      childId: searchParams.get("childId") ?? "",
-      childFirstName: searchParams.get("childFirstName") ?? "",
-      childLastName: searchParams.get("childLastName") ?? "",
-      childBirthDate: formatDateForInput(birthDateParam),
-      childGender: searchParams.get("childGender") ?? "",
-    };
-  }, [searchParams]);
-  const [form, setForm] = useState<InscriptionFormState>(() =>
-    createEmptyInscription(),
-  );
-  const [isLoading, setIsLoading] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [feedback, setFeedback] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [isPartnerLinked, setIsPartnerLinked] = useState(false);
-  const [isCancelled, setIsCancelled] = useState(false);
-  const [parentTwoHandled, setParentTwoHandled] = useState(false);
-  const [colosApprenantes, setColosApprenantes] = useState(false);
-  const [passColo, setPassColo] = useState(false);
-  const [financialSummary, setFinancialSummary] = useState({
-    sejourTitle: "",
-    sejourTheme: "",
-    sejourAmount: "",
-    transportOutCity: "",
-    transportOutAmount: "",
-    transportReturnCity: "",
-    transportReturnAmount: "",
-    assuranceLabel: "",
-    assuranceAmount: "",
-    supplementsTotal: "",
-    reductionsTotal: "",
-    totalBeforeCoverage: "",
-    totalFamily: "",
-  });
-  const [coverageRows] = useState<Array<{ id: number; partner: string; partnerId: string; amount: string }>>([]);
-  const [documentsState, setDocumentsState] = useState({
-    ficheSanitaire: false,
-    pai: false,
-    vaccins: false,
-    css: false,
-    autorisation: false,
-    baignade: false,
-    passVaccinal: false,
-    secu: false,
-    sortie: false,
-    mutuelle: false,
-    ordonnance: false,
-    livret: false,
-  });
-  const documentLabels: Record<keyof typeof documentsState, string> = {
-    ficheSanitaire: "Fiche sanitaire",
-    pai: "PAI",
-    vaccins: "Vaccins",
-    css: "Attestation CSS / AME",
-    autorisation: "Autorisation parentale",
-    baignade: "Certificat baignade",
-    passVaccinal: "Pass vaccinal",
-    secu: "Attestation sécu",
-    sortie: "Attestation sortie territoire",
-    mutuelle: "Mutuelle",
-    ordonnance: "Ordonnance",
-    livret: "Livret inclusion ou autre",
-  };
-  const [transportInfo, setTransportInfo] = useState({ mode: "", auto: true, details: "" });
-  const [childMetrics, setChildMetrics] = useState({ taille: "", poids: "", pointure: "" });
-  const [notes, setNotes] = useState("");
-  const [eventType, setEventType] = useState("Inscription");
-  const [cancellationInfo, setCancellationInfo] = useState({
-    withFees: false,
-    amountFamily: "",
-    amountPartner: "",
-    status: "",
-  });
-  const lastSavedInscriptionRef = useRef<InscriptionRecord | null>(null);
+    // Financial
+    coverageRows,
 
-  const arrivalDate = form.dateEntree || form.dateSortie;
-  const computedAge = useMemo(
-    () => computeAgeAtDate(form.childBirthDate, arrivalDate),
-    [form.childBirthDate, arrivalDate],
-  );
+    // Flags
+    colosApprenantes,
+    setColosApprenantes,
+    passColo,
+    setPassColo,
 
-  const loadInscription = useCallback(
-    async (id: number) => {
-      try {
-        setIsLoading(true);
-        setError(null);
-        const record = await fetchInscriptionById(id);
-        if (!record) {
-          setFeedback("Aucune inscription trouvée pour cet identifiant.");
-          setForm(createEmptyInscription());
-          return;
-        }
+    // Documents
+    documentsState,
+    handleDocumentToggle,
 
-        setForm({
-          ...record,
-          id: record.id,
-          dateEntree: formatDateForInput(record.dateEntree),
-          dateSortie: formatDateForInput(record.dateSortie),
-          childBirthDate: formatDateForInput(record.childBirthDate),
-        });
-        lastSavedInscriptionRef.current = record;
-        setFeedback(null);
-      } catch (err) {
-        console.error(err);
-        setError(
-          err instanceof Error
-            ? err.message
-            : "Impossible de charger l'inscription.",
-        );
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [],
-  );
+    // Transport
+    transportInfo,
+    handleTransportFieldChange,
 
-  useEffect(() => {
-    if (inscriptionIdParam) {
-      const numericId = Number.parseInt(inscriptionIdParam, 10);
-      if (Number.isNaN(numericId)) {
-        setError("Identifiant d'inscription invalide.");
-        return;
-      }
-      void loadInscription(numericId);
-      return;
-    }
+    // Child metrics
+    childMetrics,
+    handleMetricsChange,
 
-    setForm((prev) => {
-      const base = createEmptyInscription();
-      return {
-        ...base,
-        ...prev,
-        id: undefined,
-        idClient: prefillData.idClient || prev.idClient || base.idClient,
-        childFirstName:
-          prefillData.childFirstName || prev.childFirstName || base.childFirstName,
-        childLastName:
-          prefillData.childLastName || prev.childLastName || base.childLastName,
-        childBirthDate:
-          prefillData.childBirthDate || prev.childBirthDate || base.childBirthDate,
-        childGender:
-          prefillData.childGender || prev.childGender || base.childGender,
-      };
-    });
-    lastSavedInscriptionRef.current = null;
-    setIsPartnerLinked(false);
-    setIsCancelled(false);
-  }, [inscriptionIdParam, loadInscription, prefillData]);
+    // Notes
+    notes,
+    setNotes,
 
-  const handleFieldChange =
-    (field: keyof InscriptionFormState) =>
-    (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-      const value = event.target.value;
-      setForm((prev) => ({
-        ...prev,
-        [field]: value,
-      }));
-    };
+    // Event type
+    eventType,
+    handleEventTypeChange,
 
-  const handleFinancialFieldChange =
-    (field: keyof typeof financialSummary) =>
-    (event: ChangeEvent<HTMLInputElement>) => {
-      const value = event.target.value;
-      setFinancialSummary((prev) => ({
-        ...prev,
-        [field]: value,
-      }));
-    };
+    // Cancellation
+    cancellationInfo,
+    handleCancelInfoChange,
+  } = useFichePage();
 
-  const handleDocumentToggle = (field: keyof typeof documentsState) => () => {
-    setDocumentsState((prev) => ({
-      ...prev,
-      [field]: !prev[field],
-    }));
-  };
-
-  const handleTransportFieldChange =
-    (field: keyof typeof transportInfo) =>
-    (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-      const value =
-        field === "auto" ? (event.target as HTMLInputElement).checked : event.target.value;
-      setTransportInfo((prev) => ({
-        ...prev,
-        [field]: field === "auto" ? Boolean(value) : (value as string),
-      }));
-    };
-
-  const handleMetricsChange =
-    (field: keyof typeof childMetrics) =>
-    (event: ChangeEvent<HTMLInputElement>) => {
-      const value = event.target.value;
-      setChildMetrics((prev) => ({
-        ...prev,
-        [field]: value,
-      }));
-    };
-
-  const handleSave = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setError(null);
-    setFeedback(null);
-
-    if (!form.idClient.trim()) {
-      setError("L'identifiant client est requis.");
-      return;
-    }
-
-    if (!form.childLastName.trim() || !form.childFirstName.trim()) {
-      setError("Nom et prénom de l'enfant sont requis.");
-      return;
-    }
-
-    try {
-      setIsSaving(true);
-      const record: InscriptionRecord = {
-        id: form.id,
-        idClient: form.idClient.trim(),
-        childFirstName: form.childFirstName.trim(),
-        childLastName: form.childLastName.trim(),
-        childBirthDate: form.childBirthDate,
-        childGender: form.childGender,
-        numInscription: form.numInscription,
-        referenceSejour: form.referenceSejour,
-        nomSejour: form.nomSejour,
-        lieuSejour: form.lieuSejour,
-        theme: form.theme,
-        villeDepart: form.villeDepart,
-        villeRetour: form.villeRetour,
-        periodeSejour: form.periodeSejour,
-        dateEntree: form.dateEntree,
-        dateSortie: form.dateSortie,
-        assurance: form.assurance,
-        partenaire: isPartnerLinked ? form.partenaire : "",
-        createdAt: form.createdAt,
-        updatedAt: form.updatedAt,
-      };
-      const previousRecord = lastSavedInscriptionRef.current;
-      const actionType: "insert" | "update" = previousRecord ? "update" : "insert";
-
-      const saved = await saveInscription(record);
-
-      if (typeof saved.id === "number") {
-        await logEdit({
-          action: actionType,
-          tableName: "inscriptions",
-          recordId: saved.id,
-          before: previousRecord ?? null,
-          after: saved,
-          editedByInscription: saved.id,
-        });
-      } else {
-        console.warn(
-          "[Fiche] Impossible de consigner l'opération d'inscription : identifiant introuvable.",
-        );
-      }
-
-      setForm({
-        ...saved,
-        id: saved.id,
-        dateEntree: formatDateForInput(saved.dateEntree),
-        dateSortie: formatDateForInput(saved.dateSortie),
-        childBirthDate: formatDateForInput(saved.childBirthDate),
-      });
-      lastSavedInscriptionRef.current = saved;
-      setFeedback("Inscription enregistrée avec succès.");
-      if (!record.id && saved.id) {
-        const params = new URLSearchParams({
-          idClient: saved.idClient,
-          childFirstName: saved.childFirstName,
-          childLastName: saved.childLastName,
-          childBirthDate: formatDateForInput(saved.childBirthDate),
-          childGender: saved.childGender,
-        });
-        router.push(`/inscriptions?${params.toString()}`);
-      }
-    } catch (err) {
-      console.error(err);
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Erreur lors de l'enregistrement de l'inscription.",
-      );
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const handleEventTypeChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setEventType(event.target.value);
-  };
-
-  const handleCancelInfoChange =
-    (field: keyof typeof cancellationInfo) =>
-    (event: ChangeEvent<HTMLInputElement>) => {
-      const value =
-        field === "withFees" ? (event.target as HTMLInputElement).checked : event.target.value;
-      setCancellationInfo((prev) => ({
-        ...prev,
-        [field]: field === "withFees" ? Boolean(value) : (value as string),
-      }));
-    };
   return (
     <div className="bg-[#f9f9fb]">
       <div className="mx-auto max-w-7xl px-4 py-8">
@@ -451,7 +77,7 @@ function FichePageContent() {
                 </h4>
                 <dl className="grid gap-3 text-xs font-semibold uppercase tracking-[0.14em] text-[#5c606b]">
                   <div>
-                    <dt>Réductions</dt>
+                    <dt>RÃ©ductions</dt>
                     <dd className="text-sm font-semibold text-[#1f2330]">
                       Famille
                     </dd>
@@ -463,7 +89,7 @@ function FichePageContent() {
                     </dd>
                   </div>
                   <div>
-                    <dt>Suppléments</dt>
+                    <dt>SupplÃ©ments</dt>
                     <dd className="text-sm font-semibold text-[#1f2330]">
                       Famille
                     </dd>
@@ -517,7 +143,7 @@ function FichePageContent() {
                             colSpan={3}
                             className="px-3 py-4 text-center text-xs font-medium text-[#7f8696]"
                           >
-                            Aucune prise en charge enregistrée.
+                            Aucune prise en charge enregistrÃ©e.
                           </td>
                         </tr>
                       ) : (
@@ -565,10 +191,10 @@ function FichePageContent() {
 
               <div className="rounded-xl border border-fiche-accent bg-fiche-accent p-4 text-white shadow">
                 <h4 className="text-sm font-semibold uppercase tracking-[0.18em]">
-                  Informations documents séjour
+                  Informations documents sÃ©jour
                 </h4>
                 <div className="mt-3 space-y-2 text-xs font-semibold uppercase tracking-[0.12em]">
-                  {(Object.keys(documentsState) as Array<keyof typeof documentsState>).map((key) => (
+                  {(Object.keys(documentsState) as Array<keyof DocumentsState>).map((key) => (
                     <label key={key} className="flex items-center gap-2">
                       <input
                         type="checkbox"
@@ -576,7 +202,7 @@ function FichePageContent() {
                         checked={documentsState[key]}
                         onChange={handleDocumentToggle(key)}
                       />
-                      <span>{documentLabels[key]}</span>
+                      <span>{DOCUMENT_LABELS[key]}</span>
                     </label>
                   ))}
                 </div>
@@ -603,7 +229,7 @@ function FichePageContent() {
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-semibold uppercase tracking-[0.16em]">
-                  Réductions
+                  RÃ©ductions
                 </h3>
                 <button
                   type="button"
@@ -617,13 +243,13 @@ function FichePageContent() {
                 type="button"
                 className="inline-flex items-center justify-center rounded-md border border-[#d43a3a] bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-status-error transition hover:bg-[#fdeaea]"
               >
-                Rafraîchir inscription
+                RafraÃ®chir inscription
               </button>
             </div>
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-semibold uppercase tracking-[0.16em]">
-                  Suppléments
+                  SupplÃ©ments
                 </h3>
                 <button
                   type="button"
@@ -637,7 +263,7 @@ function FichePageContent() {
                 type="button"
                 className="inline-flex items-center justify-center rounded-md border border-[#d43a3a] bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-status-error transition hover:bg-[#fdeaea]"
               >
-                Rafraîchir inscription
+                RafraÃ®chir inscription
               </button>
             </div>
           </section>
@@ -673,13 +299,13 @@ function FichePageContent() {
                 {[
                   "Option",
                   "Inscription",
-                  "Réception Acompte",
-                  "Réception Solde",
-                  "Réception Paiement",
+                  "RÃ©ception Acompte",
+                  "RÃ©ception Solde",
+                  "RÃ©ception Paiement",
                   "Changement Transport",
                   "Changement Dates",
-                  "Changement Thème",
-                  "Réception Attestation JPA",
+                  "Changement ThÃ¨me",
+                  "RÃ©ception Attestation JPA",
                 ].map((label) => (
                   <label key={label} className="inline-flex items-center gap-2">
                     <input
@@ -702,13 +328,13 @@ function FichePageContent() {
                   type="button"
                   className="flex items-center justify-center gap-2 rounded-md border border-[#d4d7df] bg-white py-3 text-sm text-[#2b2f36] transition hover:bg-[#eef1f7]"
                 >
-                  ✉ Mail
+                  âœ‰ Mail
                 </button>
                 <button
                   type="button"
                   className="flex items-center justify-center gap-2 rounded-md border border-[#d4d7df] bg-white py-3 text-sm text-[#2b2f36] transition hover:bg-[#eef1f7]"
                 >
-                  🚍 Convocation
+                  ðŸš Convocation
                 </button>
                 <button
                   type="button"
@@ -727,7 +353,7 @@ function FichePageContent() {
                     Plan pour convocation
                     <input
                       className="rounded border border-[#d4d7df] bg-white px-3 py-2 text-sm text-[#2b2f36] focus:border-app-input-focus focus:outline-none"
-                      placeholder="URL ou référence"
+                      placeholder="URL ou rÃ©fÃ©rence"
                     />
                   </label>
                   <label className="flex flex-col gap-1">
@@ -785,7 +411,7 @@ function FichePageContent() {
                   </label>
                   <div className="grid gap-2">
                     <label className="flex flex-col gap-1">
-                      Montant conservé familles
+                      Montant conservÃ© familles
                       <input
                         className="rounded border border-[#d4d7df] bg-white px-3 py-2 text-sm text-[#2b2f36] focus:border-[#c95144] focus:outline-none"
                         value={cancellationInfo.amountFamily}
@@ -793,7 +419,7 @@ function FichePageContent() {
                       />
                     </label>
                     <label className="flex flex-col gap-1">
-                      Montant conservé partenaire
+                      Montant conservÃ© partenaire
                       <input
                         className="rounded border border-[#d4d7df] bg-white px-3 py-2 text-sm text-[#2b2f36] focus:border-[#c95144] focus:outline-none"
                         value={cancellationInfo.amountPartner}
@@ -813,7 +439,7 @@ function FichePageContent() {
                     type="button"
                     className="mt-2 inline-flex items-center justify-center rounded-md border border-[#c95144] bg-[#fceae9] px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#c95144] transition hover:bg-[#fbd1cd]"
                   >
-                    Déclencher l&apos;annulation
+                    DÃ©clencher l&apos;annulation
                   </button>
                 </div>
               </div>

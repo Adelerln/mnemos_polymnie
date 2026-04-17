@@ -1,270 +1,31 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ChangeEvent } from "react";
 import Link from "next/link";
-import { useRouter, useParams } from "next/navigation";
 import { Pencil, Trash2 } from "lucide-react";
 
 import { formatFrenchPhoneNumber } from "@/lib/phone";
-import { supabase } from "@/lib/supabase-client";
-import type { CentrePayload, ContactRow, ContactForm } from "@/types/centre";
 
-const createEmptyCentre = (): CentrePayload => ({
-  id: null,
-  name: "",
-  is_active: true,
-  address_street: "",
-  address_extra: "",
-  postal_code: "",
-  city: "",
-  phone_landline: "",
-  generic_email: "",
-  ddcs_number: "",
-  gps_latitude: "",
-  gps_longitude: "",
-  commission_pv_date: "",
-  commission_expiry_date: "",
-});
-
-const mapCentreRowToPayload = (row: Record<string, unknown>): CentrePayload => ({
-  id: (row.id as number | null) ?? null,
-  name: (row.name as string) ?? "",
-  is_active: (row.is_active as boolean) ?? true,
-  address_street: (row.address_street as string) ?? "",
-  address_extra: (row.address_extra as string) ?? "",
-  postal_code: (row.postal_code as string) ?? "",
-  city: (row.city as string) ?? "",
-  phone_landline: (row.phone_landline as string) ?? "",
-  generic_email: (row.generic_email as string) ?? "",
-  ddcs_number: (row.ddcs_number as string) ?? "",
-  gps_latitude: row.gps_latitude !== null && row.gps_latitude !== undefined ? String(row.gps_latitude) : "",
-  gps_longitude:
-    row.gps_longitude !== null && row.gps_longitude !== undefined ? String(row.gps_longitude) : "",
-  commission_pv_date: (row.commission_pv_date as string) ?? "",
-  commission_expiry_date: (row.commission_expiry_date as string) ?? "",
-});
-
-const createEmptyContact = (): ContactForm => ({
-  id: null,
-  civility: "",
-  last_name: "",
-  first_name: "",
-  role: "",
-  phone_1: "",
-  phone_2: "",
-  email: "",
-});
+import { useCentreDetailPage } from "./_hooks/useCentreDetailPage";
 
 export default function CentreDetailPage() {
-  const router = useRouter();
-  const params = useParams<{ id: string }>();
-  const centreIdParam = params?.id;
-  const isCreation = centreIdParam === "new" || !centreIdParam;
-
-  const [centre, setCentre] = useState<CentrePayload>(() => createEmptyCentre());
-  const [contacts, setContacts] = useState<ContactRow[]>([]);
-  const [loadingCentre, setLoadingCentre] = useState(false);
-  const [loadingContacts, setLoadingContacts] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
-  const [contactModalOpen, setContactModalOpen] = useState(false);
-  const [contactForm, setContactForm] = useState<ContactForm>(() => createEmptyContact());
-
-  useEffect(() => {
-    const loadCentre = async () => {
-      if (isCreation) {
-        setCentre(createEmptyCentre());
-        setContacts([]);
-        return;
-      }
-      setLoadingCentre(true);
-      setError(null);
-      const { data, error: fetchError } = await supabase
-        .from("centres")
-        .select("*")
-        .eq("id", Number(centreIdParam))
-        .single();
-
-      if (fetchError) {
-        setError(`Erreur lors du chargement du centre : ${fetchError.message}`);
-        setCentre(createEmptyCentre());
-      } else if (data) {
-        setCentre(mapCentreRowToPayload(data));
-      }
-      setLoadingCentre(false);
-    };
-
-    loadCentre();
-  }, [centreIdParam, isCreation]);
-
-  useEffect(() => {
-    const loadContacts = async () => {
-      if (isCreation || !centreIdParam) {
-        setContacts([]);
-        return;
-      }
-      setLoadingContacts(true);
-      const { data, error: fetchError } = await supabase
-        .from("contacts_centres")
-        .select("*")
-        .eq("centre_id", Number(centreIdParam))
-        .order("last_name", { ascending: true });
-
-      if (fetchError) {
-        setError(`Erreur lors du chargement des contacts : ${fetchError.message}`);
-        setContacts([]);
-      } else {
-        setContacts((data as ContactRow[]) ?? []);
-      }
-      setLoadingContacts(false);
-    };
-
-    loadContacts();
-  }, [centreIdParam, isCreation]);
-
-  const handleCentreChange =
-    (field: keyof CentrePayload) =>
-    (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-      const value = event.target.type === "checkbox" ? (event.target as HTMLInputElement).checked : event.target.value;
-      setCentre((prev) => ({ ...prev, [field]: value }));
-    };
-
-  const handleSaveCentre = async () => {
-    setSaving(true);
-    setError(null);
-    setSuccess(null);
-    const payload = {
-      name: centre.name.trim(),
-      is_active: centre.is_active,
-      address_street: centre.address_street || null,
-      address_extra: centre.address_extra || null,
-      postal_code: centre.postal_code || null,
-      city: centre.city || null,
-      phone_landline: centre.phone_landline || null,
-      generic_email: centre.generic_email || null,
-      ddcs_number: centre.ddcs_number || null,
-      gps_latitude: centre.gps_latitude ? Number(centre.gps_latitude) : null,
-      gps_longitude: centre.gps_longitude ? Number(centre.gps_longitude) : null,
-      commission_pv_date: centre.commission_pv_date || null,
-      commission_expiry_date: centre.commission_expiry_date || null,
-      modified_at: new Date().toISOString(),
-    };
-
-    const request = centre.id
-      ? supabase.from("centres").update(payload).eq("id", centre.id).select("*").single()
-      : supabase.from("centres").insert(payload).select("*").single();
-
-    const { data, error: saveError } = await request;
-
-    if (saveError) {
-      setError(`Erreur lors de l'enregistrement du centre : ${saveError.message}`);
-    } else if (data) {
-      const mapped = mapCentreRowToPayload(data);
-      setCentre(mapped);
-      setSuccess("Centre enregistré.");
-      if (!centre.id && mapped.id) {
-        router.replace(`/centres/${mapped.id}`);
-      }
-    }
-    setSaving(false);
-  };
-
-  const openContactModal = (contact?: ContactRow) => {
-    if (!centre.id) {
-      setError("Enregistrez le centre avant d'ajouter un contact.");
-      return;
-    }
-    if (contact) {
-      setContactForm({
-        id: contact.id,
-        civility: contact.civility ?? "",
-        last_name: contact.last_name ?? "",
-        first_name: contact.first_name ?? "",
-        role: contact.role ?? "",
-        phone_1: contact.phone_1 ?? "",
-        phone_2: contact.phone_2 ?? "",
-        email: contact.email ?? "",
-      });
-    } else {
-      setContactForm(createEmptyContact());
-    }
-    setContactModalOpen(true);
-  };
-
-  const handleContactChange =
-    (field: keyof ContactForm) =>
-    (event: ChangeEvent<HTMLInputElement>) => {
-      const rawValue = event.target.value;
-      const value =
-        field === "phone_1" || field === "phone_2" ? formatFrenchPhoneNumber(rawValue) : rawValue;
-      setContactForm((prev) => ({ ...prev, [field]: value }));
-    };
-
-  const refreshContacts = async (centreId: number) => {
-    const { data, error: fetchError } = await supabase
-      .from("contacts_centres")
-      .select("*")
-      .eq("centre_id", centreId)
-      .order("last_name", { ascending: true });
-
-    if (fetchError) {
-      setError(`Erreur lors du rechargement des contacts : ${fetchError.message}`);
-      return;
-    }
-    setContacts((data as ContactRow[]) ?? []);
-  };
-
-  const handleSaveContact = async () => {
-    if (!centre.id) {
-      setError("Enregistrez le centre avant d'ajouter un contact.");
-      return;
-    }
-    if (!contactForm.last_name.trim() || !contactForm.first_name.trim()) {
-      setError("Merci de renseigner au minimum le nom et le prénom du contact.");
-      return;
-    }
-
-    const payload = {
-      centre_id: centre.id,
-      civility: contactForm.civility || null,
-      last_name: contactForm.last_name.trim(),
-      first_name: contactForm.first_name.trim(),
-      role: contactForm.role || null,
-      phone_1: contactForm.phone_1 || null,
-      phone_2: contactForm.phone_2 || null,
-      email: contactForm.email || null,
-    };
-
-    const request = contactForm.id
-      ? supabase.from("contacts_centres").update(payload).eq("id", contactForm.id).select("*").single()
-      : supabase.from("contacts_centres").insert(payload).select("*").single();
-
-    const { error: saveError } = await request;
-
-    if (saveError) {
-      setError(`Erreur lors de l'enregistrement du contact : ${saveError.message}`);
-      return;
-    }
-
-    await refreshContacts(centre.id);
-    setContactModalOpen(false);
-    setContactForm(createEmptyContact());
-    setError(null);
-  };
-
-  const handleDeleteContact = async (id: number) => {
-    const { error: deleteError } = await supabase.from("contacts_centres").delete().eq("id", id);
-    if (deleteError) {
-      setError(`Erreur lors de la suppression du contact : ${deleteError.message}`);
-      return;
-    }
-    if (centre.id) {
-      await refreshContacts(centre.id);
-    }
-  };
-
-  const pageTitle = useMemo(() => (centre.name ? centre.name : isCreation ? "Nouveau centre" : "Centre"), [centre.name, isCreation]);
+  const {
+    centre,
+    saving,
+    error,
+    success,
+    handleCentreChange,
+    handleSaveCentre,
+    pageTitle,
+    contacts,
+    loadingContacts,
+    contactModalOpen,
+    setContactModalOpen,
+    contactForm,
+    openContactModal,
+    handleContactChange,
+    handleSaveContact,
+    handleDeleteContact,
+  } = useCentreDetailPage();
 
   return (
     <div className="min-h-screen bg-app-page-bg py-10 text-app-heading">
@@ -350,7 +111,7 @@ export default function CentreDetailPage() {
                           ...event.target,
                           value: formatFrenchPhoneNumber(event.target.value),
                         },
-                      } as ChangeEvent<HTMLInputElement>)
+                      } as React.ChangeEvent<HTMLInputElement>)
                     }
                     className="w-full rounded-lg border border-app-border px-3 py-2 text-sm text-app-heading focus:border-app-input-focus focus:outline-none"
                   />
@@ -501,12 +262,12 @@ export default function CentreDetailPage() {
                       key={contact.id}
                       className="rounded-xl border border-app-border bg-app-page-bg px-4 py-3 shadow-sm"
                     >
-                        <div className="flex items-start justify-between gap-3">
-                          <div>
-                            <p className="text-sm font-semibold text-app-heading">
-                              {[contact.civility, contact.first_name, contact.last_name].filter(Boolean).join(" ")}
-                            </p>
-                            {contact.role ? (
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="text-sm font-semibold text-app-heading">
+                            {[contact.civility, contact.first_name, contact.last_name].filter(Boolean).join(" ")}
+                          </p>
+                          {contact.role ? (
                             <p className="text-xs uppercase tracking-[0.12em] text-app-label">
                               {contact.role}
                             </p>
@@ -668,3 +429,4 @@ export default function CentreDetailPage() {
     </div>
   );
 }
+"use client";

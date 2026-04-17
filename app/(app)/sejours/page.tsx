@@ -1,29 +1,8 @@
 "use client";
 
-import {
-  Suspense,
-  useEffect,
-  useState,
-  type ChangeEvent,
-  type FormEvent,
-} from "react";
-import type { SejourFormState } from "@/types/sejour";
+import { Suspense } from "react";
 
-const createEmptySejour = (): SejourFormState => ({
-  reference: "",
-  centre: "",
-  annee: "",
-  saison: "",
-  periodeGlobale: "",
-  dateDebut: "",
-  dateFin: "",
-  nomCommum: "",
-  ddcsCentre: "",
-  ddcsComplementaire: "",
-  codeAnalytique: "",
-  archive: false,
-  sansPiqueNique: false,
-});
+import { useSejoursPage } from "./_hooks/useSejoursPage";
 
 export default function SejoursPage() {
   return (
@@ -40,88 +19,34 @@ export default function SejoursPage() {
 }
 
 function SejoursPageContent() {
-  const [filters, setFilters] = useState({
-    annee: "",
-    centre: "",
-    saison: "",
-    reference: "",
-  });
-  const [searchTerm, setSearchTerm] = useState("");
-  const [isSearchPanelOpen, setIsSearchPanelOpen] = useState(false);
-  const [form, setForm] = useState<SejourFormState>(() => createEmptySejour());
-  const [sejourList] = useState<Array<{ id: number; reference: string; centre: string; annee: string; periode: string }>>([]);
-  const assuranceRows: Array<{ id: number; name: string; value: string; unit: string }> = [];
-  const artisticOptions: Array<{ id: number; sejour: string; option: string; price: string }> = [];
-  const entryDates: Array<{ id: number; date: string }> = [];
-  const exitDates: Array<{ id: number; date: string }> = [];
-  const departureCities: Array<{ id: number; city: string; price: string }> = [];
-  const returnCities: Array<{ id: number; city: string; price: string }> = [];
-  const sejourPeriods: Array<{ id: number; period: string; prestashop: string }> = [];
-  const partnerPricing: Array<{ id: number; name: string; base: string; transport: string }> = [];
-  const taskCategories: Array<{ id: number; category: string; tasks: string; daysBefore: string }> = [];
-  const staffMembers: Array<{ id: number; name: string; firstName: string; role: string }> = [];
+  const {
+    // Search
+    filters,
+    isSearchPanelOpen,
+    handleFilterChange,
+    toggleSearchPanel,
+    closeSearchPanel,
+    handleReset,
+    filteredSejours,
 
-  const handleFilterChange =
-    (field: keyof typeof filters) =>
-    (event: ChangeEvent<HTMLInputElement>) => {
-      const value = event.target.value;
-      setFilters((prev) => ({
-        ...prev,
-        [field]: value,
-      }));
-    };
+    // Form
+    form,
+    handleFormChange,
+    handleSubmit,
 
-  const handleFormChange =
-    (field: keyof SejourFormState) =>
-    (event: ChangeEvent<HTMLInputElement>) => {
-      const value =
-        field === "archive" || field === "sansPiqueNique"
-          ? (event.target as HTMLInputElement).checked
-          : event.target.value;
-
-      setForm((prev) => ({
-        ...prev,
-        [field]: field === "archive" || field === "sansPiqueNique" ? Boolean(value) : (value as string),
-      }));
-    };
-
-  const handleReset = () => {
-    setFilters({ annee: "", centre: "", saison: "", reference: "" });
-    setForm(createEmptySejour());
-  };
-
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    // TODO: connect to Supabase
-  };
-
-  useEffect(() => {
-    const onKeyDown = (event: KeyboardEvent) => {
-      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
-        event.preventDefault();
-        setIsSearchPanelOpen((open) => !open);
-      }
-    };
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, []);
-
-  const filteredSejours = sejourList.filter((item) => {
-    const term = searchTerm.trim().toLowerCase();
-    const matchesFilters =
-      (!filters.annee || item.annee.toLowerCase().includes(filters.annee.toLowerCase())) &&
-      (!filters.centre || item.centre.toLowerCase().includes(filters.centre.toLowerCase())) &&
-      (!filters.saison || item.periode.toLowerCase().includes(filters.saison.toLowerCase())) &&
-      (!filters.reference || item.reference.toLowerCase().includes(filters.reference.toLowerCase()));
-    if (!matchesFilters) return false;
-    if (!term) return true;
-    return (
-      item.reference.toLowerCase().includes(term) ||
-      item.centre.toLowerCase().includes(term) ||
-      item.annee.toLowerCase().includes(term) ||
-      item.periode.toLowerCase().includes(term)
-    );
-  });
+    // Data lists
+    sejourList,
+    assuranceRows,
+    artisticOptions,
+    entryDates,
+    exitDates,
+    departureCities,
+    returnCities,
+    sejourPeriods,
+    partnerPricing,
+    taskCategories,
+    staffMembers,
+  } = useSejoursPage();
 
   return (
     <div className="min-h-screen bg-white py-12 text-[#204991]">
@@ -140,7 +65,7 @@ function SejoursPageContent() {
             <button
               type="button"
               className="inline-flex items-center gap-3 rounded-full border border-[#CFE5FF] bg-white/70 px-5 py-2 text-sm font-medium text-[#204991] transition hover:border-[#B3D2FF] hover:bg-[#B3D2FF]"
-              onClick={() => setIsSearchPanelOpen((open) => !open)}
+              onClick={toggleSearchPanel}
             >
               {isSearchPanelOpen ? "FERMER LA RECHERCHE" : "OUVRIR LA RECHERCHE"}
               <span className="rounded-full bg-[#CFE5FF] px-2 py-0.5 text-[10px] font-semibold text-[#204991]">
@@ -185,7 +110,7 @@ function SejoursPageContent() {
               <div className="flex flex-wrap items-center gap-3 text-xs font-medium uppercase tracking-[0.18em] text-[#204991]">
                 <button
                   type="button"
-                  onClick={() => setIsSearchPanelOpen(false)}
+                  onClick={closeSearchPanel}
                   className="inline-flex items-center justify-center rounded-full border border-transparent bg-[#CFE5FF] px-4 py-2 text-[#204991] transition hover:bg-[#B3D2FF]"
                 >
                   Fermer
